@@ -245,6 +245,8 @@
     .msg{max-width:86%}
     .wrap{padding:0 12px}
   }
+  .tick{font-family:var(--mono);font-size:10px;color:#c99a86;letter-spacing:-.14em;line-height:1}
+  .tick.seen{color:var(--teal);text-shadow:0 0 7px rgba(255,157,138,.55)}
 </style>
 </head>
 <body>
@@ -297,7 +299,7 @@
 
       <div class="note">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>
-        <span>Messages, images, files and voice notes are encrypted in your browser with AES-256-GCM. The relay only ever carries scrambled bytes. Anyone with the room and secret can read the chat, so share them privately.</span>
+        <span>Messages, images, files and voice notes are encrypted in your browser with AES-256-GCM. The relay only ever carries scrambled bytes. Chat history is stored encrypted on this device, so reopening the same room and secret restores your conversation. Anyone with the room and secret can read the chat, so share them privately.</span>
       </div>
     </div>
   </section>
@@ -443,6 +445,8 @@ let typingTimer=null, lastTypingSent=0, peerTypingTimer=null;
 const REACTS=["\u{1F44D}","\u2764\uFE0F","\u{1F602}","\u{1F525}","\u{1F62E}","\u{1F622}"];
 const CHUNK=24*1024;                 // binary bytes per transport chunk
 const MAX_FILE=8*1024*1024;          // 8 MB cap after processing
+const HIST_KEEP=500;                 // messages kept per room on this device
+const HIST_PART=90*1024;             // max chars per history sync packet
 const msgEls=new Map();              // msg id -> bubble element
 const msgInfo=new Map();             // msg id -> {name, kind, preview}
 const reactState=new Map();          // msg id -> Map(emoji -> Set(fromId))
@@ -450,6 +454,15 @@ const incoming=new Map();            // fid -> {meta, parts, got, bodyEl, bar}
 let replyTo=null;                    // {id, name, kind, preview}
 let mediaRec=null, recStream=null, recChunks=[], recStart=0, recTimer=null;
 let pickerTarget=null;
+
+/* history / receipts state */
+const hist=new Map();                // msg id -> plaintext record
+const knownIds=new Set();            // every message id ever seen (dedup + replay guard)
+const unseenIn=new Set();            // incoming ids rendered while tab was hidden
+const histParts=new Map();           // hid -> {parts, got, n}
+const syncAnswered=new Map();        // peerId -> last time we replayed history for them
+let db=null;
+const RANK={sent:1,delivered:2,seen:3};
 
 const ICON={
   reply:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17l-5-5 5-5"/><path d="M4 12h11a4 4 0 0 1 4 4v1"/></svg>',
@@ -464,17 +477,16 @@ function uid(){ return rid()+rid(); }
 function bytesToB64(b){let s="";const c=0x8000;for(let i=0;i<b.length;i+=c)s+=String.fromCharCode.apply(null,b.subarray(i,i+c));return btoa(s);}
 function b64ToBytes(s){const bin=atob(s);const o=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)o[i]=bin.charCodeAt(i);return o;}
 
-async function deriveKey(secret,room){
-  const salt=new Uint8Array(await crypto.subtle.digest("SHA-256",enc.encode("secureline.salt|"+room)));
-  const base=await crypto.subtle.importKey("raw",enc.encode(secret),"PBKDF2",false,["deriveKey"]);
-  return crypto.subtle.deriveKey(
-    {name:"PBKDF2",salt,iterations:150000,hash:"SHA-256"},
-    base,{name:"AES-GCM",length:256},false,["encrypt","decrypt"]);
-}
-async function deriveTopic(secret,room){
-  const h=new Uint8Array(await crypto.subtle.digest("SHA-256",enc.encode("secureline.topic|"+room+"|"+secret)));
-  const hex=[...h].map(b=>b.toString(16).padStart(2,"0")).join("");
-  return "secureline/"+hex.slice(0,40);
+/* One slow PBKDF2 pass yields BOTH the AES key and the relay topic, so the
+   public topic name can no longer be brute-forced faster than the key itself. */
+async function deriveBoth(secret,room){
+  const salt=new Uint8Array(await crypto.subtle.digest("SHA-256",enc.encode("secureline.salt.v2|"+room)));
+  const base=await crypto.subtle.importKey("raw",enc.encode(secret),"PBKDF2",false,["deriveBits"]);
+  const bits=new Uint8Array(await crypto.subtle.deriveBits(
+    {name:"PBKDF2",salt,iterations:200000,hash:"SHA-256"},base,512));
+  const k=await crypto.subtle.importKey("raw",bits.slice(0,32),"AES-GCM",false,["encrypt","decrypt"]);
+  const hex=[...bits.slice(32,52)].map(b=>b.toString(16).padStart(2,"0")).join("");
+  return {key:k, topic:"secureline/v2/"+hex};
 }
 async function encryptObj(obj){
   const iv=crypto.getRandomValues(new Uint8Array(12));
@@ -486,6 +498,153 @@ async function decryptObj(b64){
   const bytes=b64ToBytes(b64);const iv=bytes.slice(0,12);const ct=bytes.slice(12);
   const pt=await crypto.subtle.decrypt({name:"AES-GCM",iv},key,ct);
   return JSON.parse(dec.decode(pt));
+}
+
+/* ---------- encrypted local history (IndexedDB, per room) ---------- */
+function idbOpen(){
+  return new Promise(res=>{
+    if(!window.indexedDB){ res(null); return; }
+    let r;
+    try{ r=indexedDB.open("secureline",1); }catch(e){ res(null); return; }
+    r.onupgradeneeded=()=>{ try{ r.result.createObjectStore("msgs",{keyPath:"k"}); }catch(e){} };
+    r.onsuccess=()=>res(r.result);
+    r.onerror=()=>res(null);
+  });
+}
+function idbPut(row){ if(!db)return; try{ db.transaction("msgs","readwrite").objectStore("msgs").put(row); }catch(e){} }
+function idbDel(k){ if(!db)return; try{ db.transaction("msgs","readwrite").objectStore("msgs").delete(k); }catch(e){} }
+function idbAllForTopic(){
+  return new Promise(res=>{
+    if(!db){ res([]); return; }
+    const out=[];
+    try{
+      const cur=db.transaction("msgs").objectStore("msgs").openCursor();
+      cur.onsuccess=e=>{ const c=e.target.result; if(c){ if(c.value&&c.value.topic===topic) out.push(c.value); c.continue(); } else res(out); };
+      cur.onerror=()=>res(out);
+    }catch(e){ res(out); }
+  });
+}
+async function saveRec(rec){
+  hist.set(rec.id,rec); knownIds.add(rec.id);
+  if(!db||!key) return;
+  try{ idbPut({k:topic+"|"+rec.id, topic, ts:rec.ts||0, ct:await encryptObj(rec)}); }catch(e){}
+}
+function serializeReacts(mid){
+  const em=reactState.get(mid); if(!em) return undefined;
+  const o={}; for(const[e,set]of em){ if(set.size) o[e]=[...set]; }
+  return Object.keys(o).length?o:undefined;
+}
+async function loadHistory(){
+  db=await idbOpen();
+  const rows=await idbAllForTopic();
+  const recs=[];
+  for(const row of rows){ try{ const r=await decryptObj(row.ct); if(r&&r.id) recs.push(r); }catch(e){} }
+  recs.sort((a,b)=>(a.ts||0)-(b.ts||0));
+  const drop=recs.slice(0,Math.max(0,recs.length-HIST_KEEP));
+  drop.forEach(r=>idbDel(topic+"|"+r.id));
+  const keep=recs.slice(-HIST_KEEP);
+  keep.forEach(r=>{ hist.set(r.id,r); knownIds.add(r.id); renderRecord(r); });
+  if(keep.length){ sys("Restored "+keep.length+" earlier message"+(keep.length>1?"s":"")); scrollDown(); }
+}
+function bodyFromRec(rec){
+  if(rec.kind==="text"){ const n=document.createElement("div"); n.innerHTML=linkify(escapeHtml(rec.text||"")); return n; }
+  if(rec.media&&rec.media.b64){
+    try{
+      return makeMediaNode({kind:rec.kind,mime:rec.media.mime,bytes:b64ToBytes(rec.media.b64),
+        filename:rec.media.filename,w:rec.media.w,h:rec.media.h,dur:rec.media.dur,size:rec.media.size});
+    }catch(e){}
+  }
+  const d=document.createElement("div"); d.className="mediacap";
+  d.textContent=mediaLabel(rec.kind,rec.media&&rec.media.filename)+" \u00b7 unavailable";
+  return d;
+}
+function renderRecord(rec){
+  if(msgEls.has(rec.id)) return;
+  addBubble({id:rec.id,name:rec.name,mine:!!rec.mine,ts:rec.ts,reply:rec.reply,bodyNode:bodyFromRec(rec)});
+  msgInfo.set(rec.id,{name:rec.name,kind:rec.kind,
+    preview:rec.kind==="text"?(rec.text||"").slice(0,80):mediaLabel(rec.kind,rec.media&&rec.media.filename)});
+  if(rec.reacts){
+    const em=new Map(); for(const e in rec.reacts) em.set(e,new Set(rec.reacts[e]));
+    reactState.set(rec.id,em); renderReacts(rec.id);
+  }
+  if(rec.mine) setTickDom(rec.id,rec.status||"sent");
+}
+
+/* ---------- read receipts ---------- */
+function setTickDom(id,status){
+  const el=msgEls.get(id); if(!el) return;
+  const tk=el.querySelector(".tick"); if(!tk) return;
+  tk.textContent = status==="sent" ? "\u2713" : "\u2713\u2713";
+  tk.classList.toggle("seen",status==="seen");
+  tk.title = status==="seen" ? "Seen" : status==="delivered" ? "Delivered" : "Sent";
+}
+function bumpStatus(id,status){
+  const rec=hist.get(id);
+  if(rec&&rec.mine){
+    if((RANK[status]||0)>(RANK[rec.status||"sent"]||0)){ rec.status=status; saveRec(rec); }
+    setTickDom(id,rec.status||"sent");
+  }else{
+    setTickDom(id,status);
+  }
+}
+function ackDelivered(ids){ publish({t:"recv",from:me.id,ids:[].concat(ids)}); }
+function maybeMarkSeen(id){
+  if(document.visibilityState==="visible"){ publish({t:"seen",from:me.id,ids:[id]}); }
+  else unseenIn.add(id);
+}
+function flushSeen(){
+  if(!unseenIn.size) return;
+  const ids=[...unseenIn]; unseenIn.clear();
+  publish({t:"seen",from:me.id,ids});
+}
+
+/* ---------- history sync (offline catch-up) ---------- */
+function requestSync(){
+  let have=0; for(const r of hist.values()) if((r.ts||0)>have) have=r.ts;
+  publish({t:"syncq",from:me.id,name:me.name,have});
+}
+async function answerSync(m){
+  const last=syncAnswered.get(m.from)||0;
+  if(Date.now()-last<15000) return;
+  syncAnswered.set(m.from,Date.now());
+  /* tell them their messages stored here have been seen */
+  const theirIds=[...hist.values()].filter(r=>r.from===m.from).map(r=>r.id).slice(-200);
+  if(theirIds.length) publish({t:"seen",from:me.id,ids:theirIds});
+  /* replay everything they are missing (not authored by them) */
+  const recs=[...hist.values()]
+    .filter(r=>r.from!==m.from && (r.ts||0)>(m.have||0)-2000)
+    .sort((a,b)=>(a.ts||0)-(b.ts||0));
+  for(const r of recs){
+    const out={id:r.id,from:r.from,name:r.name,kind:r.kind,text:r.text,media:r.media,ts:r.ts,reply:r.reply,reacts:r.reacts};
+    const s=JSON.stringify(out);
+    if(s.length<=HIST_PART){ await publish({t:"hist",from:me.id,rec:out}); }
+    else{
+      const hid=uid(), n=Math.ceil(s.length/HIST_PART);
+      for(let i=0;i<n;i++){ await publish({t:"histp",from:me.id,hid,i,n,part:s.slice(i*HIST_PART,(i+1)*HIST_PART)}); await sleep(10); }
+    }
+    await sleep(12);
+  }
+}
+function onHistRec(rec){
+  if(!rec||!rec.id||knownIds.has(rec.id)) return;
+  rec.mine=(rec.from===me.id);
+  if(rec.mine) return;                        // never replay our own back to us
+  rec.status=undefined;
+  saveRec(rec);
+  renderRecord(rec);
+  ackDelivered(rec.id);
+  maybeMarkSeen(rec.id);
+  notifyMe(rec.name||"Peer","Sent while you were away");
+}
+function onHistPart(m){
+  let h=histParts.get(m.hid);
+  if(!h){ h={parts:new Array(m.n),got:0,n:m.n}; histParts.set(m.hid,h); setTimeout(()=>histParts.delete(m.hid),60000); }
+  if(h.parts[m.i]!==undefined) return;
+  h.parts[m.i]=m.part; h.got++;
+  if(h.got>=h.n){
+    histParts.delete(m.hid);
+    try{ onHistRec(JSON.parse(h.parts.join(""))); }catch(e){}
+  }
 }
 
 /* ---------- browser notifications ---------- */
@@ -520,14 +679,11 @@ async function publish(obj){
     if(obj.t==="msg"||obj.t==="react"){ outbox.push(obj); saveOutbox(); toast("Offline \u00b7 queued, sends on reconnect"); }
     return;
   }
-  const qos=(obj.t==="msg"||obj.t==="media"||obj.t==="chunk"||obj.t==="react")?1:0;
+  const qos=(obj.t==="msg"||obj.t==="media"||obj.t==="chunk"||obj.t==="react"||obj.t==="hist"||obj.t==="histp"||obj.t==="seen"||obj.t==="recv")?1:0;
   try{ client.publish(topic, await encryptObj(obj), {qos}); }catch(e){}
 }
 
-async function connect(broker,room,secret){
-  key=await deriveKey(secret,room);
-  topic=await deriveTopic(secret,room);
-
+async function connect(broker){
   client=mqtt.connect(broker,{
     clientId:"sl_"+rid()+rid(),
     clean:true, reconnectPeriod:2000, connectTimeout:10000, keepalive:20
@@ -539,6 +695,7 @@ async function connect(broker,room,secret){
     announce();
     heartbeat();
     setTimeout(flushOutbox,600);
+    setTimeout(requestSync,1200);
   });
   client.on("reconnect",()=>setState("reconnecting",false,"warn"));
   client.on("offline",  ()=>setState("offline",false));
@@ -551,10 +708,24 @@ async function connect(broker,room,secret){
     if(!m||m.from===me.id) return;                                          // ignore own echo
     const known=peers.has(m.from);
     seen(m.from,m.name);
-    if(m.t==="msg"){ hidePeerTyping(); recvText(m); notifyMe(m.name||"Peer",(m.text||"New message").slice(0,90)); }
-    else if(m.t==="media"){ hidePeerTyping(); startIncoming(m); notifyMe(m.name||"Peer","Sent you a file"); }
+    if(m.t==="msg"){
+      hidePeerTyping();
+      if(knownIds.has(m.id)){ ackDelivered(m.id); maybeMarkSeen(m.id); return; } // replay/dup guard
+      recvText(m);
+      notifyMe(m.name||"Peer",(m.text||"New message").slice(0,90));
+    }
+    else if(m.t==="media"){
+      hidePeerTyping();
+      if(knownIds.has(m.id)) return;
+      startIncoming(m); notifyMe(m.name||"Peer","Sent you a file");
+    }
     else if(m.t==="chunk"){ onChunk(m); }
-    else if(m.t==="react"){ applyReact(m.from,m.mid,m.emoji,m.on); }
+    else if(m.t==="react"){ applyReact(m.from,m.mid,m.emoji,m.on); persistReacts(m.mid); }
+    else if(m.t==="recv"){ (m.ids||[]).forEach(id=>bumpStatus(id,"delivered")); }
+    else if(m.t==="seen"){ (m.ids||[]).forEach(id=>bumpStatus(id,"seen")); }
+    else if(m.t==="syncq"){ answerSync(m); }
+    else if(m.t==="hist"){ onHistRec(m.rec); }
+    else if(m.t==="histp"){ onHistPart(m); }
     else if(m.t==="typing"){ showPeerTyping(m.name); }
     else if(m.t==="join"){ if(!known) sys(`${m.name||"Someone"} joined`); publish({t:"here",from:me.id,name:me.name}); }
     else if(m.t==="leave"){ if(known){ sys(`${m.name||"Someone"} left`); peers.delete(m.from); refreshPresence(); } }
@@ -611,6 +782,7 @@ function scrollDown(){ const s=$("stream"); s.scrollTop=s.scrollHeight; }
 function sys(text){
   const stick=nearBottom();
   const d=document.createElement("div");d.className="sys";d.textContent=text;
+  d.dataset.ts=Date.now();
   $("stream").appendChild(d); if(stick)scrollDown();
 }
 function showPeerTyping(name){
@@ -634,11 +806,23 @@ function iconBtn(svg,title,fn){
   const b=document.createElement("button");b.className="act";b.title=title;b.innerHTML=svg;
   b.addEventListener("click",fn);return b;
 }
+function insertSorted(div,ts){
+  const s=$("stream");
+  const kids=s.children;
+  for(let i=kids.length-1;i>=0;i--){
+    const k=kids[i];
+    const kts=Number(k.dataset&&k.dataset.ts||0);
+    if(kts&&kts<=ts){ k.after(div); return; }
+  }
+  /* older than everything (or empty stream): put first */
+  if(kids.length) s.insertBefore(div,kids[0]); else s.appendChild(div);
+}
 function addBubble({id,name,mine,ts,reply,bodyNode}){
   const stick=nearBottom();
   const div=document.createElement("div");
   div.className="msg "+(mine?"me":"you");
   div.dataset.id=id;
+  div.dataset.ts=ts||Date.now();
 
   if(reply){
     const q=document.createElement("div");q.className="quote";
@@ -655,15 +839,20 @@ function addBubble({id,name,mine,ts,reply,bodyNode}){
   const foot=document.createElement("div");foot.className="foot";
   const time=document.createElement("span");time.className="time";
   time.textContent=new Date(ts||Date.now()).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+  foot.appendChild(time);
+  if(mine){
+    const tk=document.createElement("span");tk.className="tick";tk.textContent="\u2713";tk.title="Sent";
+    foot.appendChild(tk);
+  }
   const acts=document.createElement("div");acts.className="acts";
   acts.appendChild(iconBtn(ICON.reply,"Reply",()=>startReply(id)));
   acts.appendChild(iconBtn(ICON.smile,"React",e=>{e.stopPropagation();openPicker(e.currentTarget,id);}));
-  foot.appendChild(time);foot.appendChild(acts);
+  foot.appendChild(acts);
   div.appendChild(foot);
 
   const rc=document.createElement("div");rc.className="reacts";div.appendChild(rc);
 
-  $("stream").appendChild(div);
+  insertSorted(div,Number(div.dataset.ts));
   msgEls.set(id,div);
   if(mine||stick) scrollDown();
   return {el:div,bodyEl:body};
@@ -675,19 +864,25 @@ async function sendMsg(){
   if(!text) return;
   const id=uid();
   const reply=replyTo||undefined;
+  const ts=Date.now();
   const node=document.createElement("div");node.innerHTML=linkify(escapeHtml(text));
-  addBubble({id,name:me.name,mine:true,ts:Date.now(),reply,bodyNode:node});
+  addBubble({id,name:me.name,mine:true,ts,reply,bodyNode:node});
   msgInfo.set(id,{name:me.name,kind:"text",preview:text.slice(0,80)});
-  const m={t:"msg",id,from:me.id,name:me.name,text,ts:Date.now(),reply};
+  saveRec({id,from:me.id,name:me.name,mine:true,kind:"text",text,ts,reply,status:"sent"});
+  const m={t:"msg",id,from:me.id,name:me.name,text,ts,reply};
   clearReply();
   box.value=""; autosize(); toggleSend();
   await publish(m);
 }
 function recvText(m){
   const id=m.id||uid();
+  const ts=m.ts||Date.now();
   const node=document.createElement("div");node.innerHTML=linkify(escapeHtml(m.text||""));
-  addBubble({id,name:m.name,mine:false,ts:m.ts,reply:m.reply,bodyNode:node});
+  addBubble({id,name:m.name,mine:false,ts,reply:m.reply,bodyNode:node});
   msgInfo.set(id,{name:m.name,kind:"text",preview:(m.text||"").slice(0,80)});
+  saveRec({id,from:m.from,name:m.name,mine:false,kind:"text",text:m.text||"",ts,reply:m.reply});
+  ackDelivered(id);
+  maybeMarkSeen(id);
 }
 
 /* ---------- reply ---------- */
@@ -733,6 +928,7 @@ function toggleReact(mid,emoji){
   const has=em&&em.get(emoji)&&em.get(emoji).has(me.id);
   const on=!has;
   applyReact(me.id,mid,emoji,on);
+  persistReacts(mid);
   publish({t:"react",from:me.id,name:me.name,mid,emoji,on});
 }
 function applyReact(from,mid,emoji,on){
@@ -740,6 +936,11 @@ function applyReact(from,mid,emoji,on){
   let set=em.get(emoji); if(!set){set=new Set();em.set(emoji,set);}
   if(on) set.add(from); else set.delete(from);
   renderReacts(mid);
+}
+function persistReacts(mid){
+  const rec=hist.get(mid); if(!rec) return;
+  rec.reacts=serializeReacts(mid);
+  saveRec(rec);
 }
 function renderReacts(mid){
   const el=msgEls.get(mid); if(!el) return;
@@ -820,15 +1021,18 @@ async function prepImage(file){
 
 async function shipMedia({kind,mime,bytes,filename,w,h,dur}){
   const id=uid(), fid=uid();
+  const ts=Date.now();
   const chunks=Math.max(1,Math.ceil(bytes.length/CHUNK));
   const reply=replyTo||undefined;
 
   const bodyNode=makeMediaNode({kind,mime,bytes,filename,w,h,dur,size:bytes.length});
-  const {bodyEl}=addBubble({id,name:me.name,mine:true,ts:Date.now(),reply,bodyNode});
+  const {bodyEl}=addBubble({id,name:me.name,mine:true,ts,reply,bodyNode});
   msgInfo.set(id,{name:me.name,kind,preview:mediaLabel(kind,filename)});
+  saveRec({id,from:me.id,name:me.name,mine:true,kind,ts,reply,status:"sent",
+    media:{mime,filename,w,h,dur:dur||0,size:bytes.length,b64:bytesToB64(bytes)}});
   const bar=makeProg(bodyEl);
 
-  const meta={t:"media",id,fid,from:me.id,name:me.name,kind,mime,filename,size:bytes.length,w,h,dur:dur||0,chunks,ts:Date.now(),reply};
+  const meta={t:"media",id,fid,from:me.id,name:me.name,kind,mime,filename,size:bytes.length,w,h,dur:dur||0,chunks,ts,reply};
   clearReply();
   await publish(meta);
   for(let i=0;i<chunks;i++){
@@ -843,6 +1047,7 @@ async function shipMedia({kind,mime,bytes,filename,w,h,dur}){
 /* ---------- media: receiving ---------- */
 function startIncoming(meta){
   if(incoming.has(meta.fid)) return;
+  if((meta.size||0)>MAX_FILE||(meta.chunks||0)>Math.ceil(MAX_FILE/CHUNK)+2) return; // reject oversize
   const ph=document.createElement("div");
   const what=meta.kind==="image"?"photo":meta.kind==="voice"?"voice note":escapeHtml(meta.filename||"file");
   ph.innerHTML=`<div class="mediacap">Receiving ${what}\u2026</div>`;
@@ -866,6 +1071,11 @@ function onChunk(m){
     const node=makeMediaNode({kind:rec.meta.kind,mime:rec.meta.mime,bytes:all,filename:rec.meta.filename,w:rec.meta.w,h:rec.meta.h,dur:rec.meta.dur,size:rec.meta.size});
     const stick=nearBottom();
     rec.bodyEl.innerHTML=""; rec.bodyEl.appendChild(node);
+    const mt=rec.meta;
+    saveRec({id:mt.id,from:mt.from,name:mt.name,mine:false,kind:mt.kind,ts:mt.ts||Date.now(),reply:mt.reply,
+      media:{mime:mt.mime,filename:mt.filename,w:mt.w,h:mt.h,dur:mt.dur||0,size:mt.size,b64:bytesToB64(all)}});
+    ackDelivered(mt.id);
+    maybeMarkSeen(mt.id);
     incoming.delete(m.fid);
     if(stick) scrollDown();
   }
@@ -965,7 +1175,7 @@ async function sendNotify(room,secret,name){
 }
 
 /* ---------- boot ---------- */
-function start(){
+async function start(){
   const name=$("name").value.trim()||"Anon";
   const room=$("room").value.trim();
   const secret=$("secret").value;
@@ -977,6 +1187,7 @@ function start(){
 
   me.name=name;
   try{ localStorage.setItem("sl.name",name); }catch(e){}
+  try{ const sid=localStorage.getItem("sl.id"); if(sid) me.id=sid; else localStorage.setItem("sl.id",me.id); }catch(e){}
 
   $("gate").style.display="none";
   $("chat").classList.add("on");
@@ -984,12 +1195,18 @@ function start(){
   $("input").disabled=false;
   $("attachBtn").disabled=false;
   $("micBtn").disabled=false;
-  setState("connecting",false,"warn");
+  setState("unlocking\u2026",false,"warn");
 
+  const derived=await deriveBoth(secret,room);
+  key=derived.key; topic=derived.topic;
+
+  await loadHistory();
+
+  setState("connecting",false,"warn");
   window._room={room,secret,broker};
   askNotifyPermission();
   ntfyPing(name+" is online in room \""+room+"\"");
-  connect(broker,room,secret).catch(()=>toast("Could not reach the relay"));
+  connect(broker).catch(()=>toast("Could not reach the relay"));
 
   const wantEmail=$("notify")&&$("notify").checked;
   try{ localStorage.setItem("sl.notify",wantEmail?"1":""); }catch(e){}
@@ -1018,7 +1235,10 @@ function hydrate(){
   const r=h.get("r"), k=h.get("k");
   if(r)$("room").value=r;
   if(k)$("secret").value=k;
-  if(r&&k){ toast("Invite loaded \u00b7 press Open the line"); }
+  if(r&&k){
+    toast("Invite loaded \u00b7 press Open the line");
+    try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
+  }
 }
 
 /* ---------- wiring ---------- */
@@ -1041,6 +1261,7 @@ $("rbX").addEventListener("click",clearReply);
 window.addEventListener("beforeunload",()=>{ try{ client&&publish({t:"leave",from:me.id,name:me.name}); }catch(e){} });
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState!=="visible"||!client) return;
+  flushSeen();
   if(!client.connected){ try{ client.reconnect(); }catch(e){} }
   else announce();
 });
