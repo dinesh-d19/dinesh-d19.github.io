@@ -7,17 +7,17 @@
 <title>Secure Line</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
-    --ink:#070c10; --ink-2:#0a1015;
-    --surface:#0e161c; --surface-2:#111d24; --raised:#15242c;
-    --hair:#1c2c35; --hair-soft:#15222b;
-    --text:#e9f1f4; --muted:#8aa2ae; --dim:#526a76;
-    --teal:#33e0cc; --teal-2:#66ecdc; --teal-deep:#0f9e8f;
-    --gold:#ecc06b; --violet:#7b86e0; --red:#ff6f6f;
-    --radius:16px;
-    --display:"Space Grotesk",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    --ink:#151011; --ink-2:#1a1315;
+    --surface:#201719; --surface-2:#271b1d; --raised:#2f2124;
+    --hair:#3c2b2b; --hair-soft:#2e2122;
+    --text:#f8f0e9; --muted:#b49d93; --dim:#816a60;
+    --teal:#ff9d8a; --teal-2:#ffc2a9; --teal-deep:#cf6a55;
+    --gold:#eeca8f; --violet:#d39bc1; --red:#ff6f6f;
+    --radius:18px;
+    --display:"Fraunces","Georgia",serif;
     --body:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
     --mono:"Space Mono",ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
     --shadow:0 40px 100px -45px rgba(0,0,0,.92);
@@ -35,14 +35,14 @@
   button{font-family:inherit;cursor:pointer;color:inherit}
   input,textarea{font-family:inherit}
   a{color:var(--teal)}
-  ::selection{background:rgba(51,224,204,.28)}
+  ::selection{background:rgba(255,157,138,.28)}
   :focus-visible{outline:2px solid var(--teal);outline-offset:2px}
 
   /* ambient endpoints */
   .orbs{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
   .orbs span{position:absolute;border-radius:50%;filter:blur(90px)}
-  .orbs span:nth-child(1){width:440px;height:440px;left:-9%;top:-8%;background:radial-gradient(circle,rgba(51,224,204,.42),transparent 68%);animation:drift1 24s ease-in-out infinite}
-  .orbs span:nth-child(2){width:400px;height:400px;right:-8%;bottom:-10%;background:radial-gradient(circle,rgba(123,134,224,.36),transparent 68%);animation:drift2 30s ease-in-out infinite}
+  .orbs span:nth-child(1){width:440px;height:440px;left:-9%;top:-8%;background:radial-gradient(circle,rgba(255,157,138,.42),transparent 68%);animation:drift1 24s ease-in-out infinite}
+  .orbs span:nth-child(2){width:400px;height:400px;right:-8%;bottom:-10%;background:radial-gradient(circle,rgba(211,155,193,.36),transparent 68%);animation:drift2 30s ease-in-out infinite}
   @keyframes drift1{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,30px)}}
   @keyframes drift2{0%,100%{transform:translate(0,0)}50%{transform:translate(-36px,-26px)}}
 
@@ -61,7 +61,7 @@
   .crest-ring{position:absolute;inset:-5px;border-radius:20px;background:conic-gradient(from 120deg,var(--teal),var(--gold),var(--violet),var(--teal));opacity:.5;filter:blur(6px);animation:spin 9s linear infinite}
   .lock{
     position:relative;width:60px;height:60px;border-radius:17px;display:grid;place-items:center;
-    background:radial-gradient(120% 120% at 30% 20%,rgba(51,224,204,.2),rgba(236,192,107,.08)),var(--surface);
+    background:radial-gradient(120% 120% at 30% 20%,rgba(255,157,138,.2),rgba(238,202,143,.08)),var(--surface);
     border:1px solid var(--hair);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
   }
   .lock svg{width:27px;height:27px}
@@ -77,11 +77,11 @@
     border-radius:12px;padding:13px 14px;font-size:15px;outline:none;transition:border-color .16s,box-shadow .16s,background .16s;
   }
   input[type=text]::placeholder,input[type=password]::placeholder{color:var(--dim)}
-  input[type=text]:focus,input[type=password]:focus{border-color:var(--teal-deep);background:var(--surface);box-shadow:0 0 0 3px rgba(51,224,204,.12)}
+  input[type=text]:focus,input[type=password]:focus{border-color:var(--teal-deep);background:var(--surface);box-shadow:0 0 0 3px rgba(255,157,138,.12)}
   .check{display:flex;align-items:flex-start;gap:10px;margin:4px 0;cursor:pointer;font-size:13px;color:var(--muted);user-select:none}
   .check input{appearance:none;-webkit-appearance:none;width:20px;height:20px;flex:none;margin-top:1px;border:1px solid var(--hair);border-radius:6px;background:var(--ink-2);display:grid;place-items:center;transition:.14s;cursor:pointer}
   .check input:checked{background:linear-gradient(180deg,var(--teal-2),var(--teal));border-color:var(--teal)}
-  .check input:checked::after{content:"";width:5px;height:9px;border:solid #04201d;border-width:0 2px 2px 0;transform:rotate(45deg) translateY(-1px)}
+  .check input:checked::after{content:"";width:5px;height:9px;border:solid #3a140e;border-width:0 2px 2px 0;transform:rotate(45deg) translateY(-1px)}
   .check:hover{color:var(--text)}
   .check span{line-height:1.45}
   .adv-toggle{background:none;border:none;color:var(--muted);font-family:var(--mono);font-size:11px;letter-spacing:.08em;padding:6px 0;margin-top:2px}
@@ -90,12 +90,12 @@
   #adv.open{display:block}
   .go{
     width:100%;margin-top:18px;border:none;border-radius:12px;padding:14px;
-    font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.01em;color:#04201d;
+    font-family:var(--display);font-size:15px;font-weight:600;letter-spacing:.01em;color:#3a140e;
     background:linear-gradient(180deg,var(--teal-2),var(--teal));
-    box-shadow:0 12px 30px -12px rgba(51,224,204,.5),inset 0 1px 0 rgba(255,255,255,.35);
+    box-shadow:0 12px 30px -12px rgba(255,157,138,.5),inset 0 1px 0 rgba(255,255,255,.35);
     transition:transform .08s,filter .16s,box-shadow .16s;
   }
-  .go:hover{filter:brightness(1.05);box-shadow:0 16px 40px -12px rgba(51,224,204,.6),inset 0 1px 0 rgba(255,255,255,.35)}
+  .go:hover{filter:brightness(1.05);box-shadow:0 16px 40px -12px rgba(255,157,138,.6),inset 0 1px 0 rgba(255,255,255,.35)}
   .go:active{transform:translateY(1px)}
   .note{margin-top:20px;padding-top:18px;border-top:1px solid var(--hair-soft);font-size:11.5px;color:var(--dim);line-height:1.6;display:flex;gap:9px}
   .note svg{flex:none;width:15px;height:15px;margin-top:1px;color:var(--teal-deep);opacity:.9}
@@ -106,8 +106,8 @@
   .bar{display:flex;align-items:center;gap:12px;padding:16px 4px 14px}
   .status-dot{width:9px;height:9px;border-radius:50%;background:var(--dim);flex:none}
   .status-dot.live{background:var(--teal);box-shadow:0 0 10px var(--teal);animation:pulse 2.4s infinite}
-  .status-dot.warn{background:var(--gold);box-shadow:0 0 10px rgba(236,192,107,.6)}
-  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(51,224,204,.5),0 0 10px var(--teal)}70%{box-shadow:0 0 0 8px rgba(51,224,204,0),0 0 10px var(--teal)}100%{box-shadow:0 0 0 0 rgba(51,224,204,0),0 0 10px var(--teal)}}
+  .status-dot.warn{background:var(--gold);box-shadow:0 0 10px rgba(238,202,143,.6)}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,157,138,.5),0 0 10px var(--teal)}70%{box-shadow:0 0 0 8px rgba(255,157,138,0),0 0 10px var(--teal)}100%{box-shadow:0 0 0 0 rgba(255,157,138,0),0 0 10px var(--teal)}}
   .bar .meta{min-width:0;flex:1}
   .bar .room{font-family:var(--display);font-weight:600;font-size:16px;letter-spacing:-.01em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .bar .state{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:3px}
@@ -133,8 +133,8 @@
   .msg .body{line-height:1.5}
   .msg .time{font-family:var(--mono);font-size:9.5px;color:var(--dim);letter-spacing:.05em}
   .msg.you{align-self:flex-start;background:var(--surface-2);border:1px solid var(--hair);border-top-left-radius:6px}
-  .msg.me{align-self:flex-end;color:#eafffb;background:linear-gradient(165deg,rgba(30,92,84,.95),rgba(17,58,54,.96));border:1px solid #22756c;border-top-right-radius:6px;box-shadow:0 10px 30px -18px rgba(51,224,204,.5)}
-  .msg.me .time{color:#6fb5aa}
+  .msg.me{align-self:flex-end;color:#fff3ec;background:linear-gradient(165deg,rgba(186,88,68,.95),rgba(126,50,44,.96));border:1px solid #b06046;border-top-right-radius:6px;box-shadow:0 10px 30px -18px rgba(255,157,138,.5)}
+  .msg.me .time{color:#eba98f}
   .msg.flash{animation:flash 1.1s ease}
   @keyframes flash{0%,100%{box-shadow:0 0 0 0 transparent}28%{box-shadow:0 0 0 2px var(--teal)}}
 
@@ -152,21 +152,21 @@
   .msg.me .reacts{justify-content:flex-end}
   .chip{font-size:12px;background:var(--surface);border:1px solid var(--hair);border-radius:20px;padding:1px 8px;line-height:1.7;cursor:pointer;user-select:none;transition:.14s}
   .chip:hover{border-color:var(--teal-deep)}
-  .chip.mine{border-color:var(--teal-deep);background:rgba(51,224,204,.14)}
+  .chip.mine{border-color:var(--teal-deep);background:rgba(255,157,138,.14)}
   .chip .n{color:var(--muted);font-size:10.5px;margin-left:3px}
   .msg.me .chip{background:rgba(0,0,0,.22);border-color:rgba(255,255,255,.12)}
-  .msg.me .chip.mine{background:rgba(51,224,204,.2);border-color:var(--teal)}
+  .msg.me .chip.mine{background:rgba(255,157,138,.2);border-color:var(--teal)}
 
   .picker{position:fixed;z-index:40;background:var(--raised);border:1px solid var(--hair);border-radius:14px;padding:6px;display:none;gap:2px;box-shadow:0 24px 60px -22px rgba(0,0,0,.9)}
   .picker.show{display:flex;animation:pop .16s ease-out}
   .picker button{background:none;border:none;font-size:21px;padding:5px 7px;border-radius:9px;line-height:1;transition:.12s}
   .picker button:hover{background:var(--surface);transform:scale(1.12)}
 
-  .quote{border-left:2px solid var(--teal-deep);background:rgba(51,224,204,.06);border-radius:9px;padding:6px 10px;margin-bottom:7px;cursor:pointer}
+  .quote{border-left:2px solid var(--teal-deep);background:rgba(255,157,138,.06);border-radius:9px;padding:6px 10px;margin-bottom:7px;cursor:pointer}
   .msg.me .quote{background:rgba(0,0,0,.18);border-left-color:var(--teal)}
   .quote .q-name{font-family:var(--mono);color:var(--teal);font-weight:700;font-size:10px;letter-spacing:.04em;display:block;margin-bottom:2px}
   .quote .q-prev{color:var(--muted);font-size:12.5px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:230px}
-  .msg.me .quote .q-prev{color:#bfe8e0}
+  .msg.me .quote .q-prev{color:#f4d2c3}
 
   /* media */
   .media-img{max-width:min(280px,100%);border-radius:12px;display:block;cursor:pointer;border:1px solid var(--hair)}
@@ -192,12 +192,12 @@
     border-radius:14px;padding:12px 15px;font-size:15px;line-height:1.4;max-height:130px;outline:none;transition:border-color .16s,box-shadow .16s;
   }
   .composer textarea::placeholder{color:var(--dim)}
-  .composer textarea:focus{border-color:var(--teal-deep);box-shadow:0 0 0 3px rgba(51,224,204,.1)}
+  .composer textarea:focus{border-color:var(--teal-deep);box-shadow:0 0 0 3px rgba(255,157,138,.1)}
   .cbtn{background:var(--surface);border:1px solid var(--hair);color:var(--muted);border-radius:14px;width:47px;height:47px;flex:none;display:grid;place-items:center;transition:.14s}
   .cbtn:hover{color:var(--teal);border-color:var(--teal-deep);background:var(--surface-2)}
   .cbtn:disabled{opacity:.4;cursor:default}
   .cbtn svg{width:19px;height:19px}
-  .send{border:none;border-radius:14px;width:47px;height:47px;flex:none;display:grid;place-items:center;color:#04201d;background:linear-gradient(180deg,var(--teal-2),var(--teal));box-shadow:0 10px 26px -12px rgba(51,224,204,.55),inset 0 1px 0 rgba(255,255,255,.3);transition:.12s}
+  .send{border:none;border-radius:14px;width:47px;height:47px;flex:none;display:grid;place-items:center;color:#3a140e;background:linear-gradient(180deg,var(--teal-2),var(--teal));box-shadow:0 10px 26px -12px rgba(255,157,138,.55),inset 0 1px 0 rgba(255,255,255,.3);transition:.12s}
   .send:hover{filter:brightness(1.05)}
   .send:active{transform:translateY(1px)}
   .send:disabled{opacity:.45;cursor:default;box-shadow:none;filter:saturate(.5)}
@@ -250,6 +250,7 @@
 <body>
 <div class="orbs" aria-hidden="true"><span></span><span></span></div>
 <div class="wrap">
+
   <!-- CONNECT -->
   <section id="gate">
     <div class="card">
@@ -262,9 +263,9 @@
           </svg>
         </div>
       </div>
-      <p class="eyebrow"><i></i> End-to-end encrypted</p>
+      <p class="eyebrow"><i></i> Just the two of us</p>
       <h1>Secure <span>Line</span></h1>
-      <p class="sub">A private channel for two. Share the same room and secret with one other person, and everything between you stays encrypted end to end.</p>
+      <p class="sub">A quiet little line for two. Share one room and one secret with your person, and everything between you stays encrypted end to end.</p>
 
       <div class="field">
         <label for="name">Your name</label>
@@ -593,9 +594,9 @@ function refreshPresence(){
   const n=peers.size;
   const el=$("barState");
   if(!client||!client.connected){ return; }
-  if(n===0) el.innerHTML=`<b>secure</b> \u00b7 waiting for peer`;
-  else if(n===1){ const only=[...peers.values()][0]; el.innerHTML=`<b>secure</b> \u00b7 ${escapeHtml(only.name)} online`; }
-  else el.innerHTML=`<b>secure</b> \u00b7 ${n} online`;
+  if(n===0) el.innerHTML=`<b>private</b> \u00b7 just you for now`;
+  else if(n===1){ const only=[...peers.values()][0]; el.innerHTML=`<span style="color:var(--teal)">\u2665</span> ${escapeHtml(only.name)} is here`; }
+  else el.innerHTML=`<b>private</b> \u00b7 ${n} here`;
 }
 
 /* ---------- ui basics ---------- */
@@ -1050,8 +1051,7 @@ window.addEventListener("online",()=>{
 });
 window.addEventListener("offline",()=>toast("No connection \u00b7 messages will queue"));
 
-/* Optional: if a sw.js sits next to this file, the page will also open with
-   zero network. Everything else works fine without it. */
+/* offline app shell: service worker caches this page + the mqtt library */
 if("serviceWorker" in navigator && location.protocol==="https:"){
   navigator.serviceWorker.register("./sw.js").catch(()=>{});
 }
