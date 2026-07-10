@@ -281,12 +281,12 @@
         <label for="secret">Secret key</label>
         <input id="secret" type="password" placeholder="the passphrase that unlocks it" autocomplete="off">
       </div>
-<!-- 
+
       <label class="check" id="notifyRow" hidden>
         <input type="checkbox" id="notify">
         <span>Email my friend the invite when I open this line</span>
       </label>
--->
+
       <button class="adv-toggle" id="advBtn">+ advanced</button>
       <div id="adv">
         <div class="field">
@@ -403,7 +403,7 @@ safe-buffer/index.js:
    then need to already know the secret from when it was shared privately).
    ========================================================================= */
 const NOTIFY = {
-  accessKey: "",            // <-- paste your Web3Forms access key here
+  accessKey: "cc0ed75b-9533-4956-a013-1717100c631e",            // <-- paste your Web3Forms access key here
   includeSecret: true       // false = notify only, no secret in the email
 };
 
@@ -418,7 +418,7 @@ const NOTIFY = {
       phone gets a push notification instantly.
    ========================================================================= */
 const NTFY = {
-  topic: ""                 // <-- paste your secret ntfy topic here
+  topic: "secureline-dineshnan"                 // <-- paste your secret ntfy topic here
 };
 function ntfyPing(text){
   if(!NTFY.topic) return;
