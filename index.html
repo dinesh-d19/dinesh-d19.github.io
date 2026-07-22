@@ -5,9 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="color-scheme" content="dark">
 <title>Secure Line</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#151011">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Secure Line">
+<link rel="manifest" id="manifest">
+<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a1315'/%3E%3Cg fill='none' stroke='%23ff9d8a' stroke-width='4.5' stroke-linecap='round'%3E%3Crect x='19' y='29' width='26' height='19' rx='4'/%3E%3Cpath d='M25 29v-6a7 7 0 0 1 14 0v6'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="apple-touch-icon" id="touchicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a1315'/%3E%3Cg fill='none' stroke='%23ff9d8a' stroke-width='4.5' stroke-linecap='round'%3E%3Crect x='19' y='29' width='26' height='19' rx='4'/%3E%3Cpath d='M25 29v-6a7 7 0 0 1 14 0v6'/%3E%3C/g%3E%3C/svg%3E">
+
+<!-- Webfonts are a bonus, never a blocker. The page paints immediately using the
+     local fallbacks in --display/--body/--mono below; Fraunces, Inter and Space
+     Mono swap in later only if the connection is good enough to deliver them.
+     media="print" keeps this request off the critical rendering path. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Space+Mono:wght@400;700&family=Inter:wght@400;500;600&display=swap" media="print" fetchpriority="low"
+      onload="this.media='all';this.onload=null" onerror="this.remove()">
 <style>
   :root{
     --ink:#151011; --ink-2:#1a1315;
@@ -17,9 +29,9 @@
     --teal:#ff9d8a; --teal-2:#ffc2a9; --teal-deep:#cf6a55;
     --gold:#eeca8f; --violet:#d39bc1; --red:#ff6f6f;
     --radius:18px;
-    --display:"Fraunces","Georgia",serif;
-    --body:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    --mono:"Space Mono",ui-monospace,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
+    --display:"Fraunces","Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --body:"Inter",system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    --mono:"Space Mono",ui-monospace,SFMono-Regular,"SF Mono","Cascadia Code",Menlo,Consolas,monospace;
     --shadow:0 40px 100px -45px rgba(0,0,0,.92);
   }
   *{box-sizing:border-box}
@@ -214,6 +226,7 @@
   .composer.recording textarea,
   .composer.recording .send,
   .composer.recording #attachBtn,
+  .composer.recording #gifBtn,
   .composer.recording #micBtn{display:none}
   .recbar{display:none;flex:1;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--red);border-radius:14px;padding:0 15px;height:47px}
   .composer.recording .recbar{display:flex}
@@ -240,11 +253,73 @@
     .orbs span,.crest-ring,.wire::after,.status-dot.live,.recdot,.typing i,.msg,.replybar.show,.picker.show{animation:none}
   }
   @media (max-width:560px){
+    .composer{gap:6px}
+    .cbtn{width:42px;height:44px;border-radius:12px}
+    .send{width:44px;height:44px;border-radius:12px}
+    .gp-grid img{height:88px}
     .card{padding:28px 22px 22px}
     h1{font-size:25px}
     .msg{max-width:86%}
     .wrap{padding:0 12px}
   }
+
+  /* ---------- gif picker ---------- */
+  .gifpanel{display:none;flex-direction:column;gap:9px;background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:10px;margin-bottom:9px}
+  .gifpanel.show{display:flex;animation:pop .18s ease-out}
+  .gp-head{display:flex;gap:8px;align-items:center}
+  .gp-head input{flex:1;background:var(--ink-2);border:1px solid var(--hair);color:var(--text);border-radius:11px;padding:10px 12px;font-size:14px;outline:none;transition:border-color .16s,box-shadow .16s}
+  .gp-head input:focus{border-color:var(--teal-deep);box-shadow:0 0 0 3px rgba(255,157,138,.1)}
+  .gp-x{background:none;border:none;color:var(--dim);font-size:22px;line-height:1;padding:0 6px}
+  .gp-x:hover{color:var(--red)}
+  .gp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:7px;max-height:38vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--hair) transparent}
+  .gp-grid::-webkit-scrollbar{width:7px}
+  .gp-grid::-webkit-scrollbar-thumb{background:var(--hair);border-radius:8px}
+  .gp-grid img{width:100%;height:100px;object-fit:cover;border-radius:10px;background:var(--ink-2);border:1px solid var(--hair-soft);cursor:pointer;transition:transform .14s,border-color .14s}
+  .gp-grid img:hover{border-color:var(--teal-deep);transform:scale(1.03)}
+  .gp-msg{grid-column:1/-1;font-family:var(--mono);font-size:11.5px;color:var(--dim);text-align:center;padding:18px 6px;line-height:1.7}
+  .gp-msg a{color:var(--teal)}
+  .gp-foot{display:flex;align-items:center;gap:10px;justify-content:space-between}
+  .gp-cred{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+  .gp-local{background:var(--surface-2);border:1px solid var(--hair);color:var(--muted);border-radius:10px;padding:7px 11px;font-size:12px;transition:.14s}
+  .gp-local:hover{color:var(--teal);border-color:var(--teal-deep)}
+  .cbtn.gif{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.02em}
+  .gifwrap{position:relative;display:inline-block;line-height:0;max-width:100%}
+  .gifbadge{position:absolute;left:7px;bottom:7px;font-family:var(--mono);font-style:normal;font-size:9px;font-weight:700;letter-spacing:.1em;color:#fff;background:rgba(0,0,0,.62);border-radius:5px;padding:2px 5px;pointer-events:none}
+
+  /* ---------- swipe to reply ---------- */
+  .stream{overflow-x:hidden}
+  .msg{touch-action:pan-y}
+  .msg::before{
+    content:"";position:absolute;top:50%;left:-36px;width:26px;height:26px;margin-top:-13px;
+    border-radius:50%;background:var(--surface-2);border:1px solid var(--hair);
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ff9d8a' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M9 17l-5-5 5-5'/%3E%3Cpath d='M4 12h11a4 4 0 0 1 4 4v1'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:center;background-size:14px;
+    opacity:0;transform:scale(.7);transition:opacity .12s,transform .12s;pointer-events:none;
+  }
+  .msg.swiping::before{opacity:.55;transform:scale(.88)}
+  .msg.swipe-on::before{opacity:1;transform:scale(1);border-color:var(--teal-deep);box-shadow:0 0 12px -2px rgba(255,157,138,.55)}
+  .msg.snapback{transition:transform .19s cubic-bezier(.2,.8,.3,1)}
+
+  /* ---------- deleted / edited ---------- */
+  .gone{display:flex;align-items:center;gap:7px;color:var(--dim);font-style:italic;font-size:13.5px}
+  .gone svg{width:15px;height:15px;flex:none;opacity:.85}
+  .msg.gone-msg{opacity:.82}
+  .msg.me .gone{color:#e2b4a0}
+  .edited{font-family:var(--mono);font-size:9.5px;color:var(--dim);letter-spacing:.04em}
+  .msg.me .edited{color:#eba98f}
+  .msg.editing{outline:1px dashed var(--gold);outline-offset:3px}
+
+  /* ---------- small action menu ---------- */
+  .menu{position:fixed;z-index:45;background:var(--raised);border:1px solid var(--hair);border-radius:13px;padding:5px;display:none;flex-direction:column;min-width:178px;box-shadow:0 24px 60px -22px rgba(0,0,0,.9)}
+  .menu.show{display:flex;animation:pop .16s ease-out}
+  .menu button{background:none;border:none;text-align:left;font-size:13.5px;padding:9px 12px;border-radius:9px;color:var(--text);transition:.12s;white-space:nowrap}
+  .menu button:hover{background:var(--surface)}
+  .menu button.danger{color:var(--red)}
+  .menu button.danger:hover{background:rgba(255,111,111,.12)}
+
+  .replybar.edit{border-left-color:var(--gold)}
+  .replybar.edit .rb-name{color:var(--gold)}
+
   .tick{font-family:var(--mono);font-size:10px;color:#c99a86;letter-spacing:-.14em;line-height:1}
   .tick.seen{color:var(--teal);text-shadow:0 0 7px rgba(255,157,138,.55)}
 </style>
@@ -329,11 +404,31 @@
       <button class="rb-x" id="rbX" title="Cancel reply">&times;</button>
     </div>
 
+    <div class="replybar edit" id="editbar">
+      <div class="rb-txt"><span class="rb-name">Editing message</span><span class="rb-prev" id="ebPrev"></span></div>
+      <button class="rb-x" id="ebX" title="Cancel edit">&times;</button>
+    </div>
+
+    <div class="gifpanel" id="gifpanel">
+      <div class="gp-head">
+        <input id="gifQ" type="text" placeholder="Search GIFs" autocomplete="off" maxlength="60">
+        <button class="gp-x" id="gifX" title="Close">&times;</button>
+      </div>
+      <div class="gp-grid" id="gifGrid"></div>
+      <div class="gp-foot">
+        <span class="gp-cred" id="gifCred"></span>
+        <button class="gp-local" id="gifLocal">From my device</button>
+      </div>
+    </div>
+
     <div class="composer" id="composer">
       <input type="file" id="file" hidden>
+      <input type="file" id="gifFile" accept="image/gif,image/webp,image/*" hidden>
       <button class="cbtn" id="attachBtn" title="Attach image or file" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.5 21a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8.5-8.5"/></svg>
       </button>
+
+      <button class="cbtn gif" id="gifBtn" title="Send a GIF" disabled>GIF</button>
 
       <textarea id="input" rows="1" placeholder="Write a message" disabled></textarea>
 
@@ -358,6 +453,7 @@
 </div>
 
 <div class="picker" id="picker"></div>
+<div class="menu" id="menu"></div>
 <div class="toast" id="toast"></div>
 
 <!-- MQTT 5.15.2 bundled inline (MIT) so this file needs no CDN -->
@@ -420,13 +516,39 @@ const NOTIFY = {
 const NTFY = {
   topic: "secureline-dineshnan"                 // <-- paste your secret ntfy topic here
 };
+
+/* =========================================================================
+   GIF SEARCH  (optional)
+   -------------------------------------------------------------------------
+   Sending a GIF already on your phone or laptop works with no setup at all -
+   tap GIF, then "From my device".
+
+   To also SEARCH for GIFs from inside the app, get a free API key at
+   https://developers.giphy.com (Create an App -> API -> copy the key) and
+   paste it below between the quotes.
+
+   Privacy note: what you type in the GIF search box goes to GIPHY, and the
+   GIF itself is downloaded from GIPHY by whoever picks it. The GIF is then
+   sent to your friend through the normal encrypted channel, so THEIR side
+   leaks nothing. Leave the key empty to keep the app entirely self-contained.
+   ========================================================================= */
+const GIF = {
+  key: "",                  // <-- paste your GIPHY API key here
+  rating: "pg-13",          // g | pg | pg-13 | r
+  limit: 24
+};
 function ntfyPing(text){
   if(!NTFY.topic) return;
+  if(navigator.onLine===false) return;      // nothing to gain, do not hold a socket open
   try{
+    const ac=("AbortController" in window)?new AbortController():null;
+    if(ac) setTimeout(()=>{ try{ ac.abort(); }catch(e){} },8000);
     fetch("https://ntfy.sh/"+encodeURIComponent(NTFY.topic),{
       method:"POST",
       headers:{Title:"Secure Line",Priority:"high",Tags:"green_circle"},
-      body:text
+      body:text,
+      keepalive:true,
+      signal:ac?ac.signal:undefined
     }).catch(()=>{});
   }catch(e){}
 }
@@ -436,7 +558,7 @@ const enc = new TextEncoder();
 const dec = new TextDecoder();
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
-let client=null, key=null, topic=null;
+let client=null, key=null, topic=null, mbTopic=null;
 let me={id:rid(), name:"You"};
 const peers=new Map();               // id -> {name, lastSeen}
 let typingTimer=null, lastTypingSent=0, peerTypingTimer=null;
@@ -444,9 +566,13 @@ let typingTimer=null, lastTypingSent=0, peerTypingTimer=null;
 /* feature state */
 const REACTS=["\u{1F44D}","\u2764\uFE0F","\u{1F602}","\u{1F525}","\u{1F62E}","\u{1F622}"];
 const CHUNK=24*1024;                 // binary bytes per transport chunk
+const MIN_CHUNK=10*1024;             // smaller chunks used on slow connections
 const MAX_FILE=8*1024*1024;          // 8 MB cap after processing
 const HIST_KEEP=500;                 // messages kept per room on this device
 const HIST_PART=90*1024;             // max chars per history sync packet
+const MB_MAX=120*1024;               // biggest record we will park in the relay mailbox
+const MB_TTL=21*24*3600*1000;        // undelivered mail older than this is abandoned
+const MB_LIMIT=80;                   // most records republished to the mailbox at once
 const msgEls=new Map();              // msg id -> bubble element
 const msgInfo=new Map();             // msg id -> {name, kind, preview}
 const reactState=new Map();          // msg id -> Map(emoji -> Set(fromId))
@@ -454,6 +580,9 @@ const incoming=new Map();            // fid -> {meta, parts, got, bodyEl, bar}
 let replyTo=null;                    // {id, name, kind, preview}
 let mediaRec=null, recStream=null, recChunks=[], recStart=0, recTimer=null;
 let pickerTarget=null;
+let editing=null;                    // {id} while an already-sent message is being edited
+const pendingEdit=new Map();         // edits that landed before the message itself
+const SWIPE_MAX=84, SWIPE_TRIGGER=52;
 
 /* history / receipts state */
 const hist=new Map();                // msg id -> plaintext record
@@ -467,7 +596,10 @@ const RANK={sent:1,delivered:2,seen:3};
 const ICON={
   reply:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 17l-5-5 5-5"/><path d="M4 12h11a4 4 0 0 1 4 4v1"/></svg>',
   smile:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/></svg>',
-  file:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>'
+  file:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3v5h5"/><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg>',
+  gone:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M5.6 5.6l12.8 12.8"/></svg>'
 };
 
 function rid(){ return Math.random().toString(36).slice(2,10); }
@@ -560,9 +692,11 @@ function bodyFromRec(rec){
 }
 function renderRecord(rec){
   if(msgEls.has(rec.id)) return;
-  addBubble({id:rec.id,name:rec.name,mine:!!rec.mine,ts:rec.ts,reply:rec.reply,bodyNode:bodyFromRec(rec)});
-  msgInfo.set(rec.id,{name:rec.name,kind:rec.kind,
-    preview:rec.kind==="text"?(rec.text||"").slice(0,80):mediaLabel(rec.kind,rec.media&&rec.media.filename)});
+  addBubble({id:rec.id,name:rec.name,mine:!!rec.mine,ts:rec.ts,reply:rec.reply,kind:rec.kind,
+    edited:!!rec.edited,bodyNode:rec.deleted?tombstoneNode():bodyFromRec(rec)});
+  msgInfo.set(rec.id,{name:rec.name,kind:rec.kind,deleted:!!rec.deleted,
+    preview:rec.deleted?"Message deleted":(rec.kind==="text"?(rec.text||"").slice(0,80):mediaLabel(rec.kind,rec.media&&rec.media.filename))});
+  if(rec.deleted){ markDeletedDom(rec.id); return; }
   if(rec.reacts){
     const em=new Map(); for(const e in rec.reacts) em.set(e,new Set(rec.reacts[e]));
     reactState.set(rec.id,em); renderReacts(rec.id);
@@ -587,6 +721,7 @@ function bumpStatus(id,status){
     setTickDom(id,status);
   }
 }
+function clearMine(id){ const r=hist.get(id); if(r&&r.mine) mailboxClear(id); }
 function ackDelivered(ids){ publish({t:"recv",from:me.id,ids:[].concat(ids)}); }
 function maybeMarkSeen(id){
   if(document.visibilityState==="visible"){ publish({t:"seen",from:me.id,ids:[id]}); }
@@ -598,9 +733,100 @@ function flushSeen(){
   publish({t:"seen",from:me.id,ids});
 }
 
+/* ---------------------------------------------------------------------------
+   RELAY MAILBOX  (store and forward)
+   -----------------------------------------------------------------------------
+   Plain publishes only reach whoever is subscribed at that instant, and the
+   history replay below only works while the SENDER is still online to answer.
+   So a message sent to someone who is offline was lost the moment the sender
+   closed the tab.
+
+   Each message therefore also gets parked in its own RETAINED slot,
+   <topic>/mb/<id>. The relay hands retained slots to any client the moment it
+   subscribes, so the recipient collects them whenever they next open the room -
+   hours later, with the sender long gone. The recipient empties the slot as soon
+   as it has stored the record, and the sender empties it on a delivery ack, so
+   nothing accumulates. Payloads are the same AES-GCM ciphertext as everything
+   else: the relay stores bytes it cannot read.
+   --------------------------------------------------------------------------- */
+function slimRec(r){
+  return {id:r.id,from:r.from,name:r.name,kind:r.kind,text:r.text,media:r.media,ts:r.ts,reply:r.reply,reacts:r.reacts,
+          deleted:r.deleted||undefined,edited:r.edited||undefined,editedAt:r.editedAt||undefined};
+}
+function mailboxReady(){ return !!(mbTopic&&client&&client.connected); }
+async function mailboxPutRaw(slot,obj){
+  if(!mailboxReady()) return;
+  try{ client.publish(mbTopic+slot,await encryptObj(obj),{qos:1,retain:true}); }catch(e){}
+}
+function mailboxClear(slot){
+  if(!mailboxReady()) return;
+  try{ client.publish(mbTopic+slot,"",{qos:1,retain:true}); }catch(e){}   // empty payload = slot deleted
+}
+async function mailboxPut(rec){
+  if(!mailboxReady()||!rec||!rec.id||rec.delLocal) return;
+  let out=slimRec(rec);
+  try{
+    if(JSON.stringify(out).length>MB_MAX&&out.media){
+      /* too heavy to park whole: keep the record, drop the bytes. The recipient
+         shows it as unavailable and upgrades it when the sender is next around. */
+      out=Object.assign({},out,{media:Object.assign({},out.media,{b64:undefined})});
+    }
+    if(JSON.stringify(out).length>MB_MAX) return;
+  }catch(e){ return; }
+  await mailboxPutRaw(rec.id,{t:"hist",from:me.id,rec:out});
+}
+/* park a just-sent message unless the other side is here and acks it promptly */
+function ensureMailbox(id){
+  const rec=hist.get(id); if(!rec||!rec.mine) return;
+  if(peers.size===0){ mailboxPut(rec); return; }
+  setTimeout(()=>{
+    const r=hist.get(id);
+    if(r&&r.mine&&(RANK[r.status||"sent"]||1)<RANK.delivered) mailboxPut(r);
+  },4000);
+}
+/* on every connect, re-park anything of ours the other side never confirmed */
+function syncMailbox(){
+  if(!mailboxReady()) return;
+  const now=Date.now();
+  const pend=[...hist.values()]
+    .filter(r=>r.mine&&!r.delLocal&&(now-(r.ts||0))<MB_TTL&&(RANK[r.status||"sent"]||1)<RANK.delivered)
+    .sort((a,b)=>(a.ts||0)-(b.ts||0))
+    .slice(-MB_LIMIT);
+  pend.forEach((r,i)=>setTimeout(()=>mailboxPut(r),i*45));
+}
+/* reactions on the other person's message need a slot of their own */
+function mailboxReact(mid){
+  if(peers.size>0) return;                       // they are here, the live packet did the job
+  const rec=hist.get(mid); if(!rec) return;
+  if(rec.mine){ mailboxPut(rec); return; }       // our own message carries its reactions
+  const em=reactState.get(mid); const mine=[];
+  if(em) for(const[e,set]of em) if(set.has(me.id)) mine.push(e);
+  mailboxPutRaw("rx."+mid,{t:"rxs",from:me.id,name:me.name,mid,emojis:mine});
+}
+function applyReactSet(m){
+  const want=m.emojis||[];
+  const em=reactState.get(m.mid);
+  if(em) for(const[e,set]of em){ if(set.has(m.from)&&want.indexOf(e)<0) applyReact(m.from,m.mid,e,false); }
+  want.forEach(e=>applyReact(m.from,m.mid,e,true));
+  persistReacts(m.mid);
+}
+function onMailbox(slot,m){
+  if(m.from===me.id){
+    /* our own parked copy came back on subscribe: bin it once it has landed, or aged out */
+    const r=m.rec&&hist.get(m.rec.id);
+    if(!r||(RANK[r.status||"sent"]||1)>=RANK.delivered||Date.now()-(r.ts||0)>MB_TTL) mailboxClear(slot);
+    return;
+  }
+  if(m.t==="hist"&&m.rec) onHistRec(m.rec);
+  else if(m.t==="rxs") applyReactSet(m);
+  mailboxClear(slot);                            // collected - free the slot on the relay
+}
+
 /* ---------- history sync (offline catch-up) ---------- */
 function requestSync(){
-  let have=0; for(const r of hist.values()) if((r.ts||0)>have) have=r.ts;
+  /* watermark = newest thing RECEIVED. Counting our own messages here meant that
+     sending one made us skip everything older the other side still owed us. */
+  let have=0; for(const r of hist.values()) if(!r.mine&&(r.ts||0)>have) have=r.ts;
   publish({t:"syncq",from:me.id,name:me.name,have});
 }
 async function answerSync(m){
@@ -612,10 +838,11 @@ async function answerSync(m){
   if(theirIds.length) publish({t:"seen",from:me.id,ids:theirIds});
   /* replay everything they are missing (not authored by them) */
   const recs=[...hist.values()]
-    .filter(r=>r.from!==m.from && (r.ts||0)>(m.have||0)-2000)
+    .filter(r=>r.from!==m.from && (r.ts||0)>(m.have||0)-10000)
     .sort((a,b)=>(a.ts||0)-(b.ts||0));
   for(const r of recs){
-    const out={id:r.id,from:r.from,name:r.name,kind:r.kind,text:r.text,media:r.media,ts:r.ts,reply:r.reply,reacts:r.reacts};
+    if(r.delLocal) continue;                 // "delete for me" stays on this device
+    const out=slimRec(r);
     const s=JSON.stringify(out);
     if(s.length<=HIST_PART){ await publish({t:"hist",from:me.id,rec:out}); }
     else{
@@ -626,7 +853,8 @@ async function answerSync(m){
   }
 }
 function onHistRec(rec){
-  if(!rec||!rec.id||knownIds.has(rec.id)) return;
+  if(!rec||!rec.id) return;
+  if(knownIds.has(rec.id)){ mergeKnown(rec); return; }
   rec.mine=(rec.from===me.id);
   if(rec.mine) return;                        // never replay our own back to us
   rec.status=undefined;
@@ -634,7 +862,26 @@ function onHistRec(rec){
   renderRecord(rec);
   ackDelivered(rec.id);
   maybeMarkSeen(rec.id);
-  notifyMe(rec.name||"Peer","Sent while you were away");
+  applyPending(rec.id);
+  if(!rec.deleted) notifyMe(rec.name||"Peer","Sent while you were away");
+}
+/* A record we already hold, arriving again from the mailbox or a replay: it may
+   carry a newer state (edited, deleted, reacted) or the media bytes we lacked. */
+function mergeKnown(rec){
+  const cur=hist.get(rec.id); if(!cur) return;
+  if(rec.deleted&&!cur.deleted){ applyDelete(rec.id,false); return; }
+  if(cur.deleted) return;
+  if(rec.edited&&(rec.editedAt||0)>(cur.editedAt||0)) applyEdit(rec.id,rec.text,rec.editedAt);
+  if(rec.media&&rec.media.b64&&cur.media&&!cur.media.b64){
+    cur.media=rec.media; saveRec(cur);
+    const el=msgEls.get(rec.id);
+    const body=el&&el.querySelector(".body");
+    if(body){ body.innerHTML=""; body.appendChild(bodyFromRec(cur)); }
+  }
+  if(rec.reacts){                                  // union only: never drop a local reaction
+    for(const e in rec.reacts) (rec.reacts[e]||[]).forEach(f=>applyReact(f,rec.id,e,true));
+    persistReacts(rec.id);
+  }
 }
 function onHistPart(m){
   let h=histParts.get(m.hid);
@@ -676,36 +923,88 @@ function flushOutbox(){
 /* ---------- transport ---------- */
 async function publish(obj){
   if(!client||!client.connected){
-    if(obj.t==="msg"||obj.t==="react"){ outbox.push(obj); saveOutbox(); toast("Offline \u00b7 queued, sends on reconnect"); }
+    if(obj.t==="msg"||obj.t==="react"||obj.t==="del"||obj.t==="edit"){ outbox.push(obj); saveOutbox(); toast("Offline \u00b7 queued, sends on reconnect"); }
     return;
   }
-  const qos=(obj.t==="msg"||obj.t==="media"||obj.t==="chunk"||obj.t==="react"||obj.t==="hist"||obj.t==="histp"||obj.t==="seen"||obj.t==="recv")?1:0;
+  const qos=(obj.t==="msg"||obj.t==="media"||obj.t==="chunk"||obj.t==="react"||obj.t==="hist"||obj.t==="histp"||obj.t==="seen"||obj.t==="recv"||obj.t==="del"||obj.t==="edit")?1:0;
   try{ client.publish(topic, await encryptObj(obj), {qos}); }catch(e){}
 }
 
-async function connect(broker){
-  client=mqtt.connect(broker,{
-    clientId:"sl_"+rid()+rid(),
-    clean:true, reconnectPeriod:2000, connectTimeout:10000, keepalive:20
-  });
+/* ---------------------------------------------------------------------------
+   RELAY POOL
+   On a weak or filtered connection a single broker can simply never answer, and
+   the app would sit on "connecting" forever. We keep a short list and roll on to
+   the next one if a relay does not come up in time. Whichever relay works is
+   remembered and tried first next time.
+   --------------------------------------------------------------------------- */
+const BROKERS=[
+  "wss://broker.emqx.io:8084/mqtt",
+  "wss://broker.hivemq.com:8884/mqtt",
+  "wss://test.mosquitto.org:8081/mqtt"
+];
+const FAILOVER_MS=9000;
+let brokerList=[], bIdx=0, failTimer=null, switches=0;
+
+function hostOf(u){ try{ return new URL(u).hostname.replace(/^broker\./,""); }catch(e){ return "relay"; } }
+function currentBroker(){ return brokerList[bIdx%brokerList.length]; }
+function onLine(){ return navigator.onLine!==false; }
+
+async function connect(preferred){
+  const seen=new Set(); brokerList=[];
+  const add=u=>{ u=(u||"").trim(); if(u&&!seen.has(u)){ seen.add(u); brokerList.push(u); } };
+  add(preferred);
+  try{ add(localStorage.getItem("sl.broker")); }catch(e){}
+  BROKERS.forEach(add);
+  bIdx=0; switches=0;
+  openBroker();
+}
+function armFailover(ms){
+  clearTimeout(failTimer);
+  failTimer=setTimeout(()=>{ if(!client||!client.connected) nextBroker(); }, onLine()?ms:Math.max(ms,20000));
+}
+function nextBroker(){
+  clearTimeout(failTimer);
+  try{ if(client){ if(client.removeAllListeners) client.removeAllListeners(); client.end(true); } }catch(e){}
+  client=null;
+  bIdx++; switches++;
+  if(onLine() && brokerList.length>1 && switches<=brokerList.length) sys("Relay unreachable \u00b7 trying "+hostOf(currentBroker()));
+  openBroker();
+}
+function openBroker(){
+  const url=currentBroker();
+  setState(onLine()?("connecting \u00b7 "+hostOf(url)):"no network \u00b7 messages queue",false,"warn");
+  try{
+    client=mqtt.connect(url,{
+      clientId:"sl_"+rid()+rid(),
+      clean:true, reconnectPeriod:2500, connectTimeout:7000, keepalive:24, resubscribe:true
+    });
+  }catch(e){ setTimeout(nextBroker,600); return; }
 
   client.on("connect",()=>{
+    clearTimeout(failTimer); switches=0;
+    try{ localStorage.setItem("sl.broker",url); }catch(e){}
     setState("secure",true);
-    client.subscribe(topic,{qos:1});
+    client.subscribe([topic,mbTopic+"+"],{qos:1});   // "+" delivers every parked record
     announce();
     heartbeat();
     setTimeout(flushOutbox,600);
     setTimeout(requestSync,1200);
+    setTimeout(syncMailbox,1800);
   });
-  client.on("reconnect",()=>setState("reconnecting",false,"warn"));
-  client.on("offline",  ()=>setState("offline",false));
-  client.on("close",    ()=>setState("offline",false));
-  client.on("error",    ()=>setState("relay error",false,"warn"));
+  client.on("reconnect",()=>{ setState("reconnecting",false,"warn"); armFailover(FAILOVER_MS*2); });
+  client.on("offline",  ()=>{ setState(onLine()?"offline":"no network \u00b7 messages queue",false); armFailover(FAILOVER_MS*2); });
+  client.on("close",    ()=>{ setState(onLine()?"offline":"no network \u00b7 messages queue",false); });
+  client.on("error",    ()=>{ setState("relay error",false,"warn"); armFailover(3000); });
+  armFailover(FAILOVER_MS);
 
   client.on("message",async(t,payload)=>{
-    if(t!==topic) return;
+    const mb=mbTopic&&t.lastIndexOf(mbTopic,0)===0;
+    if(t!==topic&&!mb) return;
+    if(!payload||!payload.length) return;                                   // an emptied mailbox slot
     let m; try{ m=await decryptObj(payload.toString()); }catch(e){ return; } // wrong key or noise
-    if(!m||m.from===me.id) return;                                          // ignore own echo
+    if(!m) return;
+    if(mb){ onMailbox(t.slice(mbTopic.length),m); return; }
+    if(m.from===me.id) return;                                              // ignore own echo
     const known=peers.has(m.from);
     seen(m.from,m.name);
     if(m.t==="msg"){
@@ -721,11 +1020,13 @@ async function connect(broker){
     }
     else if(m.t==="chunk"){ onChunk(m); }
     else if(m.t==="react"){ applyReact(m.from,m.mid,m.emoji,m.on); persistReacts(m.mid); }
-    else if(m.t==="recv"){ (m.ids||[]).forEach(id=>bumpStatus(id,"delivered")); }
-    else if(m.t==="seen"){ (m.ids||[]).forEach(id=>bumpStatus(id,"seen")); }
+    else if(m.t==="recv"){ (m.ids||[]).forEach(id=>{ bumpStatus(id,"delivered"); clearMine(id); }); }
+    else if(m.t==="seen"){ (m.ids||[]).forEach(id=>{ bumpStatus(id,"seen"); clearMine(id); }); }
     else if(m.t==="syncq"){ answerSync(m); }
     else if(m.t==="hist"){ onHistRec(m.rec); }
     else if(m.t==="histp"){ onHistPart(m); }
+    else if(m.t==="del"){ const r=hist.get(m.id); if(!r||!r.mine) applyDelete(m.id,false); }
+    else if(m.t==="edit"){ const r=hist.get(m.id); if(!r||!r.mine) applyEdit(m.id,m.text,m.at); }
     else if(m.t==="typing"){ showPeerTyping(m.name); }
     else if(m.t==="join"){ if(!known) sys(`${m.name||"Someone"} joined`); publish({t:"here",from:me.id,name:me.name}); }
     else if(m.t==="leave"){ if(known){ sys(`${m.name||"Someone"} left`); peers.delete(m.from); refreshPresence(); } }
@@ -743,7 +1044,7 @@ function announce(){
 function heartbeat(){
   if(presenceStarted) return;
   presenceStarted=true;
-  setInterval(()=>publish({t:"ping",from:me.id,name:me.name}),4000);
+  setInterval(()=>publish({t:"ping",from:me.id,name:me.name}),slowNet()?9000:6000);
   setInterval(sweep,3000);
 }
 function seen(id,name){
@@ -797,6 +1098,17 @@ function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":
 function linkify(s){return s.replace(/https?:\/\/[^\s]+/g,u=>`<a href="${u}" target="_blank" rel="noopener" style="color:var(--teal)">${u}</a>`);}
 function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800);}
 
+/* Network Information API where available: lets us send smaller photos and pace
+   file chunks so a 2G/3G link is not flooded (which is what stalls transfers). */
+function slowNet(){
+  try{
+    const c=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
+    if(!c) return false;
+    if(c.saveData) return true;
+    const t=c.effectiveType||"";
+    return t==="slow-2g"||t==="2g"||t==="3g";
+  }catch(e){ return false; }
+}
 function fmtSize(b){ if(b<1024)return b+" B"; if(b<1048576)return (b/1024).toFixed(0)+" KB"; return (b/1048576).toFixed(1)+" MB"; }
 function fmtDur(s){ s=Math.max(0,Math.round(s)); const m=Math.floor(s/60); const ss=String(s%60).padStart(2,"0"); return m+":"+ss; }
 function mediaLabel(kind,fn){ return kind==="image"?"\u{1F4F7} Photo":kind==="voice"?"\u{1F3A4} Voice note":"\u{1F4CE} "+(fn||"File"); }
@@ -817,7 +1129,7 @@ function insertSorted(div,ts){
   /* older than everything (or empty stream): put first */
   if(kids.length) s.insertBefore(div,kids[0]); else s.appendChild(div);
 }
-function addBubble({id,name,mine,ts,reply,bodyNode}){
+function addBubble({id,name,mine,ts,reply,bodyNode,kind,edited}){
   const stick=nearBottom();
   const div=document.createElement("div");
   div.className="msg "+(mine?"me":"you");
@@ -826,7 +1138,10 @@ function addBubble({id,name,mine,ts,reply,bodyNode}){
 
   if(reply){
     const q=document.createElement("div");q.className="quote";
-    q.innerHTML=`<span class="q-name">${escapeHtml(reply.name||"Peer")}</span><span class="q-prev">${escapeHtml(reply.preview||"")}</span>`;
+    q.dataset.ref=reply.id||"";
+    const ri=msgInfo.get(reply.id);
+    const rprev=(ri&&ri.deleted)?"Message deleted":((ri&&ri.preview)||reply.preview||"");
+    q.innerHTML=`<span class="q-name">${escapeHtml(reply.name||"Peer")}</span><span class="q-prev">${escapeHtml(rprev)}</span>`;
     q.addEventListener("click",()=>jumpTo(reply.id));
     div.appendChild(q);
   }
@@ -840,6 +1155,7 @@ function addBubble({id,name,mine,ts,reply,bodyNode}){
   const time=document.createElement("span");time.className="time";
   time.textContent=new Date(ts||Date.now()).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
   foot.appendChild(time);
+  if(edited){ const mk=document.createElement("span");mk.className="edited";mk.textContent="edited";foot.appendChild(mk); }
   if(mine){
     const tk=document.createElement("span");tk.className="tick";tk.textContent="\u2713";tk.title="Sent";
     foot.appendChild(tk);
@@ -847,10 +1163,15 @@ function addBubble({id,name,mine,ts,reply,bodyNode}){
   const acts=document.createElement("div");acts.className="acts";
   acts.appendChild(iconBtn(ICON.reply,"Reply",()=>startReply(id)));
   acts.appendChild(iconBtn(ICON.smile,"React",e=>{e.stopPropagation();openPicker(e.currentTarget,id);}));
+  if(mine&&(kind||"text")==="text") acts.appendChild(iconBtn(ICON.edit,"Edit",e=>{e.stopPropagation();startEdit(id);}));
+  acts.appendChild(iconBtn(ICON.trash,"Delete",e=>{e.stopPropagation();openDeleteMenu(e.currentTarget,id,!!mine);}));
   foot.appendChild(acts);
   div.appendChild(foot);
 
   const rc=document.createElement("div");rc.className="reacts";div.appendChild(rc);
+
+  attachSwipe(div,id);
+  div.addEventListener("dblclick",()=>startReply(id));
 
   insertSorted(div,Number(div.dataset.ts));
   msgEls.set(id,div);
@@ -858,36 +1179,82 @@ function addBubble({id,name,mine,ts,reply,bodyNode}){
   return {el:div,bodyEl:body};
 }
 
+/* ---------- swipe-to-reply (touch) ---------- */
+function attachSwipe(div,id){
+  let x0=0,y0=0,dx=0,live=false,axis=0;
+  const reset=(animate)=>{
+    div.classList.remove("swiping","swipe-on");
+    if(animate){ div.classList.add("snapback"); setTimeout(()=>div.classList.remove("snapback"),220); }
+    div.style.transform=""; dx=0;
+  };
+  div.addEventListener("touchstart",e=>{
+    if(e.touches.length!==1) return;
+    const info=msgInfo.get(id); if(info&&info.deleted) return;
+    x0=e.touches[0].clientX; y0=e.touches[0].clientY;
+    dx=0; live=true; axis=0;
+    div.classList.remove("snapback");
+  },{passive:true});
+  div.addEventListener("touchmove",e=>{
+    if(!live) return;
+    const ax=e.touches[0].clientX-x0, ay=e.touches[0].clientY-y0;
+    if(!axis){
+      if(Math.abs(ax)<7&&Math.abs(ay)<7) return;
+      axis=Math.abs(ax)>Math.abs(ay)?1:2;
+      if(axis===2){ live=false; return; }          // vertical: let the list scroll
+      div.classList.add("swiping");
+    }
+    if(ax<=0){ dx=0; div.style.transform=""; div.classList.remove("swipe-on"); return; }
+    dx=Math.min(ax*0.6,SWIPE_MAX);
+    div.style.transform="translateX("+dx.toFixed(1)+"px)";
+    div.classList.toggle("swipe-on",dx>=SWIPE_TRIGGER);
+    if(e.cancelable) e.preventDefault();
+  },{passive:false});
+  const done=()=>{
+    if(!live){ reset(false); return; }
+    live=false;
+    const fire=dx>=SWIPE_TRIGGER;
+    reset(true);
+    if(fire){ try{ navigator.vibrate&&navigator.vibrate(12); }catch(e){} startReply(id); }
+  };
+  div.addEventListener("touchend",done);
+  div.addEventListener("touchcancel",()=>{ live=false; reset(true); });
+}
+
 /* ---------- text ---------- */
 async function sendMsg(){
+  if(editing) return commitEdit();
   const box=$("input"); const text=box.value.trim();
   if(!text) return;
   const id=uid();
   const reply=replyTo||undefined;
   const ts=Date.now();
   const node=document.createElement("div");node.innerHTML=linkify(escapeHtml(text));
-  addBubble({id,name:me.name,mine:true,ts,reply,bodyNode:node});
-  msgInfo.set(id,{name:me.name,kind:"text",preview:text.slice(0,80)});
+  addBubble({id,name:me.name,mine:true,ts,reply,kind:"text",bodyNode:node});
+  msgInfo.set(id,{name:me.name,kind:"text",deleted:false,preview:text.slice(0,80)});
   saveRec({id,from:me.id,name:me.name,mine:true,kind:"text",text,ts,reply,status:"sent"});
   const m={t:"msg",id,from:me.id,name:me.name,text,ts,reply};
   clearReply();
   box.value=""; autosize(); toggleSend();
   await publish(m);
+  ensureMailbox(id);
 }
 function recvText(m){
   const id=m.id||uid();
   const ts=m.ts||Date.now();
   const node=document.createElement("div");node.innerHTML=linkify(escapeHtml(m.text||""));
-  addBubble({id,name:m.name,mine:false,ts,reply:m.reply,bodyNode:node});
-  msgInfo.set(id,{name:m.name,kind:"text",preview:(m.text||"").slice(0,80)});
+  addBubble({id,name:m.name,mine:false,ts,reply:m.reply,kind:"text",bodyNode:node});
+  msgInfo.set(id,{name:m.name,kind:"text",deleted:false,preview:(m.text||"").slice(0,80)});
   saveRec({id,from:m.from,name:m.name,mine:false,kind:"text",text:m.text||"",ts,reply:m.reply});
   ackDelivered(id);
   maybeMarkSeen(id);
+  applyPending(id);
 }
 
 /* ---------- reply ---------- */
 function startReply(id){
   const info=msgInfo.get(id); if(!info) return;
+  if(info.deleted){ toast("That message was deleted"); return; }
+  if(editing) cancelEdit();
   replyTo={id,name:info.name,kind:info.kind,preview:info.preview};
   $("rbName").textContent=info.name||"Peer";
   $("rbPrev").textContent=info.preview||"";
@@ -902,6 +1269,152 @@ function jumpTo(id){
   setTimeout(()=>el.classList.remove("flash"),1200);
 }
 
+/* ---------- delete for everyone / for me ---------- */
+function tombstoneNode(){
+  const d=document.createElement("div");d.className="gone";
+  d.innerHTML=ICON.gone+"<span>This message was deleted</span>";
+  return d;
+}
+function markDeletedDom(id){
+  const el=msgEls.get(id); if(!el) return;
+  el.classList.add("gone-msg");
+  el.style.transform="";
+  const body=el.querySelector(".body");
+  if(body){ body.innerHTML=""; body.appendChild(tombstoneNode()); }
+  const q=el.querySelector(".quote"); if(q) q.remove();
+  const rc=el.querySelector(".reacts"); if(rc) rc.innerHTML="";
+  const acts=el.querySelector(".acts"); if(acts) acts.remove();
+  const tk=el.querySelector(".tick"); if(tk) tk.remove();
+  const ed=el.querySelector(".edited"); if(ed) ed.remove();
+  reactState.delete(id);
+}
+function refreshQuotes(id){
+  const info=msgInfo.get(id)||{};
+  const prev=info.deleted?"Message deleted":(info.preview||"");
+  document.querySelectorAll('.quote[data-ref="'+id+'"] .q-prev').forEach(n=>{ n.textContent=prev; });
+}
+function applyDelete(id,local){
+  if(pickerTarget===id) closePicker();
+  for(const[fid,inc]of incoming){ if(inc.meta&&inc.meta.id===id) incoming.delete(fid); }
+  const rec=hist.get(id);
+  if(rec){
+    if(rec.deleted) return;
+    rec.deleted=true; rec.text=""; rec.media=undefined; rec.reacts=undefined; rec.edited=false;
+    if(local) rec.delLocal=true;
+    saveRec(rec);
+    const info=msgInfo.get(id);
+    if(info){ info.deleted=true; info.preview="Message deleted"; }
+    else msgInfo.set(id,{name:rec.name,kind:rec.kind,deleted:true,preview:"Message deleted"});
+    markDeletedDom(id);
+  }else{
+    /* deletion arrived for something we never received - remember it so a later
+       history sync cannot resurrect the message */
+    const t={id,from:"",name:"",mine:false,kind:"text",text:"",ts:Date.now(),deleted:true};
+    if(local) t.delLocal=true;
+    saveRec(t);
+    msgInfo.set(id,{name:"",kind:"text",deleted:true,preview:"Message deleted"});
+  }
+  refreshQuotes(id);
+  if(replyTo&&replyTo.id===id) clearReply();
+  if(editing&&editing.id===id) cancelEdit();
+}
+function deleteForEveryone(id){
+  applyDelete(id,false);
+  publish({t:"del",from:me.id,id});
+  mailboxPut(hist.get(id));                        // the tombstone must reach them too
+  toast("Deleted for everyone");
+}
+function deleteForMe(id){ applyDelete(id,true); toast("Deleted on this device"); }
+
+function openMenu(btn,items){
+  const m=$("menu"); m.innerHTML="";
+  items.forEach(it=>{
+    const b=document.createElement("button");
+    b.textContent=it.label; if(it.danger) b.className="danger";
+    b.addEventListener("click",ev=>{ ev.stopPropagation(); closeMenu(); it.fn(); });
+    m.appendChild(b);
+  });
+  m.classList.add("show");
+  const r=btn.getBoundingClientRect();
+  const mw=m.offsetWidth,mh=m.offsetHeight;
+  let left=r.left+r.width/2-mw/2; left=Math.max(8,Math.min(left,innerWidth-mw-8));
+  let top=r.top-mh-8; if(top<8) top=r.bottom+8;
+  m.style.left=left+"px"; m.style.top=top+"px";
+}
+function closeMenu(){ $("menu").classList.remove("show"); }
+function openDeleteMenu(btn,id,mine){
+  closePicker();
+  const items=[];
+  if(mine) items.push({label:"Delete for everyone",danger:true,fn:()=>deleteForEveryone(id)});
+  items.push({label:"Delete for me",danger:!mine,fn:()=>deleteForMe(id)});
+  items.push({label:"Cancel",fn:()=>{}});
+  openMenu(btn,items);
+}
+
+/* ---------- edit an already-sent message ---------- */
+function startEdit(id){
+  const rec=hist.get(id);
+  if(!rec||!rec.mine){ toast("You can only edit your own messages"); return; }
+  if(rec.deleted){ toast("That message is gone"); return; }
+  if(rec.kind!=="text"){ toast("Only text messages can be edited"); return; }
+  clearReply(); closeMenu();
+  msgEls.forEach(el=>el.classList.remove("editing"));
+  editing={id};
+  const box=$("input");
+  box.value=rec.text||"";
+  $("ebPrev").textContent=(rec.text||"").slice(0,80);
+  $("editbar").classList.add("show");
+  const el=msgEls.get(id); if(el) el.classList.add("editing");
+  autosize(); toggleSend(); box.focus();
+  try{ box.setSelectionRange(box.value.length,box.value.length); }catch(e){}
+}
+function cancelEdit(){
+  if(editing){ const el=msgEls.get(editing.id); if(el) el.classList.remove("editing"); }
+  editing=null;
+  $("editbar").classList.remove("show");
+  $("input").value=""; autosize(); toggleSend();
+}
+async function commitEdit(){
+  const id=editing.id;
+  const text=$("input").value.trim();
+  const rec=hist.get(id);
+  if(!rec||rec.deleted||!text||text===rec.text){ cancelEdit(); return; }
+  const at=Date.now();
+  applyEdit(id,text,at);
+  cancelEdit();
+  await publish({t:"edit",from:me.id,id,text,at});
+  mailboxPut(hist.get(id));
+}
+function applyEdit(id,text,at){
+  const rec=hist.get(id);
+  if(!rec){ pendingEdit.set(id,{text,at:at||Date.now()}); return; }
+  if(rec.deleted) return;
+  if(rec.editedAt&&at&&at<rec.editedAt) return;          // stale edit, ignore
+  rec.text=text; rec.edited=true; rec.editedAt=at||Date.now();
+  saveRec(rec);
+  const info=msgInfo.get(id);
+  if(info) info.preview=(text||"").slice(0,80);
+  const el=msgEls.get(id);
+  if(el){
+    const body=el.querySelector(".body");
+    if(body) body.innerHTML=linkify(escapeHtml(text));
+    if(!el.querySelector(".edited")){
+      const mk=document.createElement("span");mk.className="edited";mk.textContent="edited";
+      const foot=el.querySelector(".foot"); const time=foot&&foot.querySelector(".time");
+      if(time) time.after(mk); else if(foot) foot.appendChild(mk);
+    }
+    el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash");
+    setTimeout(()=>el.classList.remove("flash"),1200);
+  }
+  refreshQuotes(id);
+  if(replyTo&&replyTo.id===id){ replyTo.preview=(text||"").slice(0,80); $("rbPrev").textContent=replyTo.preview; }
+}
+/* an edit that raced ahead of its own message */
+function applyPending(id){
+  const e=pendingEdit.get(id);
+  if(e){ pendingEdit.delete(id); applyEdit(id,e.text,e.at); }
+}
+
 /* ---------- reactions ---------- */
 function initPicker(){
   const p=$("picker");
@@ -912,6 +1425,10 @@ function initPicker(){
   });
   document.addEventListener("click",e=>{ if(!p.contains(e.target)) closePicker(); });
   window.addEventListener("resize",closePicker);
+  const mn=$("menu");
+  document.addEventListener("click",e=>{ if(!mn.contains(e.target)) closeMenu(); });
+  window.addEventListener("resize",closeMenu);
+  $("stream").addEventListener("scroll",()=>{ closePicker(); closeMenu(); });
 }
 function openPicker(btn,id){
   pickerTarget=id;
@@ -930,6 +1447,7 @@ function toggleReact(mid,emoji){
   applyReact(me.id,mid,emoji,on);
   persistReacts(mid);
   publish({t:"react",from:me.id,name:me.name,mid,emoji,on});
+  mailboxReact(mid);
 }
 function applyReact(from,mid,emoji,on){
   let em=reactState.get(mid); if(!em){em=new Map();reactState.set(mid,em);}
@@ -965,6 +1483,12 @@ function makeMediaNode({kind,mime,bytes,filename,w,h,dur,size}){
     const img=document.createElement("img");img.className="media-img";img.src=url;
     img.alt=filename||"image"; if(w&&h){img.width=w;img.height=h;img.removeAttribute("width");img.removeAttribute("height");}
     img.addEventListener("click",()=>window.open(url,"_blank","noopener"));
+    if((mime||"")==="image/gif"||((mime||"")==="image/webp"&&isAnimatedWebp(bytes))){
+      const wrap=document.createElement("span");wrap.className="gifwrap";
+      const tag=document.createElement("i");tag.className="gifbadge";tag.textContent="GIF";
+      wrap.appendChild(img);wrap.appendChild(tag);
+      return wrap;
+    }
     return img;
   }
   if(kind==="voice"){
@@ -998,22 +1522,50 @@ async function sendFile(file){
   await shipMedia({kind,mime,bytes,filename,w,h});
 }
 
+/* RIFF....WEBP with an ANMF chunk = animated WebP */
+function isAnimatedWebp(b){
+  if(!b||b.length<32) return false;
+  if(b[0]!==82||b[1]!==73||b[2]!==70||b[3]!==70) return false;      // "RIFF"
+  if(b[8]!==87||b[9]!==69||b[10]!==66||b[11]!==80) return false;    // "WEBP"
+  const n=Math.min(b.length,8192);
+  for(let i=12;i<n-3;i++){ if(b[i]===65&&b[i+1]===78&&b[i+2]===77&&b[i+3]===70) return true; }
+  return false;
+}
+async function imageDims(file){
+  try{
+    const u=URL.createObjectURL(file);
+    const i=await new Promise((res,rej)=>{const x=new Image();x.onload=()=>res(x);x.onerror=rej;x.src=u;});
+    const d={w:i.naturalWidth,h:i.naturalHeight}; URL.revokeObjectURL(u); return d;
+  }catch(e){ return {w:0,h:0}; }
+}
 async function prepImage(file){
+  /* An animated image must never touch a canvas: drawing it keeps a single
+     frame and silently throws the animation away. Ship the original bytes. */
+  const ftype=(file.type||"").toLowerCase();
+  if(ftype==="image/gif"||ftype==="image/webp"){
+    const raw=new Uint8Array(await file.arrayBuffer());
+    if(ftype==="image/gif"||isAnimatedWebp(raw)){
+      const d=await imageDims(file);
+      return {bytes:raw,mime:ftype,w:d.w,h:d.h,name:file.name};
+    }
+  }
   const url=URL.createObjectURL(file);
   let img;
   try{ img=await new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=url;}); }
   catch(e){ URL.revokeObjectURL(url); return {bytes:new Uint8Array(await file.arrayBuffer()),mime:file.type,w:0,h:0,name:file.name}; }
-  const w=img.naturalWidth, h=img.naturalHeight, maxDim=2000;
-  const big=Math.max(w,h)>maxDim || file.size>1.2*1024*1024;
+  const lean=slowNet();
+  const w=img.naturalWidth, h=img.naturalHeight, maxDim=lean?1280:2000;
+  const big=Math.max(w,h)>maxDim || file.size>(lean?280*1024:1.2*1024*1024);
   if(!big){ URL.revokeObjectURL(url); return {bytes:new Uint8Array(await file.arrayBuffer()),mime:file.type,w,h,name:file.name}; }
   const scale=Math.min(1,maxDim/Math.max(w,h));
   const cw=Math.round(w*scale), ch=Math.round(h*scale);
   const cv=document.createElement("canvas");cv.width=cw;cv.height=ch;
   cv.getContext("2d").drawImage(img,0,0,cw,ch);
   URL.revokeObjectURL(url);
+  const q=lean?0.66:0.82;
   let type="image/webp";
-  try{ if(!cv.toDataURL("image/webp",0.82).startsWith("data:image/webp")) type="image/jpeg"; }catch(e){ type="image/jpeg"; }
-  const blob=await new Promise(r=>cv.toBlob(r,type,0.82));
+  try{ if(!cv.toDataURL("image/webp",q).startsWith("data:image/webp")) type="image/jpeg"; }catch(e){ type="image/jpeg"; }
+  const blob=await new Promise(r=>cv.toBlob(r,type,q));
   const bytes=new Uint8Array(await blob.arrayBuffer());
   const base=(file.name||"image").replace(/\.[^.]+$/,"");
   return {bytes,mime:type,w:cw,h:ch,name:base+(type==="image/webp"?".webp":".jpg")};
@@ -1022,12 +1574,14 @@ async function prepImage(file){
 async function shipMedia({kind,mime,bytes,filename,w,h,dur}){
   const id=uid(), fid=uid();
   const ts=Date.now();
-  const chunks=Math.max(1,Math.ceil(bytes.length/CHUNK));
+  const csize=slowNet()?MIN_CHUNK:CHUNK;          // smaller packets survive weak links
+  const gap=slowNet()?26:6;
+  const chunks=Math.max(1,Math.ceil(bytes.length/csize));
   const reply=replyTo||undefined;
 
   const bodyNode=makeMediaNode({kind,mime,bytes,filename,w,h,dur,size:bytes.length});
-  const {bodyEl}=addBubble({id,name:me.name,mine:true,ts,reply,bodyNode});
-  msgInfo.set(id,{name:me.name,kind,preview:mediaLabel(kind,filename)});
+  const {bodyEl}=addBubble({id,name:me.name,mine:true,ts,reply,kind,bodyNode});
+  msgInfo.set(id,{name:me.name,kind,deleted:false,preview:mediaLabel(kind,filename)});
   saveRec({id,from:me.id,name:me.name,mine:true,kind,ts,reply,status:"sent",
     media:{mime,filename,w,h,dur:dur||0,size:bytes.length,b64:bytesToB64(bytes)}});
   const bar=makeProg(bodyEl);
@@ -1036,23 +1590,24 @@ async function shipMedia({kind,mime,bytes,filename,w,h,dur}){
   clearReply();
   await publish(meta);
   for(let i=0;i<chunks;i++){
-    const slice=bytes.subarray(i*CHUNK,(i+1)*CHUNK);
+    const slice=bytes.subarray(i*csize,(i+1)*csize);
     await publish({t:"chunk",fid,i,from:me.id,data:bytesToB64(slice)});
     bar.style.width=Math.round(((i+1)/chunks)*100)+"%";
-    await sleep(6);
+    await sleep(gap);
   }
   setTimeout(()=>{ if(bar.parentElement) bar.parentElement.remove(); },350);
+  ensureMailbox(id);
 }
 
 /* ---------- media: receiving ---------- */
 function startIncoming(meta){
   if(incoming.has(meta.fid)) return;
-  if((meta.size||0)>MAX_FILE||(meta.chunks||0)>Math.ceil(MAX_FILE/CHUNK)+2) return; // reject oversize
+  if((meta.size||0)>MAX_FILE||(meta.chunks||0)>Math.ceil(MAX_FILE/MIN_CHUNK)+2) return; // reject oversize
   const ph=document.createElement("div");
   const what=meta.kind==="image"?"photo":meta.kind==="voice"?"voice note":escapeHtml(meta.filename||"file");
   ph.innerHTML=`<div class="mediacap">Receiving ${what}\u2026</div>`;
-  const {bodyEl}=addBubble({id:meta.id,name:meta.name,mine:false,ts:meta.ts,reply:meta.reply,bodyNode:ph});
-  msgInfo.set(meta.id,{name:meta.name,kind:meta.kind,preview:mediaLabel(meta.kind,meta.filename)});
+  const {bodyEl}=addBubble({id:meta.id,name:meta.name,mine:false,ts:meta.ts,reply:meta.reply,kind:meta.kind,bodyNode:ph});
+  msgInfo.set(meta.id,{name:meta.name,kind:meta.kind,deleted:false,preview:mediaLabel(meta.kind,meta.filename)});
   const bar=makeProg(bodyEl);
   incoming.set(meta.fid,{meta,parts:new Array(meta.chunks),got:0,bodyEl,bar});
   setTimeout(()=>{
@@ -1066,6 +1621,8 @@ function onChunk(m){
   rec.parts[m.i]=b64ToBytes(m.data); rec.got++;
   rec.bar.style.width=Math.round(rec.got/rec.meta.chunks*100)+"%";
   if(rec.got>=rec.meta.chunks){
+    const prev=hist.get(rec.meta.id);
+    if(prev&&prev.deleted){ incoming.delete(m.fid); return; }
     let total=0; rec.parts.forEach(p=>total+=p.length);
     const all=new Uint8Array(total); let o=0; rec.parts.forEach(p=>{all.set(p,o);o+=p.length;});
     const node=makeMediaNode({kind:rec.meta.kind,mime:rec.meta.mime,bytes:all,filename:rec.meta.filename,w:rec.meta.w,h:rec.meta.h,dur:rec.meta.dur,size:rec.meta.size});
@@ -1079,6 +1636,96 @@ function onChunk(m){
     incoming.delete(m.fid);
     if(stick) scrollDown();
   }
+}
+
+/* ---------- gif picker ---------- */
+let gifTimer=null, gifLoaded=false;
+
+function openGif(){
+  closePicker(); closeMenu();
+  $("gifpanel").classList.add("show");
+  $("gifCred").textContent=GIF.key?"Powered by GIPHY":"";
+  if(!gifLoaded){ gifLoaded=true; gifLoad(""); }
+  try{ if(matchMedia("(hover:hover)").matches) $("gifQ").focus(); }catch(e){}
+}
+function closeGif(){ $("gifpanel").classList.remove("show"); }
+function toggleGif(){ $("gifpanel").classList.contains("show")?closeGif():openGif(); }
+
+async function gifFetch(url,ms){
+  const ac=("AbortController" in window)?new AbortController():null;
+  const t=ac?setTimeout(()=>{ try{ ac.abort(); }catch(e){} },ms||9000):null;
+  try{
+    const r=await fetch(url,{signal:ac?ac.signal:undefined});
+    if(!r.ok) return null;
+    return r;
+  }catch(e){ return null; }
+  finally{ if(t) clearTimeout(t); }
+}
+function gifApi(q){
+  const p="api_key="+encodeURIComponent(GIF.key)+"&limit="+(GIF.limit||24)
+         +"&rating="+encodeURIComponent(GIF.rating||"pg-13")+"&bundle=messaging_non_clips";
+  return "https://api.giphy.com/v1/gifs/"+(q?("search?q="+encodeURIComponent(q)+"&"):"trending?")+p;
+}
+function gifNote(html){ $("gifGrid").innerHTML='<div class="gp-msg">'+html+"</div>"; }
+
+async function gifLoad(q){
+  const grid=$("gifGrid");
+  if(!GIF.key){
+    gifNote("Paste a free GIPHY key near the top of this file to search GIFs.<br>"+
+            "Sending a GIF from your device works right now.");
+    return;
+  }
+  if(navigator.onLine===false){ gifNote("Offline \u00b7 GIF search needs a connection"); return; }
+  gifNote("Loading\u2026");
+  const r=await gifFetch(gifApi(q));
+  let j=null; if(r){ try{ j=await r.json(); }catch(e){} }
+  if(!j||!j.data){ gifNote("Could not reach GIPHY \u00b7 check the key or your connection"); return; }
+  if(!j.data.length){ gifNote("Nothing found for that"); return; }
+  grid.innerHTML="";
+  j.data.forEach(g=>{
+    const im=(g.images||{});
+    const prev=im.fixed_height_small||im.fixed_width_small||im.fixed_height||im.original;
+    const src=prev&&(prev.webp||prev.url);
+    if(!src) return;
+    const el=document.createElement("img");
+    el.src=src; el.loading="lazy"; el.alt=g.title||"GIF";
+    el.addEventListener("click",()=>sendGif(g));
+    grid.appendChild(el);
+  });
+  if(!grid.children.length) gifNote("Nothing usable came back");
+}
+
+/* prefer a small rendition, smaller still on a weak connection */
+function pickRendition(g){
+  const im=g.images||{};
+  const order=slowNet()
+    ? ["fixed_height_small","fixed_width_small","fixed_height","fixed_width","original"]
+    : ["fixed_height","fixed_width","fixed_height_small","original"];
+  for(const k of order){
+    const r=im[k]; if(!r) continue;
+    if(r.webp) return {url:r.webp,mime:"image/webp",w:+r.width||0,h:+r.height||0};
+    if(r.url&&/\.gif(\?|$)/i.test(r.url)) return {url:r.url,mime:"image/gif",w:+r.width||0,h:+r.height||0};
+  }
+  return null;
+}
+async function sendGif(g){
+  const pick=pickRendition(g);
+  if(!pick){ toast("That GIF has no usable version"); return; }
+  closeGif();
+  toast("Fetching GIF\u2026");
+  const r=await gifFetch(pick.url,20000);
+  let bytes=null;
+  if(r){ try{ bytes=new Uint8Array(await r.arrayBuffer()); }catch(e){} }
+  if(!bytes||!bytes.length){
+    /* usually a CORS or network failure - offer the link instead of losing the pick */
+    const box=$("input");
+    if(!box.value.trim()){ box.value=pick.url; autosize(); toggleSend(); toast("Could not attach it \u00b7 send as a link?"); }
+    else toast("Could not fetch that GIF");
+    return;
+  }
+  if(bytes.length>MAX_FILE){ toast("That GIF is too large"); return; }
+  const base=(g.title||"gif").replace(/[^\w \-]+/g,"").trim().slice(0,40)||"gif";
+  await shipMedia({kind:"image",mime:pick.mime,bytes,filename:base+(pick.mime==="image/webp"?".webp":".gif"),w:pick.w,h:pick.h});
 }
 
 /* ---------- voice notes ---------- */
@@ -1161,17 +1808,79 @@ async function sendNotify(room,secret,name){
     message:lines.join("\n")
   };
   if(withKey) body.secret=secret;
+  if(navigator.onLine===false){ toast("Offline \u00b7 invite email skipped"); return; }
   toast("Sending email\u2026");
   try{
+    const ac=("AbortController" in window)?new AbortController():null;
+    if(ac) setTimeout(()=>{ try{ ac.abort(); }catch(e){} },12000);
     const r=await fetch("https://api.web3forms.com/submit",{
       method:"POST",
       headers:{"Content-Type":"application/json",Accept:"application/json"},
-      body:JSON.stringify(body)
+      body:JSON.stringify(body),
+      signal:ac?ac.signal:undefined
     });
     let d={}; try{ d=await r.json(); }catch(e){}
     if(r.ok && d.success!==false) toast("Invite emailed to your friend");
     else toast("Email failed \u00b7 check your Web3Forms key");
   }catch(e){ toast("Email failed \u00b7 network issue"); }
+}
+
+/* ---------------------------------------------------------------------------
+   APP SHELL
+   The icon and the web app manifest are generated here at runtime instead of
+   being separate files, so this page installs to a home screen on its own. Once
+   installed it launches from the browser's own cache, which is what makes it
+   come up on a bad connection.
+   --------------------------------------------------------------------------- */
+function roundRectPath(x,r,w,h,rad){ x.beginPath();
+  x.moveTo(rad,0); x.lineTo(w-rad,0); x.quadraticCurveTo(w,0,w,rad);
+  x.lineTo(w,h-rad); x.quadraticCurveTo(w,h,w-rad,h);
+  x.lineTo(rad,h); x.quadraticCurveTo(0,h,0,h-rad);
+  x.lineTo(0,rad); x.quadraticCurveTo(0,0,rad,0); x.closePath();
+}
+function makeIcon(size){
+  try{
+    const c=document.createElement("canvas");
+    if(!c||!c.getContext) return "";
+    c.width=c.height=size;
+    const x=c.getContext("2d"); if(!x) return "";
+    roundRectPath(x,null,size,size,size*0.22);
+    const g=x.createLinearGradient(0,0,size,size);
+    g.addColorStop(0,"#271b1d"); g.addColorStop(1,"#151011");
+    x.fillStyle=g; x.fill();
+    const bw=size*0.40,bh=size*0.29,bx=(size-bw)/2,by=size*0.47;
+    x.save(); x.translate(bx,by);
+    roundRectPath(x,null,bw,bh,size*0.055);
+    x.fillStyle="#ff9d8a"; x.fill(); x.restore();
+    x.strokeStyle="#ff9d8a"; x.lineWidth=size*0.072; x.lineCap="round";
+    x.beginPath(); x.arc(size/2,by,size*0.128,Math.PI,0); x.stroke();
+    return c.toDataURL("image/png");
+  }catch(e){ return ""; }
+}
+function installShell(){
+  try{
+    const i192=makeIcon(192), i512=makeIcon(512);
+    if(i192){
+      const fav=$("favicon"), tch=$("touchicon");
+      if(fav) fav.href=i192;
+      if(tch) tch.href=i192;
+    }
+    const link=$("manifest"); if(!link||!i512) return;
+    const base=location.origin+location.pathname;
+    const man={
+      name:"Secure Line", short_name:"Secure Line",
+      description:"A private, end-to-end encrypted line for two.",
+      start_url:base, scope:base, id:base,
+      display:"standalone", background_color:"#151011", theme_color:"#151011",
+      icons:[
+        {src:i192,sizes:"192x192",type:"image/png",purpose:"any"},
+        {src:i512,sizes:"512x512",type:"image/png",purpose:"any"},
+        {src:i512,sizes:"512x512",type:"image/png",purpose:"maskable"}
+      ]
+    };
+    /* a blob URL is same-origin as this page, so start_url stays valid */
+    link.href=URL.createObjectURL(new Blob([JSON.stringify(man)],{type:"application/manifest+json"}));
+  }catch(e){}
 }
 
 /* ---------- boot ---------- */
@@ -1186,7 +1895,7 @@ async function start(){
   if(typeof mqtt==="undefined"){ toast("Still loading \u00b7 try again in a second"); return; }
 
   me.name=name;
-  try{ localStorage.setItem("sl.name",name); }catch(e){}
+  try{ localStorage.setItem("sl.name",name); localStorage.setItem("sl.room",room); }catch(e){}
   try{ const sid=localStorage.getItem("sl.id"); if(sid) me.id=sid; else localStorage.setItem("sl.id",me.id); }catch(e){}
 
   $("gate").style.display="none";
@@ -1194,11 +1903,12 @@ async function start(){
   $("barRoom").textContent=room;
   $("input").disabled=false;
   $("attachBtn").disabled=false;
+  $("gifBtn").disabled=false;
   $("micBtn").disabled=false;
   setState("unlocking\u2026",false,"warn");
 
   const derived=await deriveBoth(secret,room);
-  key=derived.key; topic=derived.topic;
+  key=derived.key; topic=derived.topic; mbTopic=topic+"/mb/";
 
   await loadHistory();
 
@@ -1215,6 +1925,7 @@ async function start(){
 
 function leave(){
   publish({t:"leave",from:me.id,name:me.name});
+  clearTimeout(failTimer);
   try{ client&&client.end(true); }catch(e){}
   location.hash="";
   location.reload();
@@ -1229,6 +1940,8 @@ function copyInvite(){
 /* prefill from invite hash + saved name */
 function hydrate(){
   try{ const n=localStorage.getItem("sl.name"); if(n)$("name").value=n; }catch(e){}
+  try{ const rm=localStorage.getItem("sl.room"); if(rm)$("room").value=rm; }catch(e){}
+  try{ const bk=localStorage.getItem("sl.broker"); if(bk)$("broker").value=bk; }catch(e){}
   if(NOTIFY.accessKey){ $("notifyRow").hidden=false; }
   try{ if(localStorage.getItem("sl.notify")) $("notify").checked=true; }catch(e){}
   const h=new URLSearchParams(location.hash.slice(1));
@@ -1253,24 +1966,46 @@ $("input").addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.p
 
 $("attachBtn").addEventListener("click",()=>$("file").click());
 $("file").addEventListener("change",e=>{ const f=e.target.files[0]; e.target.value=""; if(f) sendFile(f); });
+$("gifBtn").addEventListener("click",toggleGif);
+$("gifX").addEventListener("click",closeGif);
+$("gifLocal").addEventListener("click",()=>$("gifFile").click());
+$("gifFile").addEventListener("change",e=>{ const f=e.target.files[0]; e.target.value=""; closeGif(); if(f) sendFile(f); });
+$("gifQ").addEventListener("input",e=>{
+  clearTimeout(gifTimer);
+  const q=e.target.value.trim();
+  gifTimer=setTimeout(()=>gifLoad(q),380);
+});
+$("gifQ").addEventListener("keydown",e=>{
+  if(e.key==="Escape") closeGif();
+  if(e.key==="Enter"){ e.preventDefault(); clearTimeout(gifTimer); gifLoad(e.target.value.trim()); }
+});
 $("micBtn").addEventListener("click",startRec);
 $("recSend").addEventListener("click",()=>stopRec(true));
 $("recCancel").addEventListener("click",()=>stopRec(false));
 $("rbX").addEventListener("click",clearReply);
+$("ebX").addEventListener("click",cancelEdit);
+$("input").addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ if(editing) cancelEdit(); else if(replyTo) clearReply(); else closeGif(); }
+});
 
 window.addEventListener("beforeunload",()=>{ try{ client&&publish({t:"leave",from:me.id,name:me.name}); }catch(e){} });
 document.addEventListener("visibilitychange",()=>{
-  if(document.visibilityState!=="visible"||!client) return;
+  if(document.visibilityState!=="visible") return;
+  if(!client){ if(topic) openBroker(); return; }
   flushSeen();
-  if(!client.connected){ try{ client.reconnect(); }catch(e){} }
+  if(!client.connected){ try{ client.reconnect(); }catch(e){} armFailover(FAILOVER_MS); }
   else announce();
 });
 
 window.addEventListener("online",()=>{
   toast("Back online");
-  if(client&&!client.connected){ try{ client.reconnect(); }catch(e){} }
+  if(!client){ if(topic) openBroker(); return; }
+  if(!client.connected){ try{ client.reconnect(); }catch(e){} armFailover(FAILOVER_MS); }
 });
-window.addEventListener("offline",()=>toast("No connection \u00b7 messages will queue"));
+window.addEventListener("offline",()=>{
+  toast("No connection \u00b7 messages will queue");
+  if(topic) setState("no network \u00b7 messages queue",false);
+});
 
 /* offline app shell: service worker caches this page + the mqtt library */
 if("serviceWorker" in navigator && location.protocol==="https:"){
@@ -1278,7 +2013,9 @@ if("serviceWorker" in navigator && location.protocol==="https:"){
 }
 
 initPicker();
+installShell();
 hydrate();
+if(navigator.onLine===false) setTimeout(()=>toast("Offline \u00b7 you can still open the line and read history"),400);
 </script>
 </body>
 </html>
