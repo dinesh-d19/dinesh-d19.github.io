@@ -143,21 +143,21 @@
   @keyframes pop{from{opacity:0;transform:translateY(6px) scale(.99)}to{opacity:1;transform:none}}
   .msg .name{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--teal);margin-bottom:3px}
   .msg .body{line-height:1.5}
-  .msg .time{font-family:var(--mono);font-size:9.5px;color:var(--dim);letter-spacing:.05em}
+  .msg .time{font-family:var(--mono);font-size:9.5px;color:var(--dim);letter-spacing:.05em;flex:none;white-space:nowrap}
   .msg.you{align-self:flex-start;background:var(--surface-2);border:1px solid var(--hair);border-top-left-radius:6px}
   .msg.me{align-self:flex-end;color:#fff3ec;background:linear-gradient(165deg,rgba(186,88,68,.95),rgba(126,50,44,.96));border:1px solid #b06046;border-top-right-radius:6px;box-shadow:0 10px 30px -18px rgba(255,157,138,.5)}
   .msg.me .time{color:#eba98f}
   .msg.flash{animation:flash 1.1s ease}
   @keyframes flash{0%,100%{box-shadow:0 0 0 0 transparent}28%{box-shadow:0 0 0 2px var(--teal)}}
 
-  .foot{display:flex;align-items:center;gap:7px;margin-top:4px}
+  .foot{display:flex;align-items:center;gap:7px;margin-top:4px;white-space:nowrap}
   .msg.me .foot{flex-direction:row-reverse}
 
   /* A text bubble should be exactly as wide as its words. The clock is lifted
      out of the flow and tucked into the bottom-right corner, and an invisible
      spacer the same width rides at the end of the text so the last line simply
      makes room for it - the same trick that keeps WhatsApp bubbles tight. */
-  .msg.tight .foot{position:absolute;right:9px;bottom:6px;margin:0;gap:5px;flex-direction:row}
+  .msg.tight .foot{position:absolute;right:9px;bottom:6px;margin:0;gap:5px;flex-direction:row;white-space:nowrap}
   .msg.tight{padding-bottom:6px}
   .metaspace{display:inline-block;height:1px;vertical-align:baseline}
 
@@ -340,7 +340,7 @@
   .gone svg{width:15px;height:15px;flex:none;opacity:.85}
   .msg.gone-msg{opacity:.82}
   .msg.me .gone{color:#e2b4a0}
-  .edited{font-family:var(--mono);font-size:9.5px;color:var(--dim);letter-spacing:.04em}
+  .edited{font-family:var(--mono);font-size:9.5px;color:var(--dim);letter-spacing:.04em;flex:none}
   .msg.me .edited{color:#eba98f}
   .msg.editing{outline:1px dashed var(--gold);outline-offset:3px}
 
@@ -380,7 +380,7 @@
   .replybar.edit{border-left-color:var(--gold)}
   .replybar.edit .rb-name{color:var(--gold)}
 
-  .tick{font-family:var(--mono);font-size:10px;color:#c99a86;letter-spacing:-.14em;line-height:1}
+  .tick{font-family:var(--mono);font-size:10px;color:#c99a86;letter-spacing:-.14em;line-height:1;flex:none}
   .tick.seen{color:var(--teal);text-shadow:0 0 7px rgba(255,157,138,.55)}
 </style>
 </head>
@@ -1407,7 +1407,7 @@ function addBubble({id,name,mine,ts,reply,bodyNode,kind,edited}){
 
   const foot=document.createElement("div");foot.className="foot";
   const time=document.createElement("span");time.className="time";
-  time.textContent=new Date(ts||Date.now()).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});
+  time.textContent=new Date(ts||Date.now()).toLocaleTimeString([], {hour:"numeric",minute:"2-digit"});
   foot.appendChild(time);
   if(edited){ const mk=document.createElement("span");mk.className="edited";mk.textContent="edited";foot.appendChild(mk); }
   if(mine){
@@ -1450,13 +1450,18 @@ function fitMeta(div){
   }
   div.classList.add("tight");
   div.classList.toggle("jumbomsg",!!body.querySelector(".jumbo"));
-  let sp=body.querySelector(":scope > .metaspace");
-  if(!sp){ sp=document.createElement("span"); sp.className="metaspace"; }
+  const prev=body.querySelector(".metaspace"); if(prev) prev.remove();
+  const w=foot.offsetWidth;                    // nothing reserved yet: true width
+  const sp=document.createElement("span");
+  sp.className="metaspace";
+  sp.style.width=(w?w+10:60)+"px";
   body.appendChild(sp);                        // always last, even after an edit
-  sp.style.width="0px";
-  const w=foot.offsetWidth;
-  sp.style.width=(w?w+10:56)+"px";
 }
+
+/* Space Mono arrives after first paint and the clock changes width with it,
+   so every reserved gap is re-measured once the real font is in. */
+function refitAll(){ msgEls.forEach(el=>fitMeta(el)); }
+try{ if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>setTimeout(refitAll,0)); }catch(e){}
 
 /* ---------- swipe to reply + long press for options (touch) ----------
    One handler owns the finger, because the two gestures start identically:
