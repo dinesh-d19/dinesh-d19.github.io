@@ -652,7 +652,7 @@ const enc = new TextEncoder();
 const dec = new TextDecoder();
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
-let client=null, key=null, topic=null, mbTopic=null;
+let key=null, topic=null, mbTopic=null;
 let me={id:rid(), name:"You"};
 const peers=new Map();               // id -> {name, lastSeen}
 let typingTimer=null, lastTypingSent=0, peerTypingTimer=null;
@@ -1007,14 +1007,16 @@ function slimRec(r){
   return {id:r.id,from:r.from,name:r.name,kind:r.kind,text:r.text,media:r.media,ts:r.ts,reply:r.reply,reacts:r.reacts,
           deleted:r.deleted||undefined,edited:r.edited||undefined,editedAt:r.editedAt||undefined};
 }
-function mailboxReady(){ return !!(mbTopic&&client&&client.connected); }
+function mailboxReady(){ return !!(mbTopic&&anyLink()); }
 async function mailboxPutRaw(slot,obj){
   if(!mailboxReady()) return;
-  try{ client.publish(mbTopic+slot,await encryptObj(obj),{qos:1,retain:true}); }catch(e){}
+  let body; try{ body=await encryptObj(obj); }catch(e){ return; }
+  /* parked on every relay: we cannot know which one they will walk in on */
+  readyLinks().forEach(l=>{ try{ l.client.publish(mbTopic+slot,body,{qos:1,retain:true}); }catch(e){} });
 }
 function mailboxClear(slot){
   if(!mailboxReady()) return;
-  try{ client.publish(mbTopic+slot,"",{qos:1,retain:true}); }catch(e){}   // empty payload = slot deleted
+  readyLinks().forEach(l=>{ try{ l.client.publish(mbTopic+slot,"",{qos:1,retain:true}); }catch(e){} }); // empty payload = slot deleted
 }
 async function mailboxPut(rec){
   if(!mailboxReady()||!rec||!rec.id||rec.delLocal) return;
@@ -1175,136 +1177,208 @@ function flushOutbox(){
 }
 
 /* ---------- transport ---------- */
+
+/* Every packet carries a short random id. The same packet arriving over two
+   different relays is therefore recognised and acted on only once. */
+const pkSeen=new Set(); const pkQ=[];
+function pkFresh(id){
+  if(!id) return true;                       // older peers / mailbox records: let them through
+  if(pkSeen.has(id)) return false;
+  pkSeen.add(id); pkQ.push(id);
+  if(pkQ.length>4000){ for(let i=0;i<1500;i++) pkSeen.delete(pkQ.shift()); }
+  return true;
+}
+
 async function publish(obj){
-  if(!client||!client.connected){
+  if(!anyLink()){
     if(obj.t==="msg"||obj.t==="react"||obj.t==="del"||obj.t==="edit"){ outbox.push(obj); saveOutbox(); toast("Offline \u00b7 queued, sends on reconnect"); }
     return;
   }
   const qos=(obj.t==="msg"||obj.t==="media"||obj.t==="chunk"||obj.t==="react"||obj.t==="hist"||obj.t==="histp"||obj.t==="seen"||obj.t==="recv"||obj.t==="del"||obj.t==="edit")?1:0;
-  try{ client.publish(topic, await encryptObj(obj), {qos}); }catch(e){}
+  if(!obj.pk) obj.pk=rid()+rid();
+  let body; try{ body=await encryptObj(obj); }catch(e){ return; }
+  /* one ciphertext, sent down every live relay */
+  readyLinks().forEach(l=>{ try{ l.client.publish(topic,body,{qos}); }catch(e){} });
 }
 
 /* ---------------------------------------------------------------------------
-   RELAY POOL
-   On a weak or filtered connection a single broker can simply never answer, and
-   the app would sit on "connecting" forever. We keep a short list and roll on to
-   the next one if a relay does not come up in time. Whichever relay works is
-   remembered and tried first next time.
+   RELAY MESH
+   The previous build spoke to ONE relay at a time and rolled on to the next one
+   whenever the current one went quiet. Two people opening the same room could
+   therefore end up parked on two different relays - each of them connected,
+   each of them alone - which is exactly the "we are not both showing online"
+   failure. Worse, whichever relay happened to work was remembered per device,
+   so the two of you drifted further apart on every visit.
+
+   We now hold an open link to EVERY relay in the list at the same time. As long
+   as any single relay is reachable from both sides the room is joined; packets
+   that arrive twice are de-duplicated on the way in; a relay dying just narrows
+   the mesh instead of splitting the room, and it is retried in the background
+   with a backoff until it comes back.
    --------------------------------------------------------------------------- */
 const BROKERS=[
   "wss://broker.emqx.io:8084/mqtt",
   "wss://broker.hivemq.com:8884/mqtt",
   "wss://test.mosquitto.org:8081/mqtt"
 ];
-const FAILOVER_MS=9000;
-let brokerList=[], bIdx=0, failTimer=null, switches=0;
+const RETRY_MIN=4000, RETRY_MAX=45000;
+let links=[], reviveTimer=null, upTimer=null, meshNoted=false;
 
 function hostOf(u){ try{ return new URL(u).hostname.replace(/^broker\./,""); }catch(e){ return "relay"; } }
-function currentBroker(){ return brokerList[bIdx%brokerList.length]; }
 function onLine(){ return navigator.onLine!==false; }
+function readyLinks(){ return links.filter(l=>l.ready&&l.client); }
+function anyLink(){ return readyLinks().length>0; }
 
 async function connect(preferred){
-  const seen=new Set(); brokerList=[];
-  const add=u=>{ u=(u||"").trim(); if(u&&!seen.has(u)){ seen.add(u); brokerList.push(u); } };
+  const seenU=new Set(); const urls=[];
+  const add=u=>{ u=(u||"").trim(); if(u&&/^wss?:\/\//i.test(u)&&!seenU.has(u)){ seenU.add(u); urls.push(u); } };
   add(preferred);
   try{ add(localStorage.getItem("sl.broker")); }catch(e){}
   BROKERS.forEach(add);
-  bIdx=0; switches=0;
-  openBroker();
+  links.forEach(closeLink);
+  links=urls.map(u=>({url:u,host:hostOf(u),client:null,ready:false,tries:0,timer:null}));
+  links.forEach(openLink);
+  clearInterval(reviveTimer);
+  reviveTimer=setInterval(reviveLinks,5000);
+  showLinks();
 }
-function armFailover(ms){
-  clearTimeout(failTimer);
-  failTimer=setTimeout(()=>{ if(!client||!client.connected) nextBroker(); }, onLine()?ms:Math.max(ms,20000));
-}
-function nextBroker(){
-  clearTimeout(failTimer);
-  try{ if(client){ if(client.removeAllListeners) client.removeAllListeners(); client.end(true); } }catch(e){}
-  client=null;
-  bIdx++; switches++;
-  if(onLine() && brokerList.length>1 && switches<=brokerList.length) sys("Relay unreachable \u00b7 trying "+hostOf(currentBroker()));
-  openBroker();
-}
-function openBroker(){
-  const url=currentBroker();
-  setState(onLine()?("connecting \u00b7 "+hostOf(url)):"no network \u00b7 messages queue",false,"warn");
+function openLink(l){
+  clearTimeout(l.timer); l.timer=null;
+  if(l.client) return;
+  let c;
   try{
-    client=mqtt.connect(url,{
+    c=mqtt.connect(l.url,{
       clientId:"sl_"+rid()+rid(),
-      clean:true, reconnectPeriod:2500, connectTimeout:7000, keepalive:24, resubscribe:true
+      clean:true, reconnectPeriod:0, connectTimeout:9000, keepalive:24
     });
-  }catch(e){ setTimeout(nextBroker,600); return; }
+  }catch(e){ scheduleLink(l); return; }
+  l.client=c;
 
-  client.on("connect",()=>{
-    clearTimeout(failTimer); switches=0;
-    try{ localStorage.setItem("sl.broker",url); }catch(e){}
+  c.on("connect",()=>{
+    if(l.client!==c) return;
+    l.ready=true; l.tries=0;
+    try{ c.subscribe([topic,mbTopic+"+"],{qos:1}); }catch(e){}   // "+" delivers every parked record
+    try{ localStorage.setItem("sl.broker",l.url); }catch(e){}
+    showLinks();
+    onLinkUp();
+  });
+  const down=()=>{
+    if(l.client!==c) return;
+    const wasReady=l.ready;
+    l.ready=false; l.client=null;
+    try{ c.removeAllListeners&&c.removeAllListeners(); }catch(e){}
+    try{ c.end(true); }catch(e){}
+    if(wasReady&&!anyLink()&&onLine()) sys("Relay lost \u00b7 reconnecting");
+    showLinks();
+    scheduleLink(l);
+  };
+  c.on("close",down);
+  c.on("error",down);
+  c.on("offline",down);
+  c.on("message",onPacket);
+}
+function closeLink(l){
+  clearTimeout(l.timer); l.timer=null; l.ready=false;
+  const c=l.client; l.client=null;
+  try{ if(c){ c.removeAllListeners&&c.removeAllListeners(); c.end(true); } }catch(e){}
+}
+function scheduleLink(l){
+  clearTimeout(l.timer);
+  l.tries++;
+  const base=Math.min(RETRY_MAX,RETRY_MIN*Math.pow(1.7,Math.min(l.tries,6)));
+  const wait=Math.round(base*(0.75+Math.random()*0.5));    // jitter, so all three do not retry in lockstep
+  l.timer=setTimeout(()=>{ l.timer=null; if(onLine()) openLink(l); else scheduleLink(l); },wait);
+}
+function reviveLinks(){
+  if(!onLine()) return;
+  links.forEach(l=>{ if(!l.client&&!l.timer) openLink(l); });
+}
+function showLinks(){
+  const n=readyLinks().length;
+  if(n>0){
     setState("secure",true);
-    client.subscribe([topic,mbTopic+"+"],{qos:1});   // "+" delivers every parked record
+    if(!meshNoted&&links.length>1){ meshNoted=true; sys("On "+n+" of "+links.length+" relays \u00b7 the line stays open if one drops"); }
+  }else{
+    setState(onLine()?"connecting\u2026":"no network \u00b7 messages queue",false,"warn");
+  }
+}
+/* first relay of a batch coming up: say hello once, then catch up */
+function onLinkUp(){
+  heartbeat();
+  clearTimeout(upTimer);
+  upTimer=setTimeout(()=>{
     announce();
-    heartbeat();
-    setTimeout(flushOutbox,600);
-    setTimeout(requestSync,1200);
-    setTimeout(syncMailbox,1800);
-  });
-  client.on("reconnect",()=>{ setState("reconnecting",false,"warn"); armFailover(FAILOVER_MS*2); });
-  client.on("offline",  ()=>{ setState(onLine()?"offline":"no network \u00b7 messages queue",false); armFailover(FAILOVER_MS*2); });
-  client.on("close",    ()=>{ setState(onLine()?"offline":"no network \u00b7 messages queue",false); });
-  client.on("error",    ()=>{ setState("relay error",false,"warn"); armFailover(3000); });
-  armFailover(FAILOVER_MS);
+    flushOutbox();
+    requestSync();
+    setTimeout(syncMailbox,700);
+  },500);
+}
 
-  client.on("message",async(t,payload)=>{
-    const mb=mbTopic&&t.lastIndexOf(mbTopic,0)===0;
-    if(t!==topic&&!mb) return;
-    if(!payload||!payload.length) return;                                   // an emptied mailbox slot
-    let m; try{ m=await decryptObj(payload.toString()); }catch(e){ return; } // wrong key or noise
-    if(!m) return;
-    if(mb){ onMailbox(t.slice(mbTopic.length),m); return; }
-    if(m.from===me.id) return;                                              // ignore own echo
-    const known=peers.has(m.from);
-    seen(m.from,m.name);
-    if(m.t==="msg"){
-      hidePeerTyping();
-      if(knownIds.has(m.id)){ ackDelivered(m.id); maybeMarkSeen(m.id); return; } // replay/dup guard
-      recvText(m);
-      notifyMe(m.name||"Peer",(m.text||"New message").slice(0,90));
-    }
-    else if(m.t==="media"){
-      hidePeerTyping();
-      if(knownIds.has(m.id)) return;
-      startIncoming(m); notifyMe(m.name||"Peer","Sent you a file");
-    }
-    else if(m.t==="chunk"){ onChunk(m); }
-    else if(m.t==="react"){ applyReact(m.from,m.mid,m.emoji,m.on); persistReacts(m.mid); }
-    else if(m.t==="recv"){ (m.ids||[]).forEach(id=>{ bumpStatus(id,"delivered"); clearMine(id); }); }
-    else if(m.t==="seen"){ (m.ids||[]).forEach(id=>{ bumpStatus(id,"seen"); clearMine(id); }); }
-    else if(m.t==="syncq"){ answerSync(m); }
-    else if(m.t==="hist"){ onHistRec(m.rec); }
-    else if(m.t==="histp"){ onHistPart(m); }
-    else if(m.t==="del"){ const r=hist.get(m.id); if(!r||!r.mine) applyDelete(m.id,false); }
-    else if(m.t==="edit"){ const r=hist.get(m.id); if(!r||!r.mine) applyEdit(m.id,m.text,m.at); }
-    else if(m.t==="typing"){ showPeerTyping(m.name); }
-    else if(m.t==="join"){ if(!known) sys(`${m.name||"Someone"} joined`); publish({t:"here",from:me.id,name:me.name}); }
-    else if(m.t==="leave"){ if(known){ sys(`${m.name||"Someone"} left`); peers.delete(m.from); refreshPresence(); } }
-    // "here" and "ping" just refresh presence via seen()
-  });
+async function onPacket(t,payload){
+  const mb=mbTopic&&t.lastIndexOf(mbTopic,0)===0;
+  if(t!==topic&&!mb) return;
+  if(!payload||!payload.length) return;                                   // an emptied mailbox slot
+  let m; try{ m=await decryptObj(payload.toString()); }catch(e){ return; } // wrong key or noise
+  if(!m) return;
+  if(mb){ onMailbox(t.slice(mbTopic.length),m); return; }
+  if(m.from===me.id) return;                                              // ignore own echo
+  if(!pkFresh(m.pk)) return;                                              // same packet, second relay
+  const known=peers.has(m.from);
+  seen(m.from,m.name);
+  if(m.t==="msg"){
+    hidePeerTyping();
+    if(knownIds.has(m.id)){ ackDelivered(m.id); maybeMarkSeen(m.id); return; } // replay/dup guard
+    recvText(m);
+    notifyMe(m.name||"Peer",(m.text||"New message").slice(0,90));
+  }
+  else if(m.t==="media"){
+    hidePeerTyping();
+    if(knownIds.has(m.id)) return;
+    startIncoming(m); notifyMe(m.name||"Peer","Sent you a file");
+  }
+  else if(m.t==="chunk"){ onChunk(m); }
+  else if(m.t==="react"){ applyReact(m.from,m.mid,m.emoji,m.on); persistReacts(m.mid); }
+  else if(m.t==="recv"){ (m.ids||[]).forEach(id=>{ bumpStatus(id,"delivered"); clearMine(id); }); }
+  else if(m.t==="seen"){ (m.ids||[]).forEach(id=>{ bumpStatus(id,"seen"); clearMine(id); }); }
+  else if(m.t==="syncq"){ answerSync(m); }
+  else if(m.t==="hist"){ onHistRec(m.rec); }
+  else if(m.t==="histp"){ onHistPart(m); }
+  else if(m.t==="del"){ const r=hist.get(m.id); if(!r||!r.mine) applyDelete(m.id,false); }
+  else if(m.t==="edit"){ const r=hist.get(m.id); if(!r||!r.mine) applyEdit(m.id,m.text,m.at); }
+  else if(m.t==="typing"){ showPeerTyping(m.name); }
+  else if(m.t==="join"){
+    if(!known) sys(`${m.name||"Someone"} joined`);
+    /* answer with a small random delay so three relays do not carry three replies at once */
+    setTimeout(()=>publish({t:"here",from:me.id,name:me.name}),80+Math.random()*220);
+  }
+  else if(m.t==="leave"){ if(known){ sys(`${m.name||"Someone"} left`); peers.delete(m.from); refreshPresence(); } }
+  // "here" and "ping" just refresh presence via seen()
 }
 
 /* ---------- presence ---------- */
-let presenceStarted=false;
+/* Phones freeze timers in background tabs, so a heartbeat can be an entire
+   minute late through no fault of the network. The window below is generous
+   enough to ride that out, and we never expire anyone while OUR OWN link is
+   down - being offline ourselves says nothing about who else is here. */
+const PEER_TTL=50000;
+let presenceStarted=false, annTimer=null;
 function announce(){
   publish({t:"join",from:me.id,name:me.name});
-  setTimeout(()=>publish({t:"here",from:me.id,name:me.name}),800);
-  setTimeout(()=>publish({t:"here",from:me.id,name:me.name}),2200);
+  setTimeout(()=>publish({t:"here",from:me.id,name:me.name}),700);
+  setTimeout(()=>publish({t:"here",from:me.id,name:me.name}),2100);
 }
+function announceSoon(){ clearTimeout(annTimer); annTimer=setTimeout(announce,250); }
 function heartbeat(){
   if(presenceStarted) return;
   presenceStarted=true;
-  setInterval(()=>publish({t:"ping",from:me.id,name:me.name}),slowNet()?9000:6000);
-  setInterval(sweep,3000);
+  setInterval(()=>{ if(anyLink()) publish({t:"ping",from:me.id,name:me.name}); },slowNet()?7000:5000);
+  setInterval(sweep,2000);
 }
 function seen(id,name){
-  const isNew=!peers.has(id);
-  peers.set(id,{name:name||"Peer",lastSeen:Date.now()});
-  if(isNew){
+  if(!id) return;
+  const prev=peers.get(id);
+  peers.set(id,{name:name||(prev&&prev.name)||"Peer",lastSeen:Date.now()});
+  if(!prev){
     const who=name||"Peer";
     toast(who+" is online");
     notifyMe(who+" is online","Your line is live \u00b7 tap to open");
@@ -1312,14 +1386,15 @@ function seen(id,name){
   refreshPresence();
 }
 function sweep(){
+  if(!anyLink()) return;                 // our silence is not their absence
   const now=Date.now(); let changed=false;
-  for(const[id,p]of peers){ if(now-p.lastSeen>35000){ peers.delete(id); changed=true; } }
+  for(const[id,p]of peers){ if(now-p.lastSeen>PEER_TTL){ peers.delete(id); changed=true; } }
   if(changed) refreshPresence();
 }
 function refreshPresence(){
   const n=peers.size;
   const el=$("barState");
-  if(!client||!client.connected){ return; }
+  if(!el||!anyLink()) return;
   if(n===0) el.innerHTML=`<b>private</b> \u00b7 just you for now`;
   else if(n===1){ const only=[...peers.values()][0]; el.innerHTML=`<span style="color:var(--teal)">\u2665</span> ${escapeHtml(only.name)} is here`; }
   else el.innerHTML=`<b>private</b> \u00b7 ${n} here`;
@@ -2279,10 +2354,12 @@ async function start(){
 
 function leave(){
   publish({t:"leave",from:me.id,name:me.name});
-  clearTimeout(failTimer);
-  try{ client&&client.end(true); }catch(e){}
-  location.hash="";
-  location.reload();
+  clearInterval(reviveTimer);
+  setTimeout(()=>{
+    try{ links.forEach(closeLink); }catch(e){}
+    location.hash="";
+    location.reload();
+  },120);                                     // let the goodbye actually go out
 }
 
 function copyInvite(){
@@ -2340,19 +2417,27 @@ $("input").addEventListener("keydown",e=>{
   if(e.key==="Escape"){ if(editing) cancelEdit(); else if(replyTo) clearReply(); else closeGif(); }
 });
 
-window.addEventListener("beforeunload",()=>{ try{ client&&publish({t:"leave",from:me.id,name:me.name}); }catch(e){} });
+window.addEventListener("beforeunload",()=>{ try{ if(anyLink()) publish({t:"leave",from:me.id,name:me.name}); }catch(e){} });
+
+/* Coming back to the tab: our heartbeat has been frozen, so say we are here
+   straight away rather than waiting for the next tick, and pull any relay that
+   died while we were away back up immediately instead of on its backoff. */
+function wake(){
+  if(!topic) return;
+  links.forEach(l=>{ if(!l.client){ clearTimeout(l.timer); l.timer=null; l.tries=0; openLink(l); } });
+  if(anyLink()){ publish({t:"ping",from:me.id,name:me.name}); announceSoon(); }
+}
 document.addEventListener("visibilitychange",()=>{
   if(document.visibilityState!=="visible") return;
-  if(!client){ if(topic) openBroker(); return; }
   flushSeen();
-  if(!client.connected){ try{ client.reconnect(); }catch(e){} armFailover(FAILOVER_MS); }
-  else announce();
+  wake();
 });
+window.addEventListener("focus",wake);
+window.addEventListener("pageshow",wake);
 
 window.addEventListener("online",()=>{
   toast("Back online");
-  if(!client){ if(topic) openBroker(); return; }
-  if(!client.connected){ try{ client.reconnect(); }catch(e){} armFailover(FAILOVER_MS); }
+  wake();
 });
 window.addEventListener("offline",()=>{
   toast("No connection \u00b7 messages will queue");
