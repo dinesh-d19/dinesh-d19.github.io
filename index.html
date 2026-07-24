@@ -312,6 +312,29 @@
   .gp-tags{display:flex;gap:6px;flex-wrap:wrap;padding:1px 0 2px}
   .gp-tags button{background:var(--ink-2);border:1px solid var(--hair-soft);color:var(--muted);border-radius:20px;padding:5px 10px;font-size:11.5px;transition:.14s}
   .gp-tags button:hover{color:var(--teal);border-color:var(--teal-deep)}
+
+  /* emoji picker - desktop browsers have no keyboard emoji key, so we ship one */
+  .emopanel{display:none;flex-direction:column;gap:9px;background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:10px;margin-bottom:9px}
+  .emopanel.show{display:flex;animation:pop .18s ease-out}
+  .ep-head{display:flex;gap:8px;align-items:center}
+  .ep-head input{flex:1;background:var(--ink-2);border:1px solid var(--hair);color:var(--text);border-radius:11px;padding:10px 12px;font-size:14px;outline:none;transition:border-color .16s,box-shadow .16s}
+  .ep-head input:focus{border-color:var(--teal-deep);box-shadow:0 0 0 3px rgba(255,157,138,.1)}
+  .ep-x{background:none;border:none;color:var(--dim);font-size:22px;line-height:1;padding:0 6px}
+  .ep-x:hover{color:var(--red)}
+  .ep-cats{display:flex;gap:5px;overflow-x:auto;padding:1px 0 3px;scrollbar-width:none}
+  .ep-cats::-webkit-scrollbar{display:none}
+  .ep-cats button{background:var(--ink-2);border:1px solid var(--hair-soft);color:var(--muted);border-radius:20px;padding:5px 11px;font-size:11.5px;white-space:nowrap;flex:none;transition:.14s}
+  .ep-cats button:hover{color:var(--teal);border-color:var(--teal-deep)}
+  .ep-cats button.on{color:var(--teal);border-color:var(--teal-deep);background:var(--surface-2)}
+  .ep-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(40px,1fr));gap:2px;max-height:38vh;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--hair) transparent}
+  .ep-grid::-webkit-scrollbar{width:7px}
+  .ep-grid::-webkit-scrollbar-thumb{background:var(--hair);border-radius:8px}
+  .ep-grid button{background:none;border:1px solid transparent;border-radius:10px;height:40px;font-size:23px;line-height:1;display:grid;place-items:center;padding:0;transition:.12s}
+  .ep-grid button:hover{background:var(--surface-2);border-color:var(--teal-deep);transform:scale(1.12)}
+  .ep-grid button .emo{width:25px;height:25px;vertical-align:middle}
+  .ep-head-lbl{grid-column:1/-1;font-family:var(--mono);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);padding:9px 3px 3px}
+  .ep-msg{grid-column:1/-1;font-family:var(--mono);font-size:11.5px;color:var(--dim);text-align:center;padding:20px 6px}
+  .ep-foot{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
   .cbtn.gif{font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.02em}
   .gifwrap{position:relative;display:inline-block;line-height:0;max-width:100%}
   .gifbadge{position:absolute;left:7px;bottom:7px;font-family:var(--mono);font-style:normal;font-size:9px;font-weight:700;letter-spacing:.1em;color:#fff;background:rgba(0,0,0,.62);border-radius:5px;padding:2px 5px;pointer-events:none}
@@ -469,6 +492,16 @@
       <button class="rb-x" id="ebX" title="Cancel edit">&times;</button>
     </div>
 
+    <div class="emopanel" id="emopanel">
+      <div class="ep-head">
+        <input id="emoQ" type="text" placeholder="Search emoji" autocomplete="off" maxlength="40">
+        <button class="ep-x" id="emoX" title="Close">&times;</button>
+      </div>
+      <div class="ep-cats" id="emoCats"></div>
+      <div class="ep-grid" id="emoGrid"></div>
+      <div class="ep-foot">Tip &middot; send one on its own and it arrives big</div>
+    </div>
+
     <div class="gifpanel" id="gifpanel">
       <div class="gp-head">
         <input id="gifQ" type="text" placeholder="Search GIFs" autocomplete="off" maxlength="60">
@@ -488,6 +521,10 @@
       <input type="file" id="gifFile" accept="image/gif,image/webp,image/*" hidden>
       <button class="cbtn" id="attachBtn" title="Attach image or file" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.5 21a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8.5-8.5"/></svg>
+      </button>
+
+      <button class="cbtn" id="emojiBtn" title="Emoji" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14.5s1.4 2 4 2 4-2 4-2"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
       </button>
 
       <button class="cbtn gif" id="gifBtn" title="Send a GIF" disabled>GIF</button>
@@ -2104,7 +2141,7 @@ function buildGifTags(){
   });
 }
 function openGif(){
-  closeSheet();
+  closeSheet(); closeEmoji();
   $("gifpanel").classList.add("show");
   $("gifCred").textContent="Powered by GIPHY";
   buildGifTags();
@@ -2200,6 +2237,110 @@ async function sendGif(g){
 
 /* Voice notes are no longer recorded here. The player below stays so that any
    voice note already sitting in this room's history still plays back. */
+
+/* =========================================================================
+   EMOJI PICKER
+   -------------------------------------------------------------------------
+   Phone keyboards carry an emoji key; desktop ones do not. macOS hides its
+   picker behind Ctrl+Cmd+Space and Linux has no single answer at all - it
+   depends on the desktop, the toolkit and the browser. So the app carries its
+   own, which also means the picker looks the same on every machine.
+
+   The ones drawn by hand above render as our own SVG here too, so what you
+   pick is exactly what the other side sees.
+   ========================================================================= */
+const EMOJI_CATS=[
+  ["Smileys","😀 grin happy|😃 smile happy|😄 laugh happy|😁 beam grin|😆 laugh squint|😅 sweat laugh|🤣 rofl laugh|😂 joy tears laugh|🙂 slight smile|🙃 upside down silly|😉 wink|😊 blush smile|😇 innocent angel|🥰 love hearts adore|😍 heart eyes love|🤩 star struck wow|😘 kiss blow|😗 kiss|😚 kiss|😙 kiss|😋 yum tasty|😛 tongue|😜 wink tongue|🤪 zany crazy|😝 tongue squint|🤑 money rich|🤗 hug|🤭 oops giggle|🤫 shush quiet|🤔 think hmm|🤐 zip quiet|🤨 raised brow doubt|😐 neutral|😑 expressionless|😶 no mouth silent|😏 smirk|😒 unamused meh|🙄 eye roll|😬 grimace awkward|🤥 lying liar|😌 relieved calm|😔 pensive sad|😪 sleepy|🤤 drool|😴 sleep zzz|😷 mask sick|🤒 sick fever|🤕 hurt bandage|🤢 nauseated sick|🤮 vomit sick|🤧 sneeze|🥵 hot heat|🥶 cold freeze|🥴 woozy drunk|😵 dizzy|🤯 mind blown|🤠 cowboy|🥳 party celebrate|😎 cool sunglasses|🤓 nerd geek|🧐 monocle|😕 confused|😟 worried|🙁 frown|😮 open mouth wow|😯 hushed|😲 astonished shock|😳 flushed embarrassed|🥺 pleading beg puppy|😦 frown|😧 anguished|😨 fearful scared|😰 anxious|😥 sad|😢 cry tear|😭 sob cry|😱 scream fear|😖 confounded|😣 persevere|😞 disappointed|😓 sweat down|😩 weary|😫 tired|🥱 yawn bored|😤 triumph steam|😡 rage angry mad|😠 angry mad|🤬 cursing swear|😈 devil smiling|👿 imp angry|💀 skull dead|☠️ skull crossbones|💩 poop|🤡 clown|👻 ghost boo|👽 alien|🤖 robot|🎃 pumpkin halloween|😺 cat smile|😹 cat joy|😻 cat heart eyes|😼 cat smirk|😽 cat kiss|🙀 cat shock|😿 cat cry|😾 cat pout"],
+  ["Gestures","👋 wave hi bye|🤚 hand raised|✋ hand stop|🖐️ hand fingers|🖖 vulcan spock|👌 ok perfect|🤌 pinch italian|🤏 pinch small|✌️ peace victory|🤞 fingers crossed luck|🤟 love you|🤘 rock horns|🤙 call me|👈 point left|👉 point right|👆 point up|👇 point down|☝️ point up|👍 thumbs up like yes good|👎 thumbs down no bad|✊ fist raised|👊 punch fist bump|🤛 fist left|🤜 fist right|👏 clap applause|🙌 raise hands praise|👐 open hands|🤲 palms up|🤝 handshake deal|🙏 pray thanks please|✍️ write hand|💅 nails polish|🤳 selfie|💪 muscle strong flex|🦵 leg|🦶 foot|👂 ear|👃 nose|🧠 brain|🦷 tooth|👀 eyes look|👁️ eye|👅 tongue|👄 lips mouth"],
+  ["People","👶 baby|🧑 person|👦 boy|👧 girl|👨 man|👩 woman|🧔 beard|👴 old man|👵 old woman|🙅 no gesture|🙆 ok gesture|💁 info tip sassy|🙋 raise hand|🧏 deaf|🙇 bow sorry|🤦 facepalm|🤷 shrug idk|👮 police cop|🕵️ detective spy|💂 guard|👷 worker construction|🤴 prince|👸 princess|🎅 santa|🤶 mrs claus|🦸 superhero|🦹 villain|🧙 wizard mage|🧚 fairy|🧛 vampire|🧜 mermaid|🧟 zombie|💆 massage|💇 haircut|🚶 walk|🏃 run|💃 dance woman|🕺 dance man|👯 dancers|🧘 yoga meditate|🛀 bath|🛌 sleep bed|👪 family|👣 footprints"],
+  ["Hearts","❤️ red heart love|🧡 orange heart|💛 yellow heart|💚 green heart|💙 blue heart|💜 purple heart|🖤 black heart|🤍 white heart|🤎 brown heart|💔 broken heart|❣️ heart exclamation|💕 two hearts|💞 revolving hearts|💓 beating heart|💗 growing heart|💖 sparkling heart|💘 heart arrow cupid|💝 heart gift|💟 heart decoration|💌 love letter|💋 kiss lips mark|🌹 rose|💐 bouquet flowers|💍 ring engagement|👩‍❤️‍👨 couple love"],
+  ["Animals","🐶 dog puppy|🐱 cat kitten|🐭 mouse|🐹 hamster|🐰 rabbit bunny|🦊 fox|🐻 bear|🐼 panda|🐨 koala|🐯 tiger|🦁 lion|🐮 cow|🐷 pig|🐸 frog|🐵 monkey|🙈 see no evil monkey|🙉 hear no evil monkey|🙊 speak no evil monkey|🐒 monkey|🐔 chicken|🐧 penguin|🐦 bird|🐤 chick|🦆 duck|🦅 eagle|🦉 owl|🦇 bat|🐺 wolf|🐗 boar|🐴 horse|🦄 unicorn|🐝 bee|🐛 bug caterpillar|🦋 butterfly|🐌 snail|🐞 ladybug|🐜 ant|🕷️ spider|🐢 turtle|🐍 snake|🦎 lizard|🐙 octopus|🦑 squid|🦐 shrimp|🦀 crab|🐡 blowfish|🐠 fish tropical|🐟 fish|🐬 dolphin|🐳 whale|🦈 shark|🐊 crocodile|🦓 zebra|🦍 gorilla|🐘 elephant|🦏 rhino|🐪 camel|🦒 giraffe|🐑 sheep|🐐 goat|🦌 deer|🐕 dog|🐩 poodle|🐈 cat|🐓 rooster|🦃 turkey|🕊️ dove peace|🐇 rabbit|🐿️ chipmunk squirrel|🦔 hedgehog|🐾 paw prints"],
+  ["Nature","🌵 cactus|🌲 tree evergreen|🌳 tree|🌴 palm tree|🌱 seedling sprout|🌿 herb leaf|☘️ shamrock|🍀 four leaf clover luck|🎋 bamboo|🍃 leaf wind|🍂 fallen leaves autumn|🍁 maple leaf|🌾 rice grain|🌻 sunflower|🌼 blossom daisy|🌷 tulip|🌸 cherry blossom sakura|🌺 hibiscus|🌍 earth globe world|🌙 moon crescent|🌝 full moon face|⭐ star|🌟 glowing star|✨ sparkles shine|⚡ lightning bolt|🔥 fire lit hot|🌈 rainbow|☀️ sun sunny|⛅ cloud sun|☁️ cloud|🌧️ rain|⛈️ storm thunder|🌪️ tornado|❄️ snow cold snowflake|⛄ snowman|💧 droplet water|🌊 wave ocean sea|🌋 volcano|🏔️ mountain snow|⛰️ mountain|🏖️ beach|🏝️ island|🌅 sunrise|🌄 sunrise mountain|🌇 sunset|🌃 night city|🌌 milky way stars"],
+  ["Food","🍏 green apple|🍎 apple|🍐 pear|🍊 orange tangerine|🍋 lemon|🍌 banana|🍉 watermelon|🍇 grapes|🍓 strawberry|🫐 blueberry|🍈 melon|🍒 cherries|🍑 peach|🥭 mango|🍍 pineapple|🥥 coconut|🥝 kiwi|🍅 tomato|🍆 eggplant|🥑 avocado|🥦 broccoli|🥬 greens|🥒 cucumber|🌶️ chilli spicy pepper|🌽 corn|🥕 carrot|🧄 garlic|🧅 onion|🥔 potato|🍠 sweet potato|🥐 croissant|🥯 bagel|🍞 bread|🥖 baguette|🧀 cheese|🥚 egg|🍳 cooking fried egg|🧈 butter|🥞 pancakes|🧇 waffle|🥓 bacon|🍔 burger|🍟 fries chips|🌭 hot dog|🍕 pizza|🥪 sandwich|🌮 taco|🌯 burrito|🥗 salad|🍝 pasta spaghetti|🍜 noodles ramen|🍲 stew pot|🍛 curry rice|🍣 sushi|🍱 bento|🥟 dumpling momo|🍤 fried shrimp|🍚 rice|🍙 rice ball onigiri|🥘 paella|🍧 shaved ice|🍨 ice cream|🍦 soft serve|🥧 pie|🧁 cupcake|🍰 cake slice|🎂 birthday cake|🍮 custard pudding|🍭 lollipop|🍬 candy sweet|🍫 chocolate|🍿 popcorn|🍩 doughnut|🍪 cookie biscuit|🌰 chestnut|🥜 peanuts|🍯 honey|🥛 milk|🍼 baby bottle|☕ coffee tea hot|🍵 tea green|🧃 juice box|🥤 cup straw soda|🧋 bubble tea boba|🍺 beer|🍻 cheers beers|🥂 champagne cheers toast|🍷 wine|🥃 whisky|🍸 cocktail martini|🍹 tropical drink|🍾 champagne bottle|🧊 ice cube|🍽️ plate cutlery|🥢 chopsticks|🥄 spoon"],
+  ["Activity","⚽ football soccer|🏀 basketball|🏈 american football|⚾ baseball|🎾 tennis|🏐 volleyball|🏉 rugby|🎱 pool 8 ball|🏓 ping pong table tennis|🏸 badminton|🥅 goal net|🏒 ice hockey|🏑 field hockey|🏏 cricket|🥊 boxing glove|🥋 martial arts karate|⛳ golf|⛸️ ice skate|🎣 fishing|🤿 diving|🎽 running shirt|🎿 ski|🛷 sled|🥌 curling|🎯 target dart bullseye|🪀 yoyo|🪁 kite|🎮 game controller|🕹️ joystick|🎲 dice game|♟️ chess pawn|🧩 puzzle piece|🎰 slot machine|🎳 bowling|🎭 theatre masks|🎨 art palette paint|🎬 clapper film|🎤 mic sing karaoke|🎧 headphones|🎵 music note|🎶 music notes|🎸 guitar|🎹 piano keyboard|🥁 drum|🎺 trumpet|🎻 violin|🏆 trophy win|🥇 first place gold|🥈 second place silver|🥉 third place bronze|🏅 medal|🎖️ military medal"],
+  ["Travel","🚗 car|🚕 taxi|🚙 suv|🚌 bus|🏎️ race car|🚓 police car|🚑 ambulance|🚒 fire engine|🚚 truck lorry|🚲 bicycle cycle|🛵 scooter|🏍️ motorcycle bike|🛺 auto rickshaw|✈️ plane flight|🛫 take off|🛬 landing|🚀 rocket launch|🛸 ufo|🚁 helicopter|⛵ sailboat|🚢 ship|⛴️ ferry|🚂 train steam|🚆 train|🚊 tram|🚇 metro subway|🗺️ map|🧭 compass|🗿 moai statue|🗽 statue of liberty|🗼 tokyo tower|🏰 castle|🕌 mosque|🛕 temple|⛩️ shrine torii|⛪ church|🕍 synagogue|🎡 ferris wheel|🎢 roller coaster|🎪 circus tent|⛺ tent camping|🏠 house home|🏡 house garden|🏢 office building|🏥 hospital|🏦 bank|🏨 hotel|🏫 school|🏭 factory|🛣️ motorway highway|🚦 traffic light|🧳 luggage suitcase"],
+  ["Objects","⌚ watch|📱 phone mobile|💻 laptop computer|🖥️ desktop|⌨️ keyboard|🖨️ printer|🖱️ mouse computer|💾 floppy save|💿 cd disc|📷 camera|📸 camera flash|🎥 movie camera|📺 tv|📻 radio|🎙️ microphone studio|📞 telephone call|🔋 battery|🔌 plug|💡 bulb idea light|🔦 flashlight torch|🕯️ candle|📔 notebook|📕 book|📚 books|📖 open book read|📝 memo note write|✏️ pencil|🖊️ pen|🖍️ crayon|📌 pin|📍 location pin|📎 paperclip|🔗 link chain|✂️ scissors cut|📏 ruler|🔍 search magnify find|🔒 lock secure|🔓 unlock|🔑 key|🔨 hammer|🪛 screwdriver|🔧 wrench spanner|⚙️ gear settings|🧲 magnet|🧪 test tube lab|🧬 dna|🔬 microscope|🔭 telescope|📡 satellite dish|💉 syringe injection|💊 pill medicine|🩹 bandage plaster|🚪 door|🪑 chair|🛏️ bed|🚿 shower|🧻 toilet paper|🧼 soap|🧹 broom|🗑️ trash bin delete|💰 money bag|💵 dollar cash|💳 credit card|💎 gem diamond|⚖️ scales justice|🎁 gift present|🎈 balloon|🎉 party popper tada|🎊 confetti|🎀 ribbon bow|🔔 bell|🔕 bell off mute|📣 megaphone shout|📢 loudspeaker|⏰ alarm clock|⏳ hourglass|⌛ hourglass done|📅 calendar date|📊 bar chart|📈 chart up growth|📉 chart down|📋 clipboard|📁 folder|📧 email mail|📦 package box parcel|🏷️ tag label|🔖 bookmark|🧾 receipt bill"],
+  ["Symbols","✅ check tick yes done|❌ cross no wrong|⭕ circle|❗ exclamation|❓ question|⚠️ warning caution|🚫 prohibited no|💯 hundred perfect|✔️ check mark|➕ plus add|➖ minus|✖️ multiply|➗ divide|♾️ infinity|💤 zzz sleep|💢 anger|💥 boom collision|💫 dizzy star|💦 sweat drops|💨 dash wind|🕳️ hole|💬 speech bubble|💭 thought bubble|🗯️ anger bubble|👁️‍🗨️ eye speech|🔴 red circle|🟠 orange circle|🟡 yellow circle|🟢 green circle|🔵 blue circle|🟣 purple circle|⚫ black circle|⚪ white circle|🟥 red square|🟧 orange square|🟨 yellow square|🟩 green square|🟦 blue square|🟪 purple square|⬛ black square|⬜ white square|🔶 orange diamond|🔷 blue diamond|🔺 red triangle up|🔻 red triangle down|♻️ recycle|🆗 ok button|🆕 new|🔝 top|🔞 eighteen|➡️ arrow right|⬅️ arrow left|⬆️ arrow up|⬇️ arrow down|🔄 refresh loop|🔁 repeat|🔀 shuffle|▶️ play|⏸️ pause|⏹️ stop|⏭️ next|⏮️ previous|🔊 speaker loud|🔇 mute|📶 signal bars|📳 vibrate|♥️ heart suit|♦️ diamond suit|♠️ spade suit|♣️ club suit"],
+];
+const EMO_RECENT_KEY="sl.emorecent";
+let emoBuilt=false, emoCat="Recent", emoRecent=[];
+try{ emoRecent=JSON.parse(localStorage.getItem(EMO_RECENT_KEY)||"[]"); }catch(e){ emoRecent=[]; }
+
+/* "😀 grin happy" -> {c:"😀", k:"grin happy"} */
+function emoParse(entry){
+  const i=entry.indexOf(" ");
+  return i<0?{c:entry,k:""}:{c:entry.slice(0,i),k:entry.slice(i+1)};
+}
+function emoAll(){
+  const out=[];
+  EMOJI_CATS.forEach(([name,blob])=>blob.split("|").forEach(x=>{ const p=emoParse(x); p.cat=name; out.push(p); }));
+  return out;
+}
+function pushRecent(ch){
+  emoRecent=[ch].concat(emoRecent.filter(x=>x!==ch)).slice(0,32);
+  try{ localStorage.setItem(EMO_RECENT_KEY,JSON.stringify(emoRecent)); }catch(e){}
+}
+function buildEmoCats(){
+  const box=$("emoCats"); box.innerHTML="";
+  const names=(emoRecent.length?["Recent"]:[]).concat(EMOJI_CATS.map(c=>c[0]));
+  if(names.indexOf(emoCat)<0) emoCat=names[0];
+  names.forEach(n=>{
+    const b=document.createElement("button");
+    b.textContent=n; if(n===emoCat) b.className="on";
+    b.addEventListener("click",()=>{ emoCat=n; $("emoQ").value=""; buildEmoCats(); paintEmoji(); });
+    box.appendChild(b);
+  });
+}
+function emoButton(ch){
+  const b=document.createElement("button");
+  b.type="button"; b.title=ch;
+  b.innerHTML=emojiHTML(ch);                       // our own artwork where we have it
+  b.addEventListener("click",()=>insertEmoji(ch));
+  return b;
+}
+function paintEmoji(){
+  const grid=$("emoGrid"); grid.innerHTML="";
+  const q=$("emoQ").value.trim().toLowerCase();
+
+  if(q){
+    const hits=emoAll().filter(p=>p.k.indexOf(q)>=0||p.c===q).slice(0,180);
+    if(!hits.length){ grid.innerHTML='<div class="ep-msg">Nothing matches \u201c'+escapeHtml(q)+'\u201d</div>'; return; }
+    hits.forEach(p=>grid.appendChild(emoButton(p.c)));
+    return;
+  }
+  if(emoCat==="Recent"){
+    if(!emoRecent.length){ grid.innerHTML='<div class="ep-msg">Emoji you use turn up here</div>'; return; }
+    emoRecent.forEach(ch=>grid.appendChild(emoButton(ch)));
+    return;
+  }
+  const cat=EMOJI_CATS.find(c=>c[0]===emoCat);
+  if(!cat) return;
+  cat[1].split("|").forEach(x=>grid.appendChild(emoButton(emoParse(x).c)));
+}
+/* drop it in at the caret, not at the end, and keep the box focused so you can
+   carry on typing or pick another one straight away */
+function insertEmoji(ch){
+  const ta=$("input");
+  if(ta.disabled) return;
+  const s=(ta.selectionStart==null)?ta.value.length:ta.selectionStart;
+  const e=(ta.selectionEnd==null)?ta.value.length:ta.selectionEnd;
+  ta.value=ta.value.slice(0,s)+ch+ta.value.slice(e);
+  const pos=s+ch.length;
+  try{ ta.focus(); ta.setSelectionRange(pos,pos); }catch(err){}
+  autosize(); toggleSend(); onTyping();
+  pushRecent(ch);
+  if(emoCat==="Recent"&&!$("emoQ").value.trim()){ buildEmoCats(); paintEmoji(); }
+  else buildEmoCats();
+}
+function openEmoji(){
+  closeSheet(); closeGif();
+  $("emopanel").classList.add("show");
+  if(!emoBuilt){ emoBuilt=true; if(emoRecent.length) emoCat="Recent"; else emoCat=EMOJI_CATS[0][0]; }
+  buildEmoCats(); paintEmoji();
+  try{ if(matchMedia("(hover:hover)").matches) $("emoQ").focus(); }catch(e){}
+}
+function closeEmoji(){ $("emopanel").classList.remove("show"); }
+function toggleEmoji(){ $("emopanel").classList.contains("show")?closeEmoji():openEmoji(); }
 
 /* ---------- typing / composer ---------- */
 function onTyping(){
@@ -2334,6 +2475,7 @@ async function start(){
   $("input").disabled=false;
   $("attachBtn").disabled=false;
   $("gifBtn").disabled=false;
+  $("emojiBtn").disabled=false;
   setState("unlocking\u2026",false,"warn");
 
   const derived=await deriveBoth(secret,room);
@@ -2398,6 +2540,13 @@ $("input").addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.p
 $("attachBtn").addEventListener("click",()=>$("file").click());
 $("file").addEventListener("change",e=>{ const f=e.target.files[0]; e.target.value=""; if(f) sendFile(f); });
 $("gifBtn").addEventListener("click",toggleGif);
+$("emojiBtn").addEventListener("click",toggleEmoji);
+$("emoX").addEventListener("click",closeEmoji);
+$("emoQ").addEventListener("input",paintEmoji);
+$("emoQ").addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ e.preventDefault(); closeEmoji(); $("input").focus(); }
+  if(e.key==="Enter"){ e.preventDefault(); const b=$("emoGrid").querySelector("button"); if(b) b.click(); }
+});
 $("gifX").addEventListener("click",closeGif);
 $("gifLocal").addEventListener("click",()=>$("gifFile").click());
 $("gifFile").addEventListener("change",e=>{ const f=e.target.files[0]; e.target.value=""; closeGif(); if(f) sendFile(f); });
@@ -2414,7 +2563,15 @@ $("gifQ").addEventListener("keydown",e=>{
 $("rbX").addEventListener("click",clearReply);
 $("ebX").addEventListener("click",cancelEdit);
 $("input").addEventListener("keydown",e=>{
-  if(e.key==="Escape"){ if(editing) cancelEdit(); else if(replyTo) clearReply(); else closeGif(); }
+  if(e.key==="Escape"){ if(editing) cancelEdit(); else if(replyTo) clearReply(); else { closeGif(); closeEmoji(); } }
+});
+
+/* desktop shortcut: Ctrl+E / Cmd+E opens the picker without leaving the keyboard */
+document.addEventListener("keydown",e=>{
+  if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&!e.altKey&&(e.key==="e"||e.key==="E")){
+    if($("emojiBtn").disabled) return;
+    e.preventDefault(); toggleEmoji();
+  }
 });
 
 window.addEventListener("beforeunload",()=>{ try{ if(anyLink()) publish({t:"leave",from:me.id,name:me.name}); }catch(e){} });
