@@ -705,6 +705,8 @@ const HIST_PART=90*1024;             // max chars per history sync packet
 const MB_MAX=120*1024;               // biggest record we will park in the relay mailbox
 const MB_TTL=21*24*3600*1000;        // undelivered mail older than this is abandoned
 const MB_LIMIT=80;                   // most records republished to the mailbox at once
+const MB_ACK_PREFIX="ack.";          // companion slot: recipient's "I have this" receipt
+const MB_COLLECTED_KEY="sl.mbgot";   // ids this device has already durably collected
 const msgEls=new Map();              // msg id -> bubble element
 const msgInfo=new Map();             // msg id -> {name, kind, preview}
 const reactState=new Map();          // msg id -> Map(emoji -> Set(fromId))
@@ -1103,16 +1105,62 @@ function applyReactSet(m){
   want.forEach(e=>applyReact(m.from,m.mid,e,true));
   persistReacts(m.mid);
 }
+/* ids this device has already stored for good. Kept so that a slot we cleared
+   is never re-processed, and - crucially - so we can RE-CONFIRM a slot the sender
+   re-parked because our earlier receipt got lost. */
+let mbGot=new Set();
+try{ mbGot=new Set(JSON.parse(localStorage.getItem(MB_COLLECTED_KEY)||"[]")); }catch(e){}
+function mbGotSave(){ try{ localStorage.setItem(MB_COLLECTED_KEY,JSON.stringify([...mbGot].slice(-800))); }catch(e){} }
+function mbMarkGot(id){ if(id&&!mbGot.has(id)){ mbGot.add(id); mbGotSave(); } }
+
+/* Confirmed hand-off. The sender no longer relies on the recipient wiping its
+   slot - that races a tab close and could bin a message the recipient never
+   actually kept. Instead:
+     - recipient stores the record FIRST, and only then drops a tiny receipt in a
+       companion slot (ack.<id>) AND empties the message slot;
+     - if the recipient's tab dies before the empty lands, the sender still finds
+       its own slot on next connect and re-parks - but now the recipient, seeing
+       an id it already has in mbGot, simply re-confirms instead of showing a dupe;
+     - the sender clears its slot when it sees the receipt, online or parked. */
+async function mailboxConfirm(id){
+  if(!mailboxReady()) return;
+  await mailboxPutRaw(MB_ACK_PREFIX+id,{t:"mback",from:me.id,id});   // durable receipt for an offline sender
+  mailboxClear(id);                                                   // and free the message slot
+}
 function onMailbox(slot,m){
-  if(m.from===me.id){
-    /* our own parked copy came back on subscribe: bin it once it has landed, or aged out */
+  /* a receipt for one of OUR messages: the other side has it for good, so we can
+     stop parking it and bin both the message slot and the receipt slot. */
+  if(m&&m.t==="mback"){
+    if(m.from!==me.id){
+      /* the other side confirmed one of our messages: stop parking it and reap
+         both its message slot and this receipt slot. */
+      const r=hist.get(m.id);
+      if(r&&r.mine) bumpStatus(m.id,"delivered");
+      mailboxClear(m.id);
+      mailboxClear(slot);
+    }
+    /* our own receipt echoing back on subscribe: leave it for the sender to reap. */
+    return;
+  }
+  if(m&&m.from===me.id){
+    /* our own parked message came back on subscribe. Leave it in place until the
+       recipient confirms; only reap it once it is delivered or has aged out. */
     const r=m.rec&&hist.get(m.rec.id);
     if(!r||(RANK[r.status||"sent"]||1)>=RANK.delivered||Date.now()-(r.ts||0)>MB_TTL) mailboxClear(slot);
     return;
   }
-  if(m.t==="hist"&&m.rec) onHistRec(m.rec);
-  else if(m.t==="rxs") applyReactSet(m);
-  mailboxClear(slot);                            // collected - free the slot on the relay
+  /* someone else's parked record for us */
+  if(m&&m.t==="hist"&&m.rec){
+    const id=m.rec.id;
+    onHistRec(m.rec);                            // stores durably (idempotent if already known)
+    mbMarkGot(id);
+    mailboxConfirm(id);                          // store-then-confirm, never confirm-then-hope
+  }else if(m&&m.t==="rxs"){
+    applyReactSet(m);
+    mailboxClear(slot);
+  }else{
+    mailboxClear(slot);                          // unknown/empty: don't let it sit forever
+  }
 }
 
 /* ---------- history sync (offline catch-up) ---------- */
