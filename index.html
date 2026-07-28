@@ -163,7 +163,11 @@
   @keyframes sheen{0%{transform:translateX(-120%)}100%{transform:translateX(360%)}}
 
   .streamwrap{position:relative;flex:1;min-height:0;display:flex;flex-direction:column}
-  .stream{flex:1;overflow-y:auto;padding:18px 2px 16px;display:flex;flex-direction:column;gap:11px;scrollbar-width:thin;scrollbar-color:var(--hair) transparent;overscroll-behavior:contain}
+  /* WhatsApp-style stack: messages sit close together; a run from the same
+     sender is barely separated, and only a change of sender opens up real air. */
+  .stream{flex:1;overflow-y:auto;padding:14px 2px 12px;display:flex;flex-direction:column;gap:2px;scrollbar-width:thin;scrollbar-color:var(--hair) transparent;overscroll-behavior:contain}
+  .msg.grp-first{margin-top:9px}          /* first of a new sender's run */
+  .stream>.msg:first-child{margin-top:0}
   .stream::-webkit-scrollbar{width:7px}
   .stream::-webkit-scrollbar-thumb{background:var(--hair);border-radius:8px}
   .stream:empty::after{content:"The line is open. Say hello.";margin:auto;font-family:var(--mono);font-size:12px;letter-spacing:.06em;color:var(--dim)}
@@ -173,13 +177,30 @@
   .sys{align-self:center;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--dim);background:var(--surface);border:1px solid var(--hair-soft);padding:4px 12px;border-radius:20px;transition:opacity .5s ease,transform .5s ease;max-width:90%;text-align:center}
   .sys.fade{opacity:0;transform:translateY(-6px)}
 
-  .msg{max-width:78%;padding:6px 9px 7px 10px;border-radius:16px;line-height:1.42;font-size:14.5px;word-wrap:break-word;overflow-wrap:anywhere;position:relative;width:-moz-fit-content;width:fit-content;animation:pop .2s cubic-bezier(.2,.7,.3,1)}
+  .msg{max-width:80%;padding:5px 10px 5px 11px;border-radius:14px;line-height:1.34;font-size:14.5px;word-wrap:break-word;overflow-wrap:anywhere;position:relative;width:-moz-fit-content;width:fit-content;animation:pop .18s cubic-bezier(.2,.7,.3,1)}
   @keyframes pop{from{opacity:0;transform:translateY(6px) scale(.99)}to{opacity:1;transform:none}}
   .msg .name{font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--teal);margin-bottom:3px}
-  .msg .body{line-height:1.5}
-  .msg .time{font-family:var(--mono);font-size:9.5px;color:var(--dim);letter-spacing:.05em;flex:none;white-space:nowrap}
+  .msg.grp-mid .name,.msg.grp-last .name{display:none}   /* name only on the run's first bubble */
+  .msg .body{line-height:1.38}
+  .msg .time{font-family:var(--mono);font-size:9.5px;color:var(--dim);letter-spacing:.05em;flex:none;white-space:nowrap;
+    max-width:0;opacity:0;overflow:hidden;transition:max-width .12s ease,opacity .1s ease}
+  .msg.showtime .time{max-width:80px;opacity:1}
+  /* a quick dip the instant a bubble is tapped, so the touch registers visibly */
+  .msg.tap{animation:tapdip .16s ease}
+  @keyframes tapdip{40%{transform:scale(.975)}100%{transform:none}}
+  /* when the time is hidden the foot shrinks to just the tick, so a tight bubble
+     doesn't reserve empty space for a clock nobody is looking at */
+  .msg .foot{gap:0}
+  .msg.showtime .foot{gap:7px}
+  .msg.tight .foot{gap:0}
+  .msg.tight.showtime .foot{gap:5px}
   .msg.you{align-self:flex-start;background:var(--surface-2);border:1px solid var(--hair);border-top-left-radius:6px}
-  .msg.me{align-self:flex-end;color:#fff3ec;background:linear-gradient(165deg,rgba(186,88,68,.95),rgba(126,50,44,.96));border:1px solid #b06046;border-top-right-radius:6px;box-shadow:0 10px 30px -18px rgba(255,157,138,.5)}
+  .msg.me{align-self:flex-end;color:#fff3ec;background:linear-gradient(165deg,rgba(186,88,68,.95),rgba(126,50,44,.96));border:1px solid #b06046;border-top-right-radius:6px;box-shadow:0 8px 26px -18px rgba(255,157,138,.5)}
+  /* within a run, tuck the touching corners so the bubbles nest together */
+  .msg.you.grp-mid,.msg.you.grp-last{border-top-left-radius:6px}
+  .msg.you.grp-first,.msg.you.grp-mid{border-bottom-left-radius:6px}
+  .msg.me.grp-mid,.msg.me.grp-last{border-top-right-radius:6px}
+  .msg.me.grp-first,.msg.me.grp-mid{border-bottom-right-radius:6px}
   .msg.me .time{color:#eba98f}
   .msg.flash{animation:flash 1.1s ease}
   @keyframes flash{0%,100%{box-shadow:0 0 0 0 transparent}28%{box-shadow:0 0 0 2px var(--teal)}}
@@ -191,8 +212,16 @@
      out of the flow and tucked into the bottom-right corner, and an invisible
      spacer the same width rides at the end of the text so the last line simply
      makes room for it - the same trick that keeps WhatsApp bubbles tight. */
-  .msg.tight .foot{position:absolute;right:9px;bottom:6px;margin:0;gap:5px;flex-direction:row;white-space:nowrap}
-  .msg.tight{padding-bottom:6px}
+  .msg.tight .foot{position:absolute;right:9px;bottom:4px;margin:0;gap:4px;flex-direction:row;white-space:nowrap}
+  .msg.tight{padding-bottom:4px}
+  /* the tick alone is tiny; give it just enough corner room so the last word of
+     a short line clears it, but no more - this is what kills the big empty gap */
+  .msg.tight .tick{font-size:10px;line-height:1;opacity:.9}
+  /* a very short bubble ("hi") has no trailing room for a revealed time, so when
+     the time is showing we guarantee a little extra width and drop the clock a
+     hair further into the corner - it sits just outside the word, not on top of it */
+  .msg.tight.showtime{padding-bottom:16px;min-width:74px}
+  .msg.tight.showtime .foot{bottom:3px}
   .metaspace{display:inline-block;height:1px;vertical-align:baseline}
 
   /* the chevron sits outside the bubble so it never pads the width */
@@ -274,29 +303,29 @@
   .mediacap{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
 
   /* composer - one soft pill holding the tools and the text, send sits apart */
-  .composer{display:flex;gap:8px;align-items:flex-end;padding:6px 0 calc(10px + env(safe-area-inset-bottom));flex:none}
-  body.kb .composer{padding-bottom:8px}
+  .composer{display:flex;gap:7px;align-items:flex-end;padding:5px 0 max(6px,env(safe-area-inset-bottom));flex:none}
+  body.kb .composer{padding-bottom:6px}
   .cpill{
     flex:1;min-width:0;display:flex;align-items:flex-end;gap:1px;
-    background:var(--surface);border:1px solid var(--hair);border-radius:24px;padding:3px;
+    background:var(--surface);border:1px solid var(--hair);border-radius:22px;padding:2px;
     transition:border-color .16s,box-shadow .16s,background .16s;
   }
   .cpill:focus-within{border-color:var(--teal-deep);background:var(--surface-2);box-shadow:0 0 0 3px rgba(255,157,138,.1)}
   .composer textarea{
     flex:1;min-width:0;resize:none;background:none;border:none;color:var(--text);
-    padding:11px 5px;font-size:15px;line-height:1.4;max-height:120px;outline:none;
+    padding:8px 5px;font-size:15px;line-height:1.35;max-height:112px;outline:none;
   }
   .composer textarea::placeholder{color:var(--dim)}
-  .cbtn{background:none;border:none;color:var(--muted);border-radius:50%;width:38px;height:40px;flex:none;display:grid;place-items:center;transition:.14s}
+  .cbtn{background:none;border:none;color:var(--muted);border-radius:50%;width:36px;height:36px;flex:none;display:grid;place-items:center;transition:.14s}
   .cbtn:hover{color:var(--teal);background:rgba(255,157,138,.1)}
   .cbtn:active{transform:scale(.9)}
   .cbtn:disabled{opacity:.35;cursor:default}
   .cbtn svg{width:20px;height:20px}
-  .send{border:none;border-radius:50%;width:48px;height:48px;flex:none;display:grid;place-items:center;color:#3a140e;background:linear-gradient(180deg,var(--teal-2),var(--teal));box-shadow:0 12px 28px -12px rgba(255,157,138,.7),inset 0 1px 0 rgba(255,255,255,.35);transition:.12s}
+  .send{border:none;border-radius:50%;width:42px;height:42px;flex:none;display:grid;place-items:center;color:#3a140e;background:linear-gradient(180deg,var(--teal-2),var(--teal));box-shadow:0 10px 24px -14px rgba(255,157,138,.7),inset 0 1px 0 rgba(255,255,255,.35);transition:.12s}
   .send:hover{filter:brightness(1.06)}
   .send:active{transform:scale(.94)}
   .send:disabled{opacity:.45;cursor:default;box-shadow:none;filter:saturate(.5)}
-  .send svg{width:20px;height:20px}
+  .send svg{width:19px;height:19px}
 
   .replybar{display:none;align-items:center;gap:11px;padding:9px 13px;margin-bottom:9px;background:var(--surface);border:1px solid var(--hair-soft);border-left:2px solid var(--teal);border-radius:12px}
   .replybar.show{display:flex;animation:pop .18s ease-out}
@@ -321,10 +350,10 @@
     .orbs span,.crest-ring,.wire::after,.status-dot.live,.typing i,.msg,.replybar.show,.sheet.show,.chip.fresh{animation:none}
   }
   @media (max-width:560px){
-    .composer{gap:7px}
-    .cbtn{width:36px;height:38px}
+    .composer{gap:6px}
+    .cbtn{width:34px;height:34px}
     .cbtn svg{width:19px;height:19px}
-    .send{width:46px;height:46px}
+    .send{width:42px;height:42px}
     .gp-grid img{height:88px}
     .card{padding:28px 22px 22px}
     h1{font-size:25px}
@@ -494,12 +523,19 @@
     background:radial-gradient(88% 62% at 50% 0%,rgba(255,157,138,.18),transparent 70%),
                radial-gradient(70% 60% at 18% 100%,rgba(211,155,193,.16),transparent 72%);
   }
-  .rvid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:#0d0809;display:none;z-index:1}
+  .rvid{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#0d0809;display:none;z-index:1}
+  @media (max-width:560px){ .rvid{object-fit:cover} }
   .callui.rv .rvid{display:block}
   .lvid{
-    position:absolute;right:14px;top:calc(env(safe-area-inset-top) + 62px);width:104px;height:150px;object-fit:cover;
+    position:absolute;right:14px;top:calc(env(safe-area-inset-top) + 62px);width:118px;height:168px;object-fit:cover;
     border-radius:18px;border:1px solid rgba(255,255,255,.18);box-shadow:0 22px 52px -22px #000;
     background:#160f11;z-index:5;display:none;transform:scaleX(-1);
+  }
+  /* on a laptop the call fills the whole window, so give the self-view more room
+     and center the whole thing like a proper video app */
+  @media (min-width:700px){
+    .lvid{width:210px;height:150px;right:22px;top:calc(env(safe-area-inset-top) + 22px)}
+    .callbtns{max-width:520px;left:50%;transform:translateX(-50%)}
   }
   .callui.cam .lvid{display:block}
 
@@ -537,6 +573,11 @@
   .cb:active{transform:scale(.92)}
   .cb svg{width:23px;height:23px}
   .cb.off{background:var(--text);color:#20161a;border-color:var(--text)}
+  .cb.on{background:var(--teal-deep);border-color:var(--teal);color:#3a140e}
+  /* the speaker toggle only makes sense on a device with an earpiece (a phone);
+     hidden by default, shown by JS when routing is actually available */
+  #cbSpk{display:none}
+  .callui.canspk #cbSpk{display:grid}
   .cb.end{background:linear-gradient(180deg,#ff8272,#d33c35);border-color:#e2564a;color:#fff;box-shadow:0 18px 38px -16px rgba(211,60,53,.95)}
   .cb.accept{background:linear-gradient(180deg,#84e3ac,#2da76a);border-color:#4cc386;color:#05301c;box-shadow:0 18px 38px -16px rgba(45,167,106,.95)}
   .callin{display:none}
@@ -737,6 +778,7 @@
   </div>
 
   <div class="callbtns callmain" id="callbtns">
+    <button class="cb mainonly on" id="cbSpk" title="Speaker"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg></button>
     <button class="cb mainonly" id="cbMute" title="Mute"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v4"/></svg></button>
     <button class="cb mainonly" id="cbCam" title="Camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M23 7l-7 5 7 5V7z"/><rect x="1" y="5" width="15" height="14" rx="2.5"/></svg></button>
     <button class="cb mainonly" id="cbFlip" title="Switch camera"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/><path d="M3 21v-5h5"/></svg></button>
@@ -944,7 +986,9 @@ const ICON={
   more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
   back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>',
   mic:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v4"/></svg>',
-  micoff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M9 9v2a3 3 0 0 0 4.6 2.5"/><path d="M15 11V5a3 3 0 0 0-5.8-1"/><path d="M5 11a7 7 0 0 0 10.3 6.2M19 11a7 7 0 0 1-.6 2.8"/><path d="M12 18v4"/></svg>'
+  micoff:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M9 9v2a3 3 0 0 0 4.6 2.5"/><path d="M15 11V5a3 3 0 0 0-5.8-1"/><path d="M5 11a7 7 0 0 0 10.3 6.2M19 11a7 7 0 0 1-.6 2.8"/><path d="M12 18v4"/></svg>',
+  spk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4V5z"/><path d="M15.5 8.5a5 5 0 0 1 0 7"/><path d="M18.5 5.5a9 9 0 0 1 0 13"/></svg>',
+  ear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8.5a6 6 0 0 1 12 0c0 2.5-1.8 3.5-3 4.5s-1.5 2-1.5 3a2.5 2.5 0 0 1-5 .2"/><path d="M9.5 8.5a2.5 2.5 0 0 1 5 0"/></svg>'
 };
 
 /* =========================================================================
@@ -1622,6 +1666,7 @@ function onLinkUp(){
   upTimer=setTimeout(()=>{
     announce();
     flushOutbox();
+    flushPendingMedia();
     requestSync();
     setTimeout(syncMailbox,700);
   },500);
@@ -1692,6 +1737,7 @@ function seen(id,name){
   if(!id) return;
   const prev=peers.get(id);
   peers.set(id,{name:name||(prev&&prev.name)||"Peer",lastSeen:Date.now()});
+  noteLastSeen(id,name);
   if(!prev){
     const who=name||"Peer";
     toast(who+" is online");
@@ -1699,17 +1745,46 @@ function seen(id,name){
   }
   refreshPresence();
 }
+let lastPresenceTick=0;
 function sweep(){
   if(!anyLink()) return;                 // our silence is not their absence
   const now=Date.now(); let changed=false;
-  for(const[id,p]of peers){ if(now-p.lastSeen>PEER_TTL){ peers.delete(id); changed=true; } }
-  if(changed) refreshPresence();
+  for(const[id,p]of peers){ if(now-p.lastSeen>PEER_TTL){ noteLastSeen(id,p.name); peers.delete(id); changed=true; } }
+  /* even with nobody here, refresh every ~20s so "last seen 2 mins ago" keeps ticking */
+  if(changed || (peers.size===0 && now-lastPresenceTick>20000)){ lastPresenceTick=now; refreshPresence(); }
+}
+/* the moment a peer was last heard from, kept past their departure so the header
+   can show a "last seen" line instead of falling silent */
+const lastSeenMap=new Map();      // id -> {name, at}
+function noteLastSeen(id,name){
+  if(!id) return;
+  lastSeenMap.set(id,{name:name||(lastSeenMap.get(id)||{}).name||"Peer",at:Date.now()});
+}
+function agoText(ms){
+  const s=Math.max(0,Math.round((Date.now()-ms)/1000));
+  if(s<45) return "just now";
+  const m=Math.round(s/60);
+  if(m<60) return m+(m===1?" min":" mins")+" ago";
+  const h=Math.round(m/60);
+  if(h<24) return h+(h===1?" hour":" hours")+" ago";
+  const d=Math.round(h/24);
+  return d+(d===1?" day":" days")+" ago";
+}
+function lastSeenLine(){
+  /* whoever we most recently lost touch with */
+  let best=null;
+  for(const v of lastSeenMap.values()){ if(!best||v.at>best.at) best=v; }
+  return best;
 }
 function refreshPresence(){
   const n=peers.size;
   const el=$("barState");
   if(!el||!anyLink()) return;
-  if(n===0) el.innerHTML=`<b>private</b> \u00b7 just you for now`;
+  if(n===0){
+    const ls=lastSeenLine();
+    if(ls) el.innerHTML=`${escapeHtml(ls.name)} \u00b7 last seen ${escapeHtml(agoText(ls.at))}`;
+    else el.innerHTML=`<b>private</b> \u00b7 just you for now`;
+  }
   else if(n===1){ const only=[...peers.values()][0]; el.innerHTML=`<span style="color:var(--teal)">\u2665</span> ${escapeHtml(only.name)} is here`; }
   else el.innerHTML=`<b>private</b> \u00b7 ${n} here`;
 }
@@ -1795,6 +1870,30 @@ function insertSorted(div,ts){
   /* older than everything (or empty stream): put first */
   if(kids.length) s.insertBefore(div,kids[0]); else s.appendChild(div);
 }
+/* Tag each visible message as the first / middle / last of a run from the same
+   sender, so grouped bubbles nest and the name shows once per run - the tidy
+   WhatsApp stack. A gap over two minutes starts a fresh run even for one sender. */
+const GROUP_GAP=2*60*1000;
+let regroupPending=false;
+function regroup(){
+  if(regroupPending) return;
+  regroupPending=true;
+  requestAnimationFrame(()=>{
+    regroupPending=false;
+    const kids=[...$("stream").children].filter(k=>k.classList&&k.classList.contains("msg"));
+    for(let i=0;i<kids.length;i++){
+      const cur=kids[i], prev=kids[i-1], next=kids[i+1];
+      const s=cur.dataset.sender, ts=Number(cur.dataset.ts||0);
+      const samePrev=prev&&prev.dataset.sender===s&&(ts-Number(prev.dataset.ts||0))<GROUP_GAP;
+      const sameNext=next&&next.dataset.sender===s&&(Number(next.dataset.ts||0)-ts)<GROUP_GAP;
+      /* exactly one state: solo/first bubbles get grp-first, the rest of a run
+         get mid (has a neighbour on both sides) or last (only above) */
+      cur.classList.toggle("grp-first",!samePrev);
+      cur.classList.toggle("grp-mid",samePrev&&sameNext);
+      cur.classList.toggle("grp-last",samePrev&&!sameNext);
+    }
+  });
+}
 function addBubble({id,name,mine,ts,reply,bodyNode,kind,edited}){
   const stick=nearBottom();
   const div=document.createElement("div");
@@ -1838,13 +1937,42 @@ function addBubble({id,name,mine,ts,reply,bodyNode,kind,edited}){
 
   attachGestures(div,id);
   div.addEventListener("dblclick",()=>startReply(id));
+  /* desktop / non-touch: a plain click on the bubble body flashes the time.
+     ignored on links, the chevron, reaction chips and the reply quote. */
+  div.addEventListener("click",e=>{
+    if(e.target.closest("a,.actbtn,.chip,.quote,button")) return;
+    if(window.matchMedia&&window.matchMedia("(hover:none)").matches) return; // touch handles its own
+    toggleTime(id);
+  });
 
+  div.dataset.sender=mine?"me":(name||"Peer");
   insertSorted(div,Number(div.dataset.ts));
   msgEls.set(id,div);
+  regroup();
   if((kind||"text")==="text"){ div.dataset.txt="1"; fitMeta(div); }
   if(mine||stick) scrollDown();
   else { unread++; updateFab(); }
   return {el:div,bodyEl:body};
+}
+
+let timeShownId=null, timeHideTimer=null;
+function hideTime(){
+  if(!timeShownId) return;
+  const el=msgEls.get(timeShownId);
+  if(el){ el.classList.remove("showtime"); fitMeta(el); }
+  timeShownId=null;
+  clearTimeout(timeHideTimer); timeHideTimer=null;
+}
+function toggleTime(id){
+  const el=msgEls.get(id);
+  if(el){ el.classList.remove("tap"); void el.offsetWidth; el.classList.add("tap"); }  // restart the dip
+  if(timeShownId===id){ hideTime(); return; }
+  hideTime();
+  if(!el) return;
+  el.classList.add("showtime"); fitMeta(el);    // re-fit: now reserve the time's width
+  timeShownId=id;
+  clearTimeout(timeHideTimer);
+  timeHideTimer=setTimeout(hideTime,3500);      // fades itself back out
 }
 
 /* Reserve exactly as much room at the end of the text as the clock needs.
@@ -1863,11 +1991,16 @@ function fitMeta(div){
   div.classList.add("tight");
   div.classList.toggle("jumbomsg",!!body.querySelector(".jumbo"));
   const prev=body.querySelector(".metaspace"); if(prev) prev.remove();
-  const w=foot.offsetWidth;                    // nothing reserved yet: true width
+  /* Reserve only what is actually showing right now: when the time is hidden
+     that is just the tick (a few px), so a short bubble like "hi" stays snug and
+     a tapped time appears right next to the word instead of far out to the side.
+     When the time IS shown we reserve its full width so the last line clears it. */
+  const showing=div.classList.contains("showtime");
+  const w=foot.offsetWidth;
   const sp=document.createElement("span");
   sp.className="metaspace";
-  sp.style.width=(w?w+10:60)+"px";
-  body.appendChild(sp);                        // always last, even after an edit
+  sp.style.width=(showing?(w?w+8:56):(w?w+6:16))+"px";
+  body.appendChild(sp);
 }
 
 /* Space Mono arrives after first paint and the clock changes width with it,
@@ -1922,8 +2055,11 @@ function attachGestures(div,id){
     if(!live){ reset(false); return; }
     live=false;
     const fire=dx>=SWIPE_TRIGGER;
+    /* a tap that never became a swipe or a hold just flashes the time */
+    const tap=(axis===0 && dx<6);
     reset(true);
     if(fire){ try{ navigator.vibrate&&navigator.vibrate(12); }catch(err){} startReply(id); }
+    else if(tap){ toggleTime(id); }
   });
   div.addEventListener("touchcancel",()=>{ stopTimer(); live=false; held=false; reset(true); });
   /* desktop: right click anywhere on the bubble opens the same sheet */
@@ -2012,6 +2148,7 @@ function refreshQuotes(id){
 function applyDelete(id,local){
   if(sheetTarget===id) closeSheet();
   for(const[fid,inc]of incoming){ if(inc.meta&&inc.meta.id===id) incoming.delete(fid); }
+  regroup();
   const rec=hist.get(id);
   if(rec){
     if(rec.deleted) return;
@@ -2355,11 +2492,15 @@ async function prepImage(file){
   return {bytes,mime:type,w:cw,h:ch,name:base+(type==="image/webp"?".webp":".jpg")};
 }
 
+/* Media the sender has shown locally but not yet fully transmitted. Keyed by
+   message id; re-driven on reconnect so an image composed offline (or one whose
+   transfer died mid-flight) still reaches the other side instead of sitting
+   there forever looking sent. */
+const pendingMedia=new Map();     // id -> {kind,mime,filename,w,h,dur,bytes,ts,reply}
+
 async function shipMedia({kind,mime,bytes,filename,w,h,dur}){
-  const id=uid(), fid=uid();
+  const id=uid();
   const ts=Date.now();
-  const csize=slowNet()?MIN_CHUNK:CHUNK;          // smaller packets survive weak links
-  const chunks=Math.max(1,Math.ceil(bytes.length/csize));
   const reply=replyTo||undefined;
 
   const bodyNode=makeMediaNode({kind,mime,bytes,filename,w,h,dur,size:bytes.length});
@@ -2367,32 +2508,73 @@ async function shipMedia({kind,mime,bytes,filename,w,h,dur}){
   msgInfo.set(id,{name:me.name,kind,deleted:false,preview:mediaLabel(kind,filename)});
   saveRec({id,from:me.id,name:me.name,mine:true,kind,ts,reply,status:"sent",
     media:{mime,filename,w,h,dur:dur||0,size:bytes.length,b64:bytesToB64(bytes)}});
-  const bar=makeProg(bodyEl);
-
-  const meta={t:"media",id,fid,from:me.id,name:me.name,kind,mime,filename,size:bytes.length,w,h,dur:dur||0,chunks,ts,reply};
   clearReply();
-  await publish(meta);
 
-  /* Fire the chunks in small parallel batches instead of one-at-a-time with a
-     forced pause between each - that serial drip was the whole reason a GIF
-     could take ten seconds. A few in flight at once saturates the socket
-     without overrunning the weakest relay. */
-  const inFlight=slowNet()?2:4;
-  let done=0;
-  for(let base=0;base<chunks;base+=inFlight){
-    const batch=[];
-    for(let j=0;j<inFlight && base+j<chunks;j++){
-      const i=base+j;
-      const slice=bytes.subarray(i*csize,(i+1)*csize);
-      batch.push(publish({t:"chunk",fid,i,from:me.id,data:bytesToB64(slice)}).then(()=>{
-        done++; bar.style.width=Math.round((done/chunks)*100)+"%";
-      }));
-    }
-    await Promise.all(batch);
-    if(slowNet()) await sleep(12);               // let a 2G/3G link breathe a little
+  pendingMedia.set(id,{kind,mime,filename,w,h,dur:dur||0,bytes,ts,reply,bodyEl});
+  if(!anyLink()){
+    const cap=bodyEl.querySelector(".mediacap");
+    if(!cap){ const c=document.createElement("div"); c.className="mediacap"; c.textContent="Will send when back online"; bodyEl.appendChild(c); }
+    toast("Offline \u00b7 photo will send when you reconnect");
+    return;
   }
-  setTimeout(()=>{ if(bar.parentElement) bar.parentElement.remove(); },350);
-  ensureMailbox(id);
+  transmitMedia(id);
+}
+
+/* the actual chunked transfer, retryable */
+async function transmitMedia(id){
+  const job=pendingMedia.get(id);
+  if(!job) return;
+  if(job.sending) return;                    // already in flight
+  if(!anyLink()) return;                      // wait for reconnect
+  job.sending=true;
+
+  const bytes=job.bytes;
+  const csize=slowNet()?MIN_CHUNK:CHUNK;
+  const chunks=Math.max(1,Math.ceil(bytes.length/csize));
+  const fid=uid();
+  let bar=null;
+  try{ if(job.bodyEl){ const old=job.bodyEl.querySelector(".mediacap"); if(old) old.remove(); bar=makeProg(job.bodyEl); } }catch(e){}
+
+  const meta={t:"media",id,fid,from:me.id,name:me.name,kind:job.kind,mime:job.mime,
+    filename:job.filename,size:bytes.length,w:job.w,h:job.h,dur:job.dur||0,chunks,ts:job.ts,reply:job.reply};
+
+  try{
+    await publish(meta);
+    const inFlight=slowNet()?2:4;
+    let done=0;
+    for(let base=0;base<chunks;base+=inFlight){
+      if(!anyLink()) throw new Error("link dropped");
+      const batch=[];
+      for(let j=0;j<inFlight && base+j<chunks;j++){
+        const i=base+j;
+        const slice=bytes.subarray(i*csize,(i+1)*csize);
+        batch.push(publish({t:"chunk",fid,i,from:me.id,data:bytesToB64(slice)}).then(()=>{
+          done++; if(bar) bar.style.width=Math.round((done/chunks)*100)+"%";
+        }));
+      }
+      await Promise.all(batch);
+      if(slowNet()) await sleep(12);
+    }
+    /* transfer finished: it can now come from the mailbox if the peer was away */
+    pendingMedia.delete(id);
+    if(bar) setTimeout(()=>{ if(bar.parentElement) bar.parentElement.remove(); },350);
+    ensureMailbox(id);
+  }catch(e){
+    /* died partway (relay dropped, etc.) - leave it pending so reconnect retries */
+    job.sending=false;
+    if(bar&&bar.parentElement) bar.parentElement.remove();
+    try{ if(job.bodyEl&&!job.bodyEl.querySelector(".mediacap")){ const c=document.createElement("div"); c.className="mediacap"; c.textContent="Will retry sending\u2026"; job.bodyEl.appendChild(c); } }catch(_){}
+  }
+}
+
+/* on reconnect, push anything that never made it out */
+function flushPendingMedia(){
+  if(!anyLink()||!pendingMedia.size) return;
+  let k=0;
+  for(const id of pendingMedia.keys()){
+    setTimeout(()=>transmitMedia(id),k*120);   // stagger so several don't collide
+    k++;
+  }
 }
 
 /* ---------- media: receiving ---------- */
@@ -2664,7 +2846,7 @@ function onTyping(){
   const now=Date.now();
   if(now-lastTypingSent>1400){ lastTypingSent=now; publish({t:"typing",from:me.id,name:me.name}); }
 }
-function autosize(){const t=$("input");t.style.height="auto";t.style.height=Math.min(t.scrollHeight,130)+"px";}
+function autosize(){const t=$("input");t.style.height="auto";t.style.height=Math.min(t.scrollHeight,112)+"px";}
 function toggleSend(){ $("sendBtn").disabled=$("input").value.trim().length===0; }
 
 /* ---------- email notify ---------- */
@@ -2866,6 +3048,9 @@ function openCallUI(){
   ui.classList.add("show");
   $("cbMute").classList.remove("off");
   $("cbCam").classList.toggle("off",!call.video);
+  /* video calls default to loudspeaker, voice calls to earpiece on a phone */
+  spkOn = !!call.video || !/iPhone|iPad|Android/i.test(navigator.userAgent);
+  detectAudioOutputs().then(applyAudioRoute);
   closeSheet(); closeGif(); closeEmoji();
 }
 function setCallUI(state,text){
@@ -2889,9 +3074,26 @@ function minCall(on){
 /* ---------- plumbing ---------- */
 async function getMedia(video){
   return navigator.mediaDevices.getUserMedia({
-    audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true},
-    video: video?{facingMode:(call&&call.facing)||"user",width:{ideal:1280},height:{ideal:720}}:false
+    audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true,channelCount:1,sampleRate:48000},
+    video: video?{
+      facingMode:(call&&call.facing)||"user",
+      width:{ideal:1280,max:1920},height:{ideal:720,max:1080},
+      frameRate:{ideal:30,max:30}
+    }:false
   });
+}
+/* lift the video encoder off its timid default bitrate so the picture is sharp */
+async function tuneVideoBitrate(){
+  if(!call||!call.pc||!call.vT||!call.vT.sender) return;
+  try{
+    const sender=call.vT.sender;
+    const params=sender.getParameters();
+    if(!params.encodings||!params.encodings.length) params.encodings=[{}];
+    params.encodings[0].maxBitrate=2_500_000;   // ~2.5 Mbps, plenty for 720p
+    params.encodings[0].maxFramerate=30;
+    if("degradationPreference" in params) params.degradationPreference="maintain-framerate";
+    await sender.setParameters(params);
+  }catch(e){}
 }
 function remoteAudioEl(){
   if(!remoteAudio){
@@ -2901,6 +3103,54 @@ function remoteAudioEl(){
     document.body.appendChild(remoteAudio);
   }
   return remoteAudio;
+}
+/* Speaker vs earpiece. On phones that expose setSinkId we can pick the output
+   device outright; on iOS Safari (no setSinkId) we lean on the playsinline vs
+   not trick, which the OS reads as speakerphone vs earpiece. Either way the
+   button only shows when there is actually a choice to make. */
+let spkOn=true, spkSupported=false;
+async function detectAudioOutputs(){
+  spkSupported=false;
+  try{
+    if(navigator.mediaDevices&&navigator.mediaDevices.enumerateDevices&&
+       typeof (remoteAudioEl()).setSinkId==="function"){
+      const devs=await navigator.mediaDevices.enumerateDevices();
+      const outs=devs.filter(d=>d.kind==="audiooutput");
+      /* more than one output (e.g. earpiece + speaker) means the toggle is useful */
+      if(outs.length>1) spkSupported=true;
+      call&&(call._outs=outs);
+    }
+  }catch(e){}
+  /* iOS has no setSinkId but does have an earpiece - offer the toggle on touch phones */
+  if(!spkSupported && /iPhone|iPad|Android/i.test(navigator.userAgent)) spkSupported=true;
+  const ui=$("callui"); if(ui) ui.classList.toggle("canspk",spkSupported);
+}
+async function applyAudioRoute(){
+  const el=remoteAudioEl();
+  /* update the button first so it never lags behind a tap, even if the device
+     switch below is slow or unavailable */
+  const btn=$("cbSpk");
+  if(btn){ btn.classList.toggle("on",spkOn); btn.innerHTML=spkOn?ICON.spk:ICON.ear; btn.title=spkOn?"Speaker on":"Earpiece"; }
+  try{
+    if(typeof el.setSinkId==="function" && call && call._outs && call._outs.length>1){
+      /* pick the speaker-ish device for speaker mode, the first (usually earpiece
+         or default) otherwise - label matching is best-effort across browsers */
+      const outs=call._outs;
+      const spk=outs.find(d=>/speaker/i.test(d.label))||outs[outs.length-1];
+      const ear=outs.find(d=>/earpiece|receiver|handset/i.test(d.label))||outs[0];
+      const target=spkOn?spk:ear;
+      if(target) await el.setSinkId(target.deviceId);
+    }
+  }catch(e){}
+  /* iOS fallback: playsinline routes to earpiece, removing it forces speakerphone */
+  try{
+    if(spkOn) el.removeAttribute("playsinline");
+    else el.setAttribute("playsinline","");
+  }catch(e){}
+}
+function toggleSpeaker(){
+  spkOn=!spkOn;
+  applyAudioRoute();
 }
 function buildPC(caller){
   const pc=new RTCPeerConnection(iceConfig());
@@ -2974,6 +3224,7 @@ function attachLocal(){
   $("callui").classList.toggle("cam",has&&call.camOn!==false);
   try{ const p=v.play(); p&&p.catch&&p.catch(()=>{}); }catch(e){}
   pushLocal();
+  if(has) setTimeout(tuneVideoBitrate,300);
 }
 function drainIce(){
   if(!call||!call.pc) return;
@@ -3366,6 +3617,10 @@ $("cbEnd").addEventListener("click",()=>endCall(call&&call.startedAt?"":"Cancell
 $("cbMute").addEventListener("click",toggleMic);
 $("cbCam").addEventListener("click",toggleCam);
 $("cbFlip").addEventListener("click",flipCam);
+$("cbSpk").addEventListener("click",toggleSpeaker);
+if(navigator.mediaDevices&&navigator.mediaDevices.addEventListener){
+  navigator.mediaDevices.addEventListener("devicechange",()=>{ if(call) detectAudioOutputs().then(applyAudioRoute); });
+}
 $("cbMin").addEventListener("click",e=>{ e.stopPropagation(); minCall(true); });
 $("callui").addEventListener("click",e=>{
   if(!$("callui").classList.contains("mini")) return;
