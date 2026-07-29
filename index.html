@@ -535,7 +535,9 @@
      and center the whole thing like a proper video app */
   @media (min-width:700px){
     .lvid{width:210px;height:150px;right:22px;top:calc(env(safe-area-inset-top) + 22px)}
-    .callbtns{max-width:520px;left:50%;transform:translateX(-50%)}
+    /* keep the controls centered without the old left:50%+right:0+transform
+       conflict that stretched the bar and pushed the buttons out of view */
+    .callbtns{left:50%;right:auto;transform:translateX(-50%);width:auto;max-width:520px}
   }
   .callui.cam .lvid{display:block}
 
@@ -564,6 +566,12 @@
   .callbtns{
     position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom) + 34px);z-index:6;
     display:flex;justify-content:center;align-items:center;gap:15px;
+  }
+  /* over a video call the buttons need a scrim so they never vanish into a dark
+     frame - this is what made "no decline option" appear on the laptop */
+  .callui.rv .callbtns{
+    padding:14px 0;
+    background:linear-gradient(0deg,rgba(10,6,7,.72),transparent);
   }
   .cb{
     width:60px;height:60px;border-radius:50%;border:1px solid var(--hair);color:var(--text);
@@ -1214,7 +1222,13 @@ async function loadHistory(){
   db=await idbOpen();
   const rows=await idbAllForTopic();
   const recs=[];
-  for(const row of rows){ try{ const r=await decryptObj(row.ct); if(r&&r.id) recs.push(r); }catch(e){} }
+  for(const row of rows){
+    if(row.k===topic+"|__lastseen"){          // presence, not a message
+      try{ for(const id in row.ls){ const v=row.ls[id]; if(v&&v.at) lastSeenMap.set(id,{name:v.name||"Peer",at:v.at}); } }catch(e){}
+      continue;
+    }
+    try{ const r=await decryptObj(row.ct); if(r&&r.id) recs.push(r); }catch(e){}
+  }
   recs.sort((a,b)=>(a.ts||0)-(b.ts||0));
   const drop=recs.slice(0,Math.max(0,recs.length-HIST_KEEP));
   drop.forEach(r=>idbDel(topic+"|"+r.id));
@@ -1756,9 +1770,19 @@ function sweep(){
 /* the moment a peer was last heard from, kept past their departure so the header
    can show a "last seen" line instead of falling silent */
 const lastSeenMap=new Map();      // id -> {name, at}
+function lastSeenSave(){
+  /* persist alongside history (keyed by topic) so it survives a logout/login */
+  if(!db||!topic) return;
+  try{
+    const obj={};
+    for(const[id,v]of lastSeenMap) obj[id]={name:v.name,at:v.at};
+    idbPut({k:topic+"|__lastseen",topic,ts:0,ls:obj});
+  }catch(e){}
+}
 function noteLastSeen(id,name){
   if(!id) return;
   lastSeenMap.set(id,{name:name||(lastSeenMap.get(id)||{}).name||"Peer",at:Date.now()});
+  lastSeenSave();
 }
 function agoText(ms){
   const s=Math.max(0,Math.round((Date.now()-ms)/1000));
