@@ -539,9 +539,13 @@
   .voice{display:flex;align-items:center;gap:10px;min-width:230px}   /* legacy notes still play */
   .voice audio{width:100%;height:38px}
   .voice .vd{font-family:var(--mono);font-size:11px;color:var(--muted);flex:none}
-  .prog{height:4px;background:var(--hair);border-radius:4px;overflow:hidden;margin-top:8px}
-  .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal-deep),var(--teal));transition:width .15s}
-  .mediacap{font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+  .prog{height:5px;background:var(--hair);border-radius:5px;overflow:hidden;margin-top:8px;position:relative}
+  .prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--teal-deep),var(--teal));transition:width .18s ease}
+  .progline{display:flex;align-items:center;justify-content:space-between;gap:8px;
+            font-family:var(--mono);font-size:10.5px;color:var(--muted);margin-top:5px}
+  .progline b{font-weight:600;color:var(--text)}
+  .mediacap{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:5px;line-height:1.4}
+  .mediacap.retry{color:var(--teal-deep);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
 
   /* composer - one soft pill holding the tools and the text, send sits apart */
   .composer{display:flex;gap:7px;align-items:flex-end;padding:5px 0 max(6px,env(safe-area-inset-bottom));flex:none}
@@ -2019,7 +2023,11 @@ async function onPacket(t,payload){
     if(!known) broadcastAvatar();          // they just arrived: send ours back
   }
   else if(m.t==="react"){ applyReact(m.from,m.mid,m.emoji,m.on); persistReacts(m.mid); }
-  else if(m.t==="recv"){ (m.ids||[]).forEach(id=>{ bumpStatus(id,"delivered"); clearMine(id); }); }
+  else if(m.t==="recv"){ (m.ids||[]).forEach(id=>{
+      bumpStatus(id,"delivered"); clearMine(id);
+      const job=pendingMedia.get(id);
+      if(job){ mediaStatus(job,""); pendingMedia.delete(id); }   // confirmed received
+    }); }
   else if(m.t==="seen"){ (m.ids||[]).forEach(id=>{ bumpStatus(id,"seen"); clearMine(id); }); }
   else if(m.t==="syncq"){ answerSync(m); }
   else if(m.t==="hist"){ onHistRec(m.rec); }
@@ -2065,6 +2073,9 @@ function seen(id,name){
     const who=name||"Peer";
     toast(who+" is online");
     notifyMe(who+" is online","Your line is live \u00b7 tap to open");
+    /* they just arrived: hand them our photo and push anything still unsent */
+    setTimeout(broadcastAvatar,400);
+    setTimeout(flushPendingMedia,900);
   }
   refreshPresence();
 }
@@ -2802,10 +2813,25 @@ function makeMediaNode({kind,mime,bytes,filename,w,h,dur,size}){
   a.innerHTML=`<span class="fi">${ICON.file}</span><span class="fmeta"><span class="fn">${escapeHtml(filename||"file")}</span><span class="fs">${fmtSize(size||bytes.length)}</span></span>`;
   return a;
 }
-function makeProg(bodyEl){
+function makeProg(bodyEl,label){
   const p=document.createElement("div");p.className="prog";
   const i=document.createElement("i");p.appendChild(i);bodyEl.appendChild(p);
+  /* a readable line under the bar: what is moving and how far along it is */
+  const line=document.createElement("div");line.className="progline";
+  line.innerHTML='<span>'+escapeHtml(label||"Sending")+'</span><b>0%</b>';
+  bodyEl.appendChild(line);
+  i._line=line;
   return i;
+}
+function setProg(bar,pct){
+  if(!bar) return;
+  bar.style.width=pct+"%";
+  if(bar._line){ const b=bar._line.querySelector("b"); if(b) b.textContent=pct+"%"; }
+}
+function killProg(bar){
+  if(!bar) return;
+  if(bar._line&&bar._line.parentElement) bar._line.remove();
+  if(bar.parentElement) bar.parentElement.remove();
 }
 
 /* ---------- media: sending ---------- */
@@ -2902,11 +2928,10 @@ async function shipMedia({kind,mime,bytes,filename,w,h,dur}){
     media:{mime,filename,w,h,dur:dur||0,size:bytes.length,b64:bytesToB64(bytes)}});
   clearReply();
 
-  pendingMedia.set(id,{kind,mime,filename,w,h,dur:dur||0,bytes,ts,reply,bodyEl});
+  pendingMedia.set(id,{id,kind,mime,filename,w,h,dur:dur||0,bytes,ts,reply,bodyEl,tries:0,sentAt:0});
   if(!anyLink()){
-    const cap=bodyEl.querySelector(".mediacap");
-    if(!cap){ const c=document.createElement("div"); c.className="mediacap"; c.textContent="Will send when back online"; bodyEl.appendChild(c); }
-    toast("Offline \u00b7 photo will send when you reconnect");
+    mediaStatus(pendingMedia.get(id),"Queued \u00b7 sends when you are back online");
+    toast("Offline \u00b7 it will send when you reconnect");
     return;
   }
   transmitMedia(id);
@@ -2925,7 +2950,8 @@ async function transmitMedia(id){
   const chunks=Math.max(1,Math.ceil(bytes.length/csize));
   const fid=uid();
   let bar=null;
-  try{ if(job.bodyEl){ const old=job.bodyEl.querySelector(".mediacap"); if(old) old.remove(); bar=makeProg(job.bodyEl); } }catch(e){}
+  try{ if(job.bodyEl){ const old=job.bodyEl.querySelector(".mediacap"); if(old) old.remove();
+        bar=makeProg(job.bodyEl,(job.kind==="image"?"Sending photo":job.kind==="video"?"Sending video":"Sending "+(job.filename||"file"))); } }catch(e){}
 
   const meta={t:"media",id,fid,from:me.id,name:me.name,kind:job.kind,mime:job.mime,
     filename:job.filename,size:bytes.length,w:job.w,h:job.h,dur:job.dur||0,chunks,ts:job.ts,reply:job.reply};
@@ -2941,31 +2967,56 @@ async function transmitMedia(id){
         const i=base+j;
         const slice=bytes.subarray(i*csize,(i+1)*csize);
         batch.push(publish({t:"chunk",fid,i,from:me.id,data:bytesToB64(slice)}).then(()=>{
-          done++; if(bar) bar.style.width=Math.round((done/chunks)*100)+"%";
+          done++; setProg(bar,Math.round((done/chunks)*100));
         }));
       }
       await Promise.all(batch);
       if(slowNet()) await sleep(12);
     }
-    /* transfer finished: it can now come from the mailbox if the peer was away */
-    pendingMedia.delete(id);
-    if(bar) setTimeout(()=>{ if(bar.parentElement) bar.parentElement.remove(); },350);
+    /* Chunks are live, not retained by the relay - so finishing the upload does
+       NOT mean it arrived. Keep the file queued until the receiver acks it, and
+       retransmit whenever they next appear. This is why a file sent while they
+       were away used to vanish. */
+    job.sending=false; job.sentAt=Date.now(); job.tries=(job.tries||0)+1;
+    setProg(bar,100);
+    setTimeout(()=>killProg(bar),350);
     ensureMailbox(id);
+    if(peers.size===0) mediaStatus(job,"Waiting for them to come online");
+    else mediaStatus(job,"");
   }catch(e){
-    /* died partway (relay dropped, etc.) - leave it pending so reconnect retries */
-    job.sending=false;
-    if(bar&&bar.parentElement) bar.parentElement.remove();
-    try{ if(job.bodyEl&&!job.bodyEl.querySelector(".mediacap")){ const c=document.createElement("div"); c.className="mediacap"; c.textContent="Will retry sending\u2026"; job.bodyEl.appendChild(c); } }catch(_){}
+    /* died partway (relay dropped, etc.) - leave it queued so we can retry */
+    job.sending=false; job.tries=(job.tries||0)+1;
+    killProg(bar);
+    mediaStatus(job,(job.tries>=6)?"Not delivered \u00b7 tap to retry":"Will retry sending\u2026");
   }
 }
 
 /* on reconnect, push anything that never made it out */
 function flushPendingMedia(){
   if(!anyLink()||!pendingMedia.size) return;
+  const now=Date.now();
   let k=0;
-  for(const id of pendingMedia.keys()){
-    setTimeout(()=>transmitMedia(id),k*120);   // stagger so several don't collide
+  for(const[id,job]of pendingMedia){
+    if(job.sending) continue;
+    if(job.sentAt && now-job.sentAt<15000) continue;   // just tried, give it a moment
+    if((job.tries||0)>=6){ mediaStatus(job,"Not delivered \u00b7 tap to retry"); continue; }
+    setTimeout(()=>transmitMedia(id),k*250);           // stagger so they don't collide
     k++;
+  }
+}
+/* a small line under a file bubble telling you where the transfer is up to */
+function mediaStatus(job,text){
+  if(!job||!job.bodyEl) return;
+  let cap=job.bodyEl.querySelector(".mediacap");
+  if(!text){ if(cap) cap.remove(); return; }
+  if(!cap){ cap=document.createElement("div"); cap.className="mediacap"; job.bodyEl.appendChild(cap); }
+  cap.textContent=text;
+  const canRetry=/retry/i.test(text);
+  cap.classList.toggle("retry",canRetry);
+  if(canRetry&&!cap.dataset.wired){
+    cap.dataset.wired="1";
+    cap.addEventListener("click",e=>{ e.stopPropagation();
+      job.tries=0; job.sentAt=0; mediaStatus(job,"Retrying\u2026"); transmitMedia(job.id); });
   }
 }
 
@@ -2989,7 +3040,7 @@ function onChunk(m){
   const rec=incoming.get(m.fid); if(!rec) return;
   if(rec.parts[m.i]!==undefined) return;
   rec.parts[m.i]=b64ToBytes(m.data); rec.got++;
-  rec.bar.style.width=Math.round(rec.got/rec.meta.chunks*100)+"%";
+  setProg(rec.bar,Math.round(rec.got/rec.meta.chunks*100));
   if(rec.got>=rec.meta.chunks){
     const prev=hist.get(rec.meta.id);
     if(prev&&prev.deleted){ incoming.delete(m.fid); return; }
