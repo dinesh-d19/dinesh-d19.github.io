@@ -34,6 +34,7 @@
     --bubble-you:#ffffff;
     --me-a:#8776ea; --me-b:#6d59db; --me-text:#ffffff; --me-time:rgba(255,255,255,.8);
     --btn-a:#8776ea; --btn-b:#6a56d8; --on-accent:#ffffff;
+    --tick-seen:#8ae0ff; --tick-seen-rgb:138,224,255;
     color-scheme:light;
     --radius:18px;
     --display:"Fraunces","Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
@@ -72,6 +73,7 @@
      accent never fights the surface. Picking any of them restyles everything. */
 
   html[data-theme="linen"]{
+    --tick-seen:#a5eaff; --tick-seen-rgb:165,234,255;
     --ink:#f6f2ec; --ink-2:#efe8df;
     --surface:#fffdfa; --surface-2:#f8f2ea; --raised:#fffdfa;
     --hair:#e6dcd0; --hair-soft:#efe7dc;
@@ -86,6 +88,7 @@
   }
 
   html[data-theme="sage"]{
+    --tick-seen:#a8ecff; --tick-seen-rgb:168,236,255;
     --ink:#f0f4f0; --ink-2:#e6ece5;
     --surface:#ffffff; --surface-2:#f5f9f4; --raised:#ffffff;
     --hair:#dbe5d9; --hair-soft:#e7efe5;
@@ -100,6 +103,7 @@
   }
 
   html[data-theme="ember"]{
+    --tick-seen:#7fd8ff; --tick-seen-rgb:127,216,255;
     --ink:#151011; --ink-2:#1a1315;
     --surface:#201719; --surface-2:#271b1d; --raised:#2f2124;
     --hair:#3c2b2b; --hair-soft:#2e2122;
@@ -114,6 +118,7 @@
   }
 
   html[data-theme="tide"]{
+    --tick-seen:#ffd479; --tick-seen-rgb:255,212,121;
     --ink:#080d18; --ink-2:#0c1322;
     --surface:#111a2c; --surface-2:#172236; --raised:#1f2c44;
     --hair:#2b3a56; --hair-soft:#1e2942;
@@ -128,6 +133,7 @@
   }
 
   html[data-theme="slate"]{
+    --tick-seen:#8ae0ff; --tick-seen-rgb:138,224,255;
     --ink:#101317; --ink-2:#151920;
     --surface:#191e26; --surface-2:#1f2530; --raised:#262d3a;
     --hair:#333c4a; --hair-soft:#232a35;
@@ -193,6 +199,7 @@
 
   /* ---- hero ---- */
   html[data-theme="spider"]{
+    --tick-seen:#7fd8ff; --tick-seen-rgb:127,216,255;
     --ink:#10121c; --ink-2:#161a27;
     --surface:#1c2130; --surface-2:#232a3c; --raised:#2b3448;
     --hair:#36405a; --hair-soft:#283043;
@@ -205,6 +212,7 @@
     --btn-a:#e8434a; --btn-b:#bc1c26; --on-accent:#ffffff; color-scheme:dark;
   }
   html[data-theme="bat"]{
+    --tick-seen:#1746c8; --tick-seen-rgb:23,70,200;
     --ink:#0c0c0f; --ink-2:#121215;
     --surface:#17171c; --surface-2:#1e1e25; --raised:#272730;
     --hair:#33333e; --hair-soft:#232329;
@@ -217,6 +225,7 @@
     --btn-a:#ffd633; --btn-b:#dcae12; --on-accent:#191906; color-scheme:dark;
   }
   html[data-theme="avenger"]{
+    --tick-seen:#8ae0ff; --tick-seen-rgb:138,224,255;
     --ink:#0a0f1e; --ink-2:#0f1628;
     --surface:#151d33; --surface-2:#1c2742; --raised:#243154;
     --hair:#32406a; --hair-soft:#212c4b;
@@ -231,6 +240,7 @@
 
   /* ---- k-style ---- */
   html[data-theme="hallyu"]{
+    --tick-seen:#04203f; --tick-seen-rgb:4,32,63;
     --ink:#fdf4f7; --ink-2:#f8e9ef;
     --surface:#ffffff; --surface-2:#fdf2f6; --raised:#ffffff;
     --hair:#f0dbe4; --hair-soft:#f7e7ee;
@@ -243,6 +253,7 @@
     --btn-a:#e888ae; --btn-b:#c85c88; --on-accent:#ffffff; color-scheme:light;
   }
   html[data-theme="seoul"]{
+    --tick-seen:#7fd8ff; --tick-seen-rgb:127,216,255;
     --ink:#f3f4f5; --ink-2:#e9eaec;
     --surface:#ffffff; --surface-2:#f6f7f8; --raised:#ffffff;
     --hair:#e0e2e5; --hair-soft:#eceef0;
@@ -257,6 +268,7 @@
 
   /* ---- tech ---- */
   html[data-theme="neon"]{
+    --tick-seen:#7dffcf; --tick-seen-rgb:125,255,207;
     --ink:#08061a; --ink-2:#0d0a26;
     --surface:#151034; --surface-2:#1d1745; --raised:#271f5c;
     --hair:#3a2f7a; --hair-soft:#251d55;
@@ -269,6 +281,7 @@
     --btn-a:#22dcff; --btn-b:#0f9fc4; --on-accent:#04202b; color-scheme:dark;
   }
   html[data-theme="terminal"]{
+    --tick-seen:#8ae0ff; --tick-seen-rgb:138,224,255;
     --ink:#04070a; --ink-2:#080d12;
     --surface:#0c1319; --surface-2:#111a21; --raised:#17232c;
     --hair:#22323d; --hair-soft:#15202a;
@@ -281,6 +294,7 @@
     --btn-a:#3ddc84; --btn-b:#1c9d58; --on-accent:#032013; color-scheme:dark;
   }
   html[data-theme="circuit"]{
+    --tick-seen:#08305f; --tick-seen-rgb:8,48,95;
     --ink:#081310; --ink-2:#0c1a16;
     --surface:#11221c; --surface-2:#172d25; --raised:#1f3b31;
     --hair:#2b4c40; --hair-soft:#1b342b;
@@ -296,6 +310,201 @@
 
   @keyframes mfall {from{-webkit-mask-position:0 0;mask-position:0 0}to{-webkit-mask-position:0 420px;mask-position:0 420px}}
 
+
+  /* ============================================================
+     SCREEN EFFECTS ENGINE - presentation layer
+     Fully isolated: nothing here targets an existing selector.
+     The overlay never intercepts input (pointer-events:none), so
+     typing, tapping and scrolling continue while effects play.
+     ============================================================ */
+  #fxOverlay{
+    position:fixed;inset:0;z-index:41;
+    pointer-events:none;overflow:hidden;
+    contain:strict;                    /* isolate layout/paint from the app */
+  }
+  #fxOverlay *{pointer-events:none}
+  #fxCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+  .fx-wash{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
+
+  /* --- sunrise: warm wash + a sun disc climbing the screen --- */
+  .fx-wash.fx-sunrise{
+    background:
+      radial-gradient(125% 72% at 50% 118%, rgba(255,196,84,.50), rgba(255,138,76,.22) 46%, transparent 74%);
+    animation:fxWash 4s ease-out forwards;
+  }
+  .fx-sun{
+    position:absolute;left:50%;bottom:-70px;width:190px;height:190px;margin-left:-95px;border-radius:50%;
+    background:radial-gradient(circle,#fff6cf 0%,#ffc86b 52%,rgba(255,168,72,0) 72%);
+    transform:translate3d(0,60px,0) scale(.82);opacity:0;
+    animation:fxSunRise 4s cubic-bezier(.22,.75,.28,1) forwards;
+  }
+  @keyframes fxSunRise{
+    0%{transform:translate3d(0,60px,0) scale(.82);opacity:0}
+    22%{opacity:1}
+    68%{transform:translate3d(0,-130px,0) scale(1);opacity:1}
+    100%{transform:translate3d(0,-165px,0) scale(1.04);opacity:0}
+  }
+
+  /* --- good night: cool indigo sky, silver moon --- */
+  .fx-wash.fx-moonrise{
+    background:
+      radial-gradient(125% 74% at 50% 118%, rgba(120,140,235,.34), rgba(40,54,120,.22) 48%, transparent 76%),
+      linear-gradient(180deg, rgba(10,16,44,.30), transparent 55%);
+    animation:fxWash 4s ease-out forwards;
+  }
+  .fx-sun.fx-moon{
+    background:radial-gradient(circle,#ffffff 0%,#dfe6ff 46%,rgba(178,196,255,0) 72%);
+  }
+  /* a heart that climbs the screen exactly like the sunrise disc */
+  .fx-sun.fx-heartsun{
+    width:150px;height:150px;margin-left:-75px;
+    background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Cdefs%3E%3CradialGradient%20id%3D%27g%27%20cx%3D%2738%25%27%20cy%3D%2732%25%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%23fff1f5%27%2F%3E%3Cstop%20offset%3D%2742%25%27%20stop-color%3D%27%23ff6f9c%27%2F%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23e02a63%27%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Cpath%20fill%3D%27url%28%2523g%29%27%20d%3D%27M50%2089C22%2065%207%2047%207%2032A22%2022%200%200%201%2050%2023A22%2022%200%200%201%2093%2032C93%2047%2078%2065%2050%2089Z%27%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;
+    filter:drop-shadow(0 0 26px rgba(255,92,140,.72));
+  }
+
+  /* --- angry: a deep red throb, no flames --- */
+  .fx-wash.fx-fury{
+    background:
+      radial-gradient(110% 70% at 50% 45%, rgba(200,40,30,.30), transparent 66%),
+      linear-gradient(0deg, rgba(150,18,10,.20), transparent 48%);
+    animation:fxThrob 4s ease-out forwards;
+  }
+  /* --- fire: amber heat licking up from the bottom edge --- */
+  .fx-wash.fx-fire{
+    background:
+      radial-gradient(125% 80% at 50% 114%, rgba(255,132,26,.46), transparent 60%),
+      linear-gradient(0deg, rgba(190,60,8,.30), transparent 40%);
+    animation:fxThrob 4s ease-out forwards;
+  }
+  /* --- surprise: one sharp bright flash --- */
+  .fx-wash.fx-surprise{
+    background:radial-gradient(80% 55% at 50% 42%, rgba(190,215,255,.34), transparent 66%);
+    animation:fxFlash 4s ease-out forwards;
+  }
+  /* --- angelic: a warm halo of light blooming from above --- */
+  .fx-wash.fx-angelic{
+    background:
+      radial-gradient(70% 42% at 50% -6%, rgba(255,244,205,.50), rgba(255,216,140,.24) 42%, transparent 74%),
+      radial-gradient(120% 80% at 50% 108%, rgba(255,232,178,.16), transparent 66%);
+    animation:fxHalo 4s ease-out forwards;
+  }
+  .fx-halo{
+    position:absolute;left:50%;top:14%;width:210px;height:210px;margin-left:-105px;
+    border-radius:50%;border:2px solid rgba(255,238,178,.9);
+    box-shadow:0 0 40px rgba(255,226,150,.75),inset 0 0 30px rgba(255,240,200,.55);
+    transform:translate3d(0,-24px,0) scale(.6);opacity:0;
+    animation:fxHaloRing 4s cubic-bezier(.2,.75,.3,1) forwards;
+  }
+  @keyframes fxHalo{0%{opacity:0}14%{opacity:1}70%{opacity:.9}100%{opacity:0}}
+  @keyframes fxHaloRing{
+    0%{transform:translate3d(0,-24px,0) scale(.6);opacity:0}
+    24%{opacity:.95}
+    62%{transform:translate3d(0,6px,0) scale(1.06);opacity:.8}
+    100%{transform:translate3d(0,14px,0) scale(1.22);opacity:0}
+  }
+  /* --- crying: a cold blue melancholy --- */
+  .fx-wash.fx-crying{
+    background:
+      radial-gradient(110% 70% at 50% 10%, rgba(78,132,214,.28), transparent 64%),
+      linear-gradient(180deg, rgba(40,80,150,.20), transparent 46%);
+    animation:fxWash 4s ease-out forwards;
+  }
+  @keyframes fxFlash{0%{opacity:0}6%{opacity:1}22%{opacity:.35}34%{opacity:.8}60%{opacity:.4}100%{opacity:0}}
+  /* --- hearts: soft rose glow --- */
+  .fx-wash.fx-hearts{
+    background:radial-gradient(110% 70% at 50% 112%, rgba(255,90,140,.24), transparent 66%);
+    animation:fxWash 4s ease-out forwards;
+  }
+  @keyframes fxWash{0%{opacity:0}16%{opacity:1}72%{opacity:1}100%{opacity:0}}
+  @keyframes fxThrob{
+    0%{opacity:0}12%{opacity:1}30%{opacity:.72}46%{opacity:1}64%{opacity:.76}80%{opacity:.9}100%{opacity:0}
+  }
+
+  /* Motion-sensitive users get the colour wash only, never the particles. */
+  @media (prefers-reduced-motion:reduce){
+    #fxCanvas{display:none}
+    .fx-sun{animation-duration:.01s;opacity:0}
+    .fx-wash{animation-duration:1.2s}
+  }
+
+  /* ============================================================
+     PREMIUM DARK SET
+     Built as a backdrop for vibrant effects. Shared rules:
+     - never pure black (#000 smears on OLED and over-contrasts);
+       the base sits around 4-6% luminance instead
+     - the feed is one step lighter than the viewport, so the chat
+       reads as a raised surface rather than a flat void
+     - surfaces stay desaturated, which is what lets neon hearts,
+       golden sunrises and confetti read as genuinely bright
+     - body text is off-white (never #fff) to cut retinal glare
+     ============================================================ */
+
+  /* OBSIDIAN - neutral graphite. The most colour-neutral base, so every
+     effect hue lands true and nothing is tinted by the backdrop. */
+  html[data-theme="obsidian"]{
+    --ink:#0a0c10; --ink-2:#0e1116;
+    --surface:#12161d; --surface-2:#171c25; --raised:#1f2531;
+    --hair:#232a36; --hair-soft:#1a202a;
+    --text:#e4e9f2; --muted:#9aa6b8; --dim:#7d8a9c; --caboose:#5d6979;
+    --teal:#5b8cff; --teal-2:#8fb0ff; --teal-deep:#7ba3ff;
+    --gold:#f0c064; --violet:#a98bff; --red:#ff6b7d;
+    --accent-rgb:91,140,255; --shade-rgb:0,0,0; --violet-rgb:169,139,255;
+    --bubble-you:#171c25;
+    --me-a:#33477a; --me-b:#22314f; --me-text:#eaf0ff; --me-time:rgba(234,240,255,.72);
+    --btn-a:#5b8cff; --btn-b:#3c6ae0; --on-accent:#06101f;
+    --tick-seen:#8ae0ff; --tick-seen-rgb:138,224,255;
+    color-scheme:dark;
+  }
+
+  /* MIDNIGHT PLUM - a violet-black that flatters gold and pink effects. */
+  html[data-theme="plum"]{
+    --ink:#0b0810; --ink-2:#100c17;
+    --surface:#15101e; --surface-2:#1b1526; --raised:#241c33;
+    --hair:#2c2340; --hair-soft:#1f1830;
+    --text:#ece5f7; --muted:#a99cc2; --dim:#8d80a8; --caboose:#6b6083;
+    --teal:#b98cff; --teal-2:#d3b6ff; --teal-deep:#c9a6ff;
+    --gold:#f5c96b; --violet:#ff8fd0; --red:#ff6f8f;
+    --accent-rgb:185,140,255; --shade-rgb:0,0,0; --violet-rgb:255,143,208;
+    --bubble-you:#1b1526;
+    --me-a:#553a86; --me-b:#3a2660; --me-text:#f4ecff; --me-time:rgba(244,236,255,.74);
+    --btn-a:#b98cff; --btn-b:#8f5fe0; --on-accent:#160a26;
+    --tick-seen:#ffd479; --tick-seen-rgb:255,212,121;
+    color-scheme:dark;
+  }
+
+  /* ABYSS - deep ocean teal-navy. Warm effects (sunrise, fire, confetti)
+     sit against a cool base, which is the strongest contrast pairing. */
+  html[data-theme="abyss"]{
+    --ink:#060d12; --ink-2:#0a131a;
+    --surface:#0e1a23; --surface-2:#13212c; --raised:#1a2c3a;
+    --hair:#1f3543; --hair-soft:#152532;
+    --text:#dfeaf2; --muted:#93aabb; --dim:#7893a6; --caboose:#5a7386;
+    --teal:#3fd0c9; --teal-2:#7fe5e0; --teal-deep:#5adbd5;
+    --gold:#ffcf7a; --violet:#8fb8ff; --red:#ff7b8a;
+    --accent-rgb:63,208,201; --shade-rgb:0,0,0; --violet-rgb:143,184,255;
+    --bubble-you:#13212c;
+    --me-a:#1c5f66; --me-b:#12414a; --me-text:#e9fbfa; --me-time:rgba(233,251,250,.74);
+    --btn-a:#3fd0c9; --btn-b:#1f9aa0; --on-accent:#04211f;
+    --tick-seen:#ffd479; --tick-seen-rgb:255,212,121;
+    color-scheme:dark;
+  }
+
+  /* CARBON NEON - near-black carbon with an electric edge. Built for the
+     neon effects: the darkest base here, so bright particles blaze. */
+  html[data-theme="carbon"]{
+    --ink:#07080b; --ink-2:#0b0d11;
+    --surface:#101317; --surface-2:#151920; --raised:#1c222b;
+    --hair:#222a34; --hair-soft:#181e26;
+    --text:#e7ecf3; --muted:#96a2b2; --dim:#7a8797; --caboose:#5a6675;
+    --teal:#22e0d0; --teal-2:#79f2e8; --teal-deep:#4ce8db;
+    --gold:#ffd166; --violet:#ff5fa8; --red:#ff5470;
+    --accent-rgb:34,224,208; --shade-rgb:0,0,0; --violet-rgb:255,95,168;
+    --bubble-you:#151920;
+    --me-a:#134f56; --me-b:#0c353c; --me-text:#e6fffb; --me-time:rgba(230,255,251,.74);
+    --btn-a:#22e0d0; --btn-b:#12a89c; --on-accent:#03211f;
+    --tick-seen:#ff8fc4; --tick-seen-rgb:255,143,196;
+    color-scheme:dark;
+  }
   body{overscroll-behavior:none}
   body.callmini .wrap{padding-top:56px}
 
@@ -456,7 +665,7 @@
   .msg.tight{padding-bottom:4px}
   /* the tick alone is tiny; give it just enough corner room so the last word of
      a short line clears it, but no more - this is what kills the big empty gap */
-  .msg.tight .tick{font-size:10px;line-height:1;opacity:.9}
+  .msg.tight .tick{font-size:10.5px;line-height:1}
   /* a very short bubble ("hi") has no trailing room for a revealed time, so when
      the time is showing we guarantee a little extra width and drop the clock a
      hair further into the corner - it sits just outside the word, not on top of it */
@@ -574,6 +783,43 @@
   @keyframes launch{35%{transform:translate(3px,-3px) scale(1.06)}100%{transform:none}}
   .send:disabled{opacity:.45;cursor:default;box-shadow:none;filter:saturate(.5)}
   .send svg{width:19px;height:19px}
+  /* the action button holds both icons and crossfades between them */
+  .send{position:relative}
+  .send .ic{position:absolute;inset:0;display:grid;place-items:center;
+            transition:opacity .16s ease,transform .2s cubic-bezier(.2,.8,.3,1)}
+  .send .ic-send{opacity:1;transform:none}
+  .send .ic-mic{opacity:0;transform:scale(.6) rotate(-25deg)}
+  .send.mic .ic-send{opacity:0;transform:scale(.6) rotate(25deg)}
+  .send.mic .ic-mic{opacity:1;transform:none}
+  .send.mic{background:var(--surface-2);border:1px solid var(--hair);color:var(--muted);box-shadow:none}
+  .send.mic:disabled{opacity:.45}
+  .send.recording{background:linear-gradient(180deg,#ff6b6b,#e0342f);color:#fff;border-color:#e0342f}
+
+  /* voice recording bar - replaces the composer while a note is being taken */
+  .recbar{display:none;align-items:center;gap:10px;margin-top:9px;
+          background:var(--surface);border:1px solid var(--hair);border-radius:22px;padding:7px 10px}
+  body.recording .recbar{display:flex}
+  body.recording .cpill{opacity:.4;pointer-events:none}
+  .rec-dot{width:9px;height:9px;border-radius:50%;background:#ff4d4d;flex:none;animation:recPulse 1s infinite}
+  @keyframes recPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.35;transform:scale(.82)}}
+  .rec-time{font-family:var(--mono);font-size:12.5px;color:var(--text);flex:none;min-width:38px}
+  .rec-wave{display:flex;align-items:center;gap:3px;flex:1;height:22px;overflow:hidden}
+  .rec-wave i{flex:1;max-width:5px;background:var(--teal);border-radius:3px;height:22%;
+              animation:recWave 1.1s ease-in-out infinite}
+  .rec-wave i:nth-child(2){animation-delay:.12s}
+  .rec-wave i:nth-child(3){animation-delay:.24s}
+  .rec-wave i:nth-child(4){animation-delay:.36s}
+  .rec-wave i:nth-child(5){animation-delay:.48s}
+  .rec-wave i:nth-child(6){animation-delay:.6s}
+  .rec-wave i:nth-child(7){animation-delay:.72s}
+  @keyframes recWave{0%,100%{height:22%}50%{height:96%}}
+  .rec-x,.rec-send{background:none;border:none;flex:none;display:grid;place-items:center;
+                   width:36px;height:36px;border-radius:50%;transition:.14s}
+  .rec-x{color:var(--red)} .rec-x:hover{background:rgba(255,90,90,.12)}
+  .rec-send{color:var(--on-accent);background:linear-gradient(180deg,var(--btn-a),var(--btn-b))}
+  .rec-send:active{transform:scale(.94)}
+  .rec-x svg,.rec-send svg{width:18px;height:18px}
+  @media (prefers-reduced-motion:reduce){ .rec-wave i,.rec-dot{animation:none} }
 
   .replybar{display:none;align-items:center;gap:11px;padding:9px 13px;margin-bottom:9px;background:var(--surface);border:1px solid var(--hair-soft);border-left:2px solid var(--teal);border-radius:12px}
   .replybar.show{display:flex;animation:pop .18s ease-out}
@@ -614,7 +860,7 @@
   }
 
   /* ---------- gif picker ---------- */
-  .gifpanel{display:none;flex-direction:column;gap:9px;background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:10px;margin-bottom:9px}
+  .gifpanel{display:none;flex-direction:column;gap:9px;background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:10px;margin-top:9px}
   .gifpanel.show{display:flex;animation:pop .18s ease-out}
   .gp-head{display:flex;gap:8px;align-items:center}
   .gp-head input{flex:1;background:var(--ink-2);border:1px solid var(--hair);color:var(--text);border-radius:11px;padding:10px 12px;font-size:14px;outline:none;transition:border-color .16s,box-shadow .16s}
@@ -639,7 +885,7 @@
   .gp-tags button:hover{color:var(--teal);border-color:var(--teal-deep)}
 
   /* emoji picker - desktop browsers have no keyboard emoji key, so we ship one */
-  .emopanel{display:none;flex-direction:column;gap:9px;background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:10px;margin-bottom:9px}
+  .emopanel{display:none;flex-direction:column;gap:9px;background:var(--surface);border:1px solid var(--hair);border-radius:14px;padding:10px;margin-top:9px}
   .emopanel.show{display:flex;animation:pop .18s ease-out}
   .ep-head{display:flex;gap:8px;align-items:center}
   .ep-head input{flex:1;background:var(--ink-2);border:1px solid var(--hair);color:var(--text);border-radius:11px;padding:10px 12px;font-size:14px;outline:none;transition:border-color .16s,box-shadow .16s}
@@ -728,8 +974,12 @@
   .replybar.edit{border-left-color:var(--gold)}
   .replybar.edit .rb-name{color:var(--gold)}
 
-  .tick{font-family:var(--mono);font-size:10px;color:#c99a86;letter-spacing:-.14em;line-height:1;flex:none}
-  .tick.seen{color:var(--teal);text-shadow:0 0 7px rgba(var(--accent-rgb),.55)}
+  .tick{font-family:var(--mono);font-size:10.5px;color:var(--me-time);letter-spacing:-.14em;line-height:1;flex:none;
+        opacity:.85;transition:color .18s,opacity .18s}
+  /* read receipt: a deliberately different hue from the bubble so the second
+     tick is unmistakable at a glance */
+  .tick.seen{color:var(--tick-seen);opacity:1;font-weight:700;
+             text-shadow:0 0 6px rgba(var(--tick-seen-rgb),.5)}
 
   /* ---------- transient connection / status note ----------
      Connection chatter ("reconnecting", "restored 412 messages") is not part
@@ -990,6 +1240,40 @@
       <button class="rb-x" id="ebX" title="Cancel edit">&times;</button>
     </div>
 
+
+
+    <div class="composer" id="composer">
+      <input type="file" id="file" hidden>
+      <input type="file" id="gifFile" accept="image/gif,image/webp,image/*" hidden>
+
+      <div class="cpill">
+        <button class="cbtn" id="emojiBtn" title="Emoji" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14.5s1.4 2 4 2 4-2 4-2"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
+        </button>
+
+        <textarea id="input" rows="1" placeholder="Write a message" disabled></textarea>
+
+        <button class="cbtn gif" id="gifBtn" title="Send a GIF" disabled>GIF</button>
+
+        <button class="cbtn" id="attachBtn" title="Attach image or file" disabled>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.5 21a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8.5-8.5"/></svg>
+        </button>
+      </div>
+
+      <button class="send mic" id="sendBtn" title="Hold a thought \u00b7 or record a voice note" disabled>
+        <span class="ic ic-send"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></span>
+        <span class="ic ic-mic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0"/><path d="M12 18v4"/></svg></span>
+      </button>
+    </div>
+
+    <div class="recbar" id="recbar">
+      <button class="rec-x" id="recCancel" title="Discard"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 14h10l1-14"/></svg></button>
+      <span class="rec-dot"></span>
+      <span class="rec-time" id="recTime">0:00</span>
+      <span class="rec-wave" id="recWave"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
+      <button class="rec-send" id="recSend" title="Send voice note"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg></button>
+    </div>
+
     <div class="emopanel" id="emopanel">
       <div class="ep-head">
         <input id="emoQ" type="text" placeholder="Search emoji" autocomplete="off" maxlength="40">
@@ -1012,29 +1296,6 @@
         <button class="gp-key" id="gifKeyBtn">own key</button>
         <button class="gp-local" id="gifLocal">From my device</button>
       </div>
-    </div>
-
-    <div class="composer" id="composer">
-      <input type="file" id="file" hidden>
-      <input type="file" id="gifFile" accept="image/gif,image/webp,image/*" hidden>
-
-      <div class="cpill">
-        <button class="cbtn" id="emojiBtn" title="Emoji" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 14.5s1.4 2 4 2 4-2 4-2"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
-        </button>
-
-        <textarea id="input" rows="1" placeholder="Write a message" disabled></textarea>
-
-        <button class="cbtn gif" id="gifBtn" title="Send a GIF" disabled>GIF</button>
-
-        <button class="cbtn" id="attachBtn" title="Attach image or file" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.5 21a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8.5-8.5"/></svg>
-        </button>
-      </div>
-
-      <button class="send" id="sendBtn" disabled>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4 20-7z"/></svg>
-      </button>
     </div>
   </section>
 
@@ -1539,6 +1800,7 @@ async function loadHistory(){
   const keep=recs.slice(-HIST_KEEP);
   keep.forEach(r=>{ hist.set(r.id,r); knownIds.add(r.id); renderRecord(r); });
   if(keep.length){ flash("Restored "+keep.length+" earlier message"+(keep.length>1?"s":"")); scrollDown(); }
+  restorePendingMedia();          // anything that never reached them, ready to retry
 }
 function bodyFromRec(rec){
   if(rec.kind==="text"){ const n=document.createElement("div"); n.innerHTML=textHTML(rec.text||""); return n; }
@@ -2026,7 +2288,7 @@ async function onPacket(t,payload){
   else if(m.t==="recv"){ (m.ids||[]).forEach(id=>{
       bumpStatus(id,"delivered"); clearMine(id);
       const job=pendingMedia.get(id);
-      if(job){ mediaStatus(job,""); pendingMedia.delete(id); }   // confirmed received
+      if(job){ mediaStatus(job,""); pendingDrop(id); }           // confirmed received
     }); }
   else if(m.t==="seen"){ (m.ids||[]).forEach(id=>{ bumpStatus(id,"seen"); clearMine(id); }); }
   else if(m.t==="syncq"){ answerSync(m); }
@@ -2063,6 +2325,14 @@ function heartbeat(){
   presenceStarted=true;
   setInterval(()=>{ if(anyLink()) publish({t:"ping",from:me.id,name:me.name}); },slowNet()?7000:5000);
   setInterval(sweep,2000);
+  /* Say hello periodically. If a heartbeat is missed while the link is busy the
+     other side used to write us off until the next reconnect; this brings the
+     presence back within seconds instead. */
+  setInterval(()=>{ if(anyLink()) heartbeat(); },12000);
+  /* and whenever the app comes back to the foreground */
+  document.addEventListener("visibilitychange",()=>{
+    if(!document.hidden&&anyLink()){ heartbeat(); setTimeout(flushPendingMedia,1200); }
+  });
 }
 function seen(id,name){
   if(!id) return;
@@ -2073,6 +2343,7 @@ function seen(id,name){
     const who=name||"Peer";
     toast(who+" is online");
     notifyMe(who+" is online","Your line is live \u00b7 tap to open");
+    noteLastSeen(id,name,Date.now(),true);     // record the visit itself
     /* they just arrived: hand them our photo and push anything still unsent */
     setTimeout(broadcastAvatar,400);
     setTimeout(flushPendingMedia,900);
@@ -2088,7 +2359,7 @@ function sweep(){
      "last seen just now" forever after someone left */
   for(const[id,p]of peers){ if(now-p.lastSeen>PEER_TTL){ noteLastSeen(id,p.name,p.lastSeen); peers.delete(id); changed=true; } }
   /* even with nobody here, refresh every ~20s so "last seen 2 mins ago" keeps ticking */
-  if(changed || (peers.size===0 && now-lastPresenceTick>20000)){ lastPresenceTick=now; refreshPresence(); }
+  if(changed || (peers.size===0 && now-lastPresenceTick>5000)){ lastPresenceTick=now; refreshPresence(); }
 }
 /* the moment a peer was last heard from, kept past their departure so the header
    can show a "last seen" line instead of falling silent */
@@ -2103,14 +2374,22 @@ function lastSeenSave(){
     idbPut({k:topic+"|__lastseen",topic,ts:0,ls:obj});
   }catch(e){}
 }
-function noteLastSeen(id,name,at){
+let lastSeenDirty=false;
+function noteLastSeen(id,name,at,isVisit){
   if(!id) return;
   const prev=lastSeenMap.get(id)||{};
-  const when=at||Date.now();
-  /* never move the stamp backwards */
-  lastSeenMap.set(id,{name:name||prev.name||"Peer",at:Math.max(when,prev.at||0)});
-  lastSeenSave();
+  const now=Date.now();
+  let when=at||now;
+  if(when>now+60000) when=now;            // ignore a peer with a skewed clock
+  /* A fresh visit always wins. Otherwise keep the latest stamp we have, so a
+     stale value restored from storage can never pin the header to an old time. */
+  const at2=isVisit?when:Math.max(when,prev.at||0);
+  lastSeenMap.set(id,{name:name||prev.name||"Peer",at:at2});
+  lastSeenDirty=true;
 }
+/* batched write: this fires on every packet, so it must not hammer storage */
+setInterval(()=>{ if(lastSeenDirty){ lastSeenDirty=false; lastSeenSave(); } },4000);
+addEventListener("pagehide",()=>{ if(lastSeenDirty) lastSeenSave(); });
 /* "just now" for the first minute, then the actual clock time - and the date
    too once it is no longer today, so "last seen 2:34 pm" is unambiguous. */
 function seenStamp(ms){
@@ -2461,6 +2740,7 @@ async function sendMsg(){
   if(editing) return commitEdit();
   const box=$("input"); const text=box.value.trim();
   if(!text) return;
+  try{ ScreenFX.checkMessageForEffects(text); }catch(e){}   /* [ScreenFX] outgoing */
   /* quick launch nudge on the send button so the tap feels like it did something */
   try{ const sb=$("sendBtn"); sb.classList.remove("fired"); void sb.offsetWidth; sb.classList.add("fired");
        setTimeout(()=>sb.classList.remove("fired"),360); }catch(e){}
@@ -2479,6 +2759,7 @@ async function sendMsg(){
   ensureMailbox(id);
 }
 function recvText(m){
+  try{ ScreenFX.checkMessageForEffects(m&&m.text); }catch(e){}   /* [ScreenFX] incoming */
   const id=m.id||uid();
   const ts=m.ts||Date.now();
   const node=document.createElement("div");node.innerHTML=textHTML(m.text||"");
@@ -2915,6 +3196,33 @@ async function prepImage(file){
    transfer died mid-flight) still reaches the other side instead of sitting
    there forever looking sent. */
 const pendingMedia=new Map();     // id -> {kind,mime,filename,w,h,dur,bytes,ts,reply}
+/* The queue used to live only in memory, so composing a photo offline and then
+   closing the app lost it for good - the bubble said "sent" but nothing was ever
+   transmitted. We remember which ids are still unconfirmed; the bytes are already
+   in the encrypted history, so the job can be rebuilt on the next launch. */
+const PM_KEY="sl.pendingmedia";
+function pendingSave(){
+  try{ localStorage.setItem(PM_KEY,JSON.stringify([...pendingMedia.keys()].slice(-40))); }catch(e){}
+}
+function pendingDrop(id){ pendingMedia.delete(id); pendingSave(); }
+function restorePendingMedia(){
+  let ids=[]; try{ ids=JSON.parse(localStorage.getItem(PM_KEY)||"[]"); }catch(e){}
+  let back=0;
+  ids.forEach(id=>{
+    if(pendingMedia.has(id)) return;
+    const r=hist.get(id);
+    if(!r||!r.media||!r.media.b64) return;               // history trimmed it away
+    const el=msgEls.get(id);
+    const bodyEl=el?el.querySelector(".body"):null;
+    pendingMedia.set(id,{id,kind:r.kind,mime:r.media.mime,filename:r.media.filename,
+      w:r.media.w,h:r.media.h,dur:r.media.dur||0,bytes:b64ToBytes(r.media.b64),
+      ts:r.ts,reply:r.reply,bodyEl,tries:0,sentAt:0});
+    mediaStatus(pendingMedia.get(id),"Queued \u00b7 not delivered yet");
+    back++;
+  });
+  pendingSave();
+  if(back) setTimeout(flushPendingMedia,1500);
+}
 
 async function shipMedia({kind,mime,bytes,filename,w,h,dur}){
   const id=uid();
@@ -2929,6 +3237,7 @@ async function shipMedia({kind,mime,bytes,filename,w,h,dur}){
   clearReply();
 
   pendingMedia.set(id,{id,kind,mime,filename,w,h,dur:dur||0,bytes,ts,reply,bodyEl,tries:0,sentAt:0});
+  pendingSave();
   if(!anyLink()){
     mediaStatus(pendingMedia.get(id),"Queued \u00b7 sends when you are back online");
     toast("Offline \u00b7 it will send when you reconnect");
@@ -3290,7 +3599,77 @@ function onTyping(){
   if(now-lastTypingSent>1400){ lastTypingSent=now; publish({t:"typing",from:me.id,name:me.name}); }
 }
 function autosize(){const t=$("input");t.style.height="auto";t.style.height=Math.min(t.scrollHeight,112)+"px";}
-function toggleSend(){ $("sendBtn").disabled=$("input").value.trim().length===0; }
+/* The action button is a mic while the box is empty and a send arrow the
+   moment there is text, swapping with a short crossfade. */
+function toggleSend(){
+  const has=$("input").value.trim().length>0;
+  const b=$("sendBtn");
+  b.classList.toggle("mic",!has);
+  b.disabled=!composerLive||recording;          // usable as a mic even with no text
+  b.title=has?"Send message":"Record a voice note";
+}
+
+/* ---------------- voice notes ---------------- */
+let composerLive=false;        // set once the room is joined
+let recorder=null,recChunks=[],recording=false,recStart=0,recTimer=null,recStream=null;
+function recFmt(ms){ const s=Math.floor(ms/1000); return Math.floor(s/60)+":"+String(s%60).padStart(2,"0"); }
+function recTick(){ if(recording) $("recTime").textContent=recFmt(Date.now()-recStart); }
+
+async function startRecording(){
+  if(recording) return;
+  if(!navigator.mediaDevices||!window.MediaRecorder){ toast("Voice notes need a newer browser"); return; }
+  try{
+    recStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:true,autoGainControl:true}});
+  }catch(e){ toast("Microphone permission is needed"); return; }
+  /* opus at a low bitrate keeps a note tiny, so it lands in a single chunk
+     and arrives almost instantly */
+  let opts={audioBitsPerSecond:24000};
+  const types=["audio/webm;codecs=opus","audio/webm","audio/mp4","audio/ogg;codecs=opus"];
+  for(const t of types){ if(MediaRecorder.isTypeSupported&&MediaRecorder.isTypeSupported(t)){ opts.mimeType=t; break; } }
+  try{ recorder=new MediaRecorder(recStream,opts); }catch(e){ try{ recorder=new MediaRecorder(recStream); }catch(_){ toast("Cannot record here"); return; } }
+  recChunks=[];
+  recorder.ondataavailable=e=>{ if(e.data&&e.data.size) recChunks.push(e.data); };
+  recorder.start(250);
+  recording=true; recStart=Date.now();
+  document.body.classList.add("recording");
+  $("sendBtn").classList.add("recording");
+  $("recTime").textContent="0:00";
+  recTimer=setInterval(recTick,250);
+  try{ navigator.vibrate&&navigator.vibrate(12); }catch(e){}
+  toggleSend();
+}
+
+function endRecording(send){
+  if(!recording) return;
+  const dur=Math.round((Date.now()-recStart)/1000);
+  recording=false;
+  clearInterval(recTimer); recTimer=null;
+  document.body.classList.remove("recording");
+  $("sendBtn").classList.remove("recording");
+  const finish=async()=>{
+    try{ recStream&&recStream.getTracks().forEach(t=>t.stop()); }catch(e){}
+    recStream=null;
+    if(!send||!recChunks.length){ recChunks=[]; toggleSend(); return; }
+    if(dur<1){ recChunks=[]; toast("Too short"); toggleSend(); return; }
+    const type=(recorder&&recorder.mimeType)||"audio/webm";
+    const blob=new Blob(recChunks,{type});
+    recChunks=[];
+    const bytes=new Uint8Array(await blob.arrayBuffer());
+    toggleSend();
+    /* rides the existing media pipeline: chunked, queued and retried */
+    shipMedia({kind:"voice",mime:type,bytes,filename:"voice-note",dur});
+  };
+  try{
+    if(recorder&&recorder.state!=="inactive"){ recorder.onstop=finish; recorder.stop(); }
+    else finish();
+  }catch(e){ finish(); }
+}
+
+function actionButton(){
+  if(recording){ endRecording(true); return; }        // tapping while recording sends it
+  if($("input").value.trim().length>0) return sendMsg();
+  startRecording();
+}
 
 /* ---------- email notify ---------- */
 function inviteLink(room,secret){
@@ -3843,6 +4222,496 @@ async function flipCam(){
   }catch(e){ toast("Could not switch camera"); }
 }
 
+
+/* ================================================================
+   SCREEN EFFECTS ANIMATION TRIGGER ENGINE                v1.0
+   ----------------------------------------------------------------
+   A self-contained add-on. It reads message text, matches it against
+   a trigger dictionary, and plays a full-screen animation.
+
+   It does NOT touch messaging state, storage, transport or any
+   existing component. The only contact points with the host app are
+   two one-line calls (see INJECTION POINTS at the bottom of this
+   block), and it fails silently if it is ever removed.
+
+   Public surface:
+     ScreenFX.checkMessageForEffects(text) -> matched key | null
+     ScreenFX.play(key)                    -> force an effect
+     ScreenFX.stop()                       -> clear immediately
+     ScreenFX.getActiveEffect()            -> key | null
+   ================================================================ */
+const ScreenFX=(function(){
+  "use strict";
+
+  const DURATION=4000;            // self-destruct window, per spec
+  const MAX_DPR=2;                // cap retina cost on phones
+
+  /* ---------------------------------------------------------------
+     1. TRIGGER DICTIONARY
+     `phrases` are matched case-insensitively anywhere in the string.
+     Short/ambiguous words carry `strict:true`, which requires a word
+     boundary so "mad" does not fire inside "made" or "nomad".
+     Emoji are matched as plain substrings, with variation selectors
+     normalised away so ❤ and ❤️ both hit.
+     --------------------------------------------------------------- */
+  const DICTIONARY=[
+    { key:"confetti", phrases:["happy birthday","happybirthday","hbd","many happy returns"],
+      emojis:["🎉","🥳","🎊","🎂"] },
+    { key:"applause", phrases:["congratulations","congrats","congratz","well done","good job","nailed it"],
+      emojis:["👏","🙌"] },
+    /* the proposal scene is a big moment - it should only fire for the words,
+       never for a lone heart emoji */
+    { key:"hearts",   phrases:["i love you","love you","love u","luv you","luv u"],
+      emojis:[] },
+    { key:"sunrise",  phrases:["rise and shine","good morning","gud morning","morning!"],
+      emojis:["☀","🌅","🌞","🌄"] },
+    { key:"moonrise", phrases:["good night","goodnight","gud night","nighty night","sweet dreams","sleep well"],
+      strictPhrases:["gn"], emojis:["🌙","🌜","🌛","🌃","😴","💤"] },
+    { key:"laughing", phrases:["haha","hehe","lol","lmao","rofl"],
+      emojis:["😂","🤣"] },
+    /* "wow" and "oh no" are opposite feelings, so they get their own effects
+       rather than one shared burst - same for anger versus fire. */
+    { key:"surprise", phrases:["wow","whoa","omg","oh my god","no way"],
+      emojis:["😮","😯","😲","🤯"] },
+    { key:"crying",   phrases:["oh no","ohno","so sad","heartbroken"],
+      emojis:["😢","😭","💧","🥺","😥"] },
+    { key:"fury",     phrases:["angry","furious","so mad"], strictPhrases:["mad"],
+      emojis:["😠","😡","🤬"] },
+    { key:"fire",     phrases:["on fire","lit up"],
+      emojis:["🔥"] }
+  ];
+
+  /* strip emoji variation selectors + skin tones so comparisons are stable */
+  const stripVS=t=>t.replace(/[\uFE0E\uFE0F\u200D]/g,"").replace(/[\u{1F3FB}-\u{1F3FF}]/gu,"");
+  const escapeRe=t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
+
+  /* Special-cased name trigger. A regex handles the repeated-i variants
+     (nandini, nandiniiii, Nandiiiniii...) that a fixed phrase list cannot. */
+  const NAME_RE=/n\s*a\s*n\s*d\s*i+\s*n\s*i+/i;
+
+  function detect(input){
+    if(typeof input!=="string") return null;
+    const raw=input.trim();
+    if(!raw) return null;
+    const text=raw.toLowerCase();
+    const bare=stripVS(raw);
+    if(NAME_RE.test(text)) return "angelic";
+
+    for(const entry of DICTIONARY){
+      // emoji anywhere in the message
+      for(const e of (entry.emojis||[])){
+        if(bare.indexOf(stripVS(e))!==-1) return entry.key;
+      }
+      // free phrases: substring, case-insensitive
+      for(const p of (entry.phrases||[])){
+        if(text.indexOf(p.toLowerCase())!==-1) return entry.key;
+      }
+      // ambiguous words: require a word boundary
+      for(const p of (entry.strictPhrases||[])){
+        if(new RegExp("\\b"+escapeRe(p.toLowerCase())+"\\b").test(text)) return entry.key;
+      }
+    }
+    return null;
+  }
+
+  /* ---------------------------------------------------------------
+     3. OVERLAY (built lazily, never present until first use)
+     --------------------------------------------------------------- */
+  let root=null,canvas=null,ctx=null,wash=null,sun=null;
+  let W=0,H=0,dpr=1;
+
+  function build(){
+    if(root) return;
+    root=document.createElement("div");
+    root.id="fxOverlay";
+    root.setAttribute("aria-hidden","true");     // decorative only
+    canvas=document.createElement("canvas");
+    canvas.id="fxCanvas";
+    wash=document.createElement("div");
+    wash.className="fx-wash";
+    root.appendChild(wash);
+    root.appendChild(canvas);
+    document.body.appendChild(root);
+    ctx=canvas.getContext("2d");
+    resize();
+    addEventListener("resize",resize,{passive:true});
+  }
+  function resize(){
+    if(!canvas) return;
+    dpr=Math.min(devicePixelRatio||1,MAX_DPR);
+    W=innerWidth; H=innerHeight;
+    canvas.width=Math.floor(W*dpr); canvas.height=Math.floor(H*dpr);
+    if(ctx) ctx.setTransform(dpr,0,0,dpr,0,0);
+  }
+
+  /* ---------------------------------------------------------------
+     PARTICLE SYSTEM - one rAF loop, only alive while an effect runs
+     --------------------------------------------------------------- */
+  let particles=[],raf=0,startedAt=0,activeEffect=null,timer=null;
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  const pick=a=>a[(Math.random()*a.length)|0];
+  const CONFETTI_COLORS=["#ff5c8a","#ffd166","#5ad2ff","#8ef0a8","#c08bff","#ff8a4c"];
+
+  function makeParticles(key){
+    const P=[];
+    const n=v=>Math.round(v*(W<420?0.72:1));      // fewer pieces on a phone
+
+    if(key==="confetti"){
+      for(let i=0;i<n(84);i++) P.push({
+        x:rnd(0,W), y:rnd(-H*0.5,-10), vx:rnd(-45,45), vy:rnd(150,320),
+        rot:rnd(0,6.28), vr:rnd(-7,7), w:rnd(6,11), h:rnd(9,16),
+        color:pick(CONFETTI_COLORS), kind:"rect", delay:rnd(0,.5)
+      });
+      for(let i=0;i<n(14);i++) P.push({
+        x:rnd(0,W), y:rnd(-H*0.4,-10), vx:rnd(-35,35), vy:rnd(140,250),
+        rot:rnd(0,6.28), vr:rnd(-4,4), size:rnd(20,30),
+        glyph:pick(["🎉","🥳","🎊"]), kind:"glyph", delay:rnd(0,.6)
+      });
+    }
+    /* mild, unhurried hearts - the stick-figure scene is the main event now,
+       so these drift gently around it instead of filling the screen */
+    else if(key==="hearts"){
+      for(let i=0;i<n(16);i++) P.push({
+        x:rnd(W*0.06,W*0.94), y:H+rnd(10,150), vx:0, vy:rnd(-96,-58),
+        sway:rnd(10,30), swaySpeed:rnd(1.1,2.2), phase:rnd(0,6.28),
+        size:rnd(14,26), glyph:pick(["❤️","💖","💘","💕"]), kind:"glyph",
+        rot:0, vr:0, delay:rnd(0,2.2), pulse:true, soft:true
+      });
+    }
+    else if(key==="applause"){
+      for(let i=0;i<n(26);i++) P.push({
+        x:rnd(W*0.05,W*0.95), y:rnd(H*0.55,H*0.95), vx:rnd(-24,24), vy:rnd(-95,-45),
+        size:rnd(22,38), glyph:pick(["👏","🙌"]), kind:"glyph",
+        rot:rnd(-.35,.35), vr:rnd(-1.6,1.6), delay:rnd(0,1.3), pop:true
+      });
+    }
+    else if(key==="laughing"){
+      for(let i=0;i<n(24);i++){
+        const fromLeft=Math.random()<.5;
+        P.push({
+          x:fromLeft?rnd(-40,W*0.3):rnd(W*0.7,W+40), y:H+rnd(10,120),
+          vx:fromLeft?rnd(18,64):rnd(-64,-18), vy:rnd(-165,-105),
+          size:rnd(24,44), glyph:pick(["😂","🤣"]), kind:"glyph",
+          rot:rnd(-.5,.5), vr:rnd(-3.2,3.2), delay:rnd(0,1.2), pulse:true
+        });
+      }
+    }
+    /* WOW - a shocked burst radiating out from the middle of the screen */
+    else if(key==="surprise"){
+      const cx=W/2, cy=H*0.42;
+      for(let i=0;i<n(22);i++){
+        const a=rnd(0,Math.PI*2), sp=rnd(150,430);
+        P.push({
+          x:cx+Math.cos(a)*18, y:cy+Math.sin(a)*18,
+          vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-40,
+          size:rnd(22,42), glyph:pick(["😮","😯","😲","🤯"]), kind:"glyph",
+          rot:0, vr:rnd(-1.2,1.2), delay:rnd(0,.35), pop:true
+        });
+      }
+    }
+    /* CRYING - slow teardrops running down the screen */
+    else if(key==="crying"){
+      for(let i=0;i<n(20);i++) P.push({
+        x:rnd(W*0.05,W*0.95), y:rnd(-H*0.3,-10), vx:rnd(-8,8), vy:rnd(95,180),
+        size:rnd(20,36), glyph:pick(["😢","😭","😥"]), kind:"glyph",
+        rot:0, vr:rnd(-.35,.35), delay:rnd(0,1.1)
+      });
+      for(let i=0;i<n(18);i++) P.push({
+        x:rnd(0,W), y:rnd(-H*0.35,-10), vx:rnd(-4,4), vy:rnd(200,330),
+        size:rnd(11,20), glyph:"💧", kind:"glyph",
+        rot:0, vr:0, delay:rnd(0,1.4)
+      });
+    }
+    /* ANGRY - faces jittering in place, no flames */
+    else if(key==="fury"){
+      for(let i=0;i<n(22);i++) P.push({
+        x:rnd(W*0.08,W*0.92), y:rnd(H*0.2,H*0.85), vx:rnd(-14,14), vy:rnd(-52,-14),
+        size:rnd(24,44), glyph:pick(["😠","😡","🤬"]), kind:"glyph",
+        rot:rnd(-.22,.22), vr:rnd(-1.1,1.1), delay:rnd(0,1), jitter:rnd(2.5,6)
+      });
+    }
+    /* FIRE - flames climbing the bottom edge, flickering */
+    else if(key==="fire"){
+      for(let i=0;i<n(38);i++) P.push({
+        x:rnd(0,W), y:H+rnd(6,110), vx:rnd(-26,26), vy:rnd(-260,-140),
+        size:rnd(16,44), glyph:"🔥", kind:"glyph",
+        rot:rnd(-.25,.25), vr:rnd(-1.2,1.2), delay:rnd(0,1.1), flicker:true,
+        sway:rnd(8,26), swaySpeed:rnd(3,6), phase:rnd(0,6.28)
+      });
+    }
+    /* ANGELIC - a halo of light: feathers drifting down through rising motes */
+    else if(key==="angelic"){
+      for(let i=0;i<n(30);i++) P.push({          // slow golden motes rising
+        x:rnd(0,W), y:H+rnd(10,200), vx:rnd(-10,10), vy:rnd(-84,-40),
+        sway:rnd(8,26), swaySpeed:rnd(.8,1.8), phase:rnd(0,6.28),
+        size:rnd(9,20), glyph:pick(["✨","🌟","💫"]), kind:"glyph",
+        rot:0, vr:rnd(-.4,.4), delay:rnd(0,2.2), pulse:true
+      });
+      for(let i=0;i<n(10);i++) P.push({          // feathers falling gently
+        x:rnd(0,W), y:rnd(-H*0.4,-20), vx:rnd(-16,16), vy:rnd(34,64),
+        sway:rnd(20,46), swaySpeed:rnd(1.1,2.1), phase:rnd(0,6.28),
+        size:rnd(18,30), glyph:pick(["🕊️","🪶"]), kind:"glyph",
+        rot:rnd(-.4,.4), vr:rnd(-.8,.8), delay:rnd(0,1.6)
+      });
+      for(let i=0;i<n(26);i++) P.push({          // fine dust catching the light
+        x:rnd(0,W), y:rnd(0,H), vx:rnd(-14,14), vy:rnd(-30,-8),
+        size:rnd(2,4.5), kind:"rect", w:rnd(2,3.6), h:rnd(2,3.6),
+        color:pick(["#fff6d5","#ffe9a8","#ffffff","#ffdf94"]),
+        rot:0, vr:0, delay:rnd(0,2.4), soft:true
+      });
+    }
+    /* GOOD NIGHT - stars twinkling while the moon climbs */
+    else if(key==="moonrise"){
+      for(let i=0;i<n(26);i++) P.push({
+        x:rnd(0,W), y:rnd(H*0.05,H*0.8), vx:rnd(-6,6), vy:rnd(-26,-6),
+        size:rnd(10,22), glyph:pick(["✨","⭐","🌟","💫"]), kind:"glyph",
+        rot:0, vr:rnd(-.5,.5), delay:rnd(0,1.8), pulse:true, phase:rnd(0,6.28)
+      });
+      for(let i=0;i<n(6);i++) P.push({
+        x:rnd(W*0.1,W*0.9), y:rnd(H*0.3,H*0.7), vx:rnd(-10,10), vy:rnd(-30,-12),
+        size:rnd(20,30), glyph:pick(["💤","😴"]), kind:"glyph",
+        rot:0, vr:rnd(-.3,.3), delay:rnd(.4,2), pulse:true, phase:rnd(0,6.28)
+      });
+    }
+    else if(key==="sunrise"){
+      for(let i=0;i<n(16);i++) P.push({
+        x:rnd(0,W), y:rnd(H*0.25,H*0.9), vx:rnd(-10,10), vy:rnd(-46,-18),
+        size:rnd(12,22), glyph:pick(["✨","☀️","🌟"]), kind:"glyph",
+        rot:0, vr:rnd(-.7,.7), delay:rnd(0,1.6), pulse:true
+      });
+    }
+    return P;
+  }
+
+  /* ---------------------------------------------------------------
+     STICK-FIGURE SCENE - drawn procedurally, no images, no library.
+     He walks up, kneels, offers the ring; she raises her arms.
+     --------------------------------------------------------------- */
+  let sceneInk="#ffffff";
+  const lerp=(a,b,u)=>a+(b-a)*u;
+  const sat=v=>v<0?0:v>1?1:v;
+
+  function limb(ax,ay,bx,by){ ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke(); }
+  function ring(x,y,r,fill){ ctx.beginPath(); ctx.arc(x,y,r,0,6.2832); fill?ctx.fill():ctx.stroke(); }
+
+  function drawProposal(t,alpha){
+    const S=Math.max(46,Math.min(74,W*0.17));       // figure unit, scales with screen
+    const baseY=Math.min(H*0.84,H-S*0.5);
+    const cx=W/2;
+    const walk=sat(t/0.7);                           // he approaches
+    const kneel=sat((t-0.75)/0.85);                  // then goes down on one knee
+    const reach=sat((t-1.5)/0.55);                   // offers the ring
+    const joy=sat((t-2.1)/0.5);                      // her arms go up
+    const out=t>3.25?1-sat((t-3.25)/0.75):1;         // gentle exit
+
+    const gx=lerp(cx-S*2.0,cx-S*0.95,walk);          // him
+    const wx=cx+S*0.85;                              // her
+
+    ctx.save();
+    ctx.globalAlpha=Math.max(0,Math.min(1,alpha*out));
+    ctx.strokeStyle=sceneInk; ctx.fillStyle=sceneInk;
+    ctx.lineWidth=Math.max(2,S*0.05); ctx.lineCap="round"; ctx.lineJoin="round";
+
+    /* ---- him: standing -> kneeling ---- */
+    const hipY=lerp(baseY-S*0.78,baseY-S*0.52,kneel);
+    const headR=S*0.145;
+    const headY=hipY-S*0.62;
+    ring(gx,headY,headR,false);                       // head
+    limb(gx,headY+headR,gx,hipY);                     // spine
+    // back leg folds to the ground as he kneels
+    const kneeX=lerp(gx-S*0.16,gx-S*0.30,kneel), kneeY=lerp(baseY-S*0.36,baseY,kneel);
+    limb(gx,hipY,kneeX,kneeY);
+    limb(kneeX,kneeY,lerp(gx-S*0.30,gx-S*0.62,kneel),baseY);
+    // front leg stays planted, knee up
+    const fkX=lerp(gx+S*0.16,gx+S*0.26,kneel), fkY=lerp(baseY-S*0.36,baseY-S*0.46,kneel);
+    limb(gx,hipY,fkX,fkY);
+    limb(fkX,fkY,gx+S*0.26,baseY);
+    // arm offering the ring
+    const shY=hipY-S*0.46;
+    const handX=lerp(gx+S*0.18,gx+S*0.66,reach), handY=lerp(shY+S*0.18,shY-S*0.04,reach);
+    limb(gx,shY,handX,handY);
+    if(reach>0.15){                                   // the ring itself
+      ctx.save();
+      ctx.globalAlpha=Math.max(0,Math.min(1,alpha*out*reach));
+      ctx.strokeStyle="#ffd469"; ctx.lineWidth=Math.max(1.6,S*0.035);
+      ring(handX+S*0.07,handY-S*0.02,S*0.075,false);
+      ctx.fillStyle="#fff3c4";
+      ring(handX+S*0.07,handY-S*0.10,S*0.028,true);   // the stone
+      ctx.restore();
+      ctx.strokeStyle=sceneInk; ctx.lineWidth=Math.max(2,S*0.05);
+    }
+
+    /* ---- her: skirt, arms lifting with joy ---- */
+    const wHipY=baseY-S*0.70, wHeadY=wHipY-S*0.62;
+    ring(wx,wHeadY,headR,false);
+    limb(wx,wHeadY+headR,wx,wHipY-S*0.18);
+    ctx.beginPath();                                  // skirt
+    ctx.moveTo(wx,wHipY-S*0.22);
+    ctx.lineTo(wx-S*0.30,wHipY+S*0.30);
+    ctx.lineTo(wx+S*0.30,wHipY+S*0.30);
+    ctx.closePath(); ctx.stroke();
+    limb(wx-S*0.16,wHipY+S*0.30,wx-S*0.18,baseY);     // legs
+    limb(wx+S*0.16,wHipY+S*0.30,wx+S*0.18,baseY);
+    const aShY=wHeadY+S*0.34;                         // arms rise as she reacts
+    const aY=lerp(aShY+S*0.30,aShY-S*0.34,joy);
+    limb(wx,aShY,wx-lerp(S*0.22,S*0.40,joy),aY);
+    limb(wx,aShY,wx+lerp(S*0.22,S*0.40,joy),aY);
+    // hair, so the two figures read differently at a glance
+    ctx.beginPath();
+    ctx.arc(wx,wHeadY,headR*1.18,Math.PI*0.15,Math.PI*0.85,false);
+    ctx.stroke();
+
+    /* ---- ground ---- */
+    ctx.globalAlpha=Math.max(0,Math.min(1,alpha*out*0.35));
+    limb(cx-S*2.2,baseY,cx+S*2.2,baseY);
+
+    /* ---- a couple of hearts between them once she reacts ---- */
+    if(joy>0){
+      ctx.globalAlpha=Math.max(0,Math.min(1,alpha*out*joy));
+      ctx.font=(S*0.34)+"px system-ui,'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
+      ctx.textAlign="center"; ctx.textBaseline="middle";
+      const midX=(gx+wx)/2;
+      for(let i=0;i<3;i++){
+        const u=sat(joy-i*0.18);
+        ctx.globalAlpha=Math.max(0,Math.min(1,alpha*out*u*(1-u*0.5)));
+        ctx.fillText("❤️",midX+(i-1)*S*0.34,headY-S*0.1-u*S*0.85);
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawScene(key,t,alpha){
+    if(key==="hearts") drawProposal(t,alpha);
+  }
+
+  function frame(now){
+    if(!activeEffect){ raf=0; return; }
+    const elapsed=(now-startedAt)/1000;
+    const life=elapsed/(DURATION/1000);
+    if(life>=1){ stop(); return; }
+
+    // global fade-out over the last quarter so nothing vanishes abruptly
+    const fade=life<.75?1:1-((life-.75)/.25);
+    ctx.clearRect(0,0,W,H);
+    drawScene(activeEffect,elapsed,fade);        // scene sits behind the particles
+
+    const dt=Math.min(0.05,(now-(frame._last||now))/1000);
+    frame._last=now;
+
+    for(let i=0;i<particles.length;i++){
+      const p=particles[i];
+      if(elapsed<p.delay) continue;
+      const t=elapsed-p.delay;
+
+      if(p.kind==="rect"&&!p.soft) p.vy+=520*dt;   // confetti falls; angelic dust floats
+      p.x+=p.vx*dt; p.y+=p.vy*dt; p.rot+=p.vr*dt;
+      if(p.sway) p.x+=Math.sin(t*p.swaySpeed+p.phase)*p.sway*dt;
+      const shakeX=p.jitter?Math.sin(t*34+p.x)*p.jitter:0;   // angry faces tremble
+
+      let alpha=fade;
+      if(p.pop)   alpha*=Math.max(0,1-t/1.5);      // clap bursts fade quickly
+      if(p.glyph&&!p.pop) alpha*=Math.max(0,1-t/3.2);
+      if(p.soft) alpha*=0.72;                       // gentler than the other bursts
+      if(p.flicker) alpha*=0.75+Math.sin(t*22+p.x)*0.25;
+      if(alpha<=0.01) continue;
+
+      let scale=1;
+      if(p.pop)   scale=Math.min(1,t/0.18);        // pop in
+      if(p.pulse) scale*=1+Math.sin(t*5+p.phase)*0.08;
+
+      ctx.save();
+      ctx.globalAlpha=Math.max(0,Math.min(1,alpha));
+      ctx.translate(p.x+shakeX,p.y);
+      if(p.rot) ctx.rotate(p.rot);
+      if(scale!==1) ctx.scale(scale,scale);
+      if(p.kind==="rect"){
+        ctx.fillStyle=p.color;
+        ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      }else{
+        ctx.font=p.size+"px system-ui,'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
+        ctx.textAlign="center"; ctx.textBaseline="middle";
+        ctx.fillText(p.glyph,0,0);
+      }
+      ctx.restore();
+    }
+    raf=requestAnimationFrame(frame);
+  }
+
+  /* ---------------------------------------------------------------
+     2. ENGINE - state + 4s self-destruct, restart-safe
+     --------------------------------------------------------------- */
+  function stop(){
+    if(timer){ clearTimeout(timer); timer=null; }
+    if(raf){ cancelAnimationFrame(raf); raf=0; }
+    frame._last=0;
+    particles.length=0;
+    activeEffect=null;
+    if(ctx) ctx.clearRect(0,0,W,H);
+    if(wash){ wash.className="fx-wash"; }
+    if(sun&&sun.parentNode){ sun.parentNode.removeChild(sun); sun=null; }
+  }
+
+  function play(key){
+    if(!key) return null;
+    build();
+    stop();                                   // a new trigger instantly replaces the old
+    resize();
+    activeEffect=key;
+    startedAt=performance.now();
+
+    // colour wash layer (restart the CSS animation by reflowing the class)
+    wash.className="fx-wash";
+    void wash.offsetWidth;
+    if(["sunrise","moonrise","fury","fire","surprise","crying","hearts","angelic"].indexOf(key)!==-1){
+      wash.className="fx-wash fx-"+key;
+    }
+    if(key==="angelic"){
+      const halo=document.createElement("div"); halo.className="fx-halo";
+      root.insertBefore(halo,canvas); sun=halo;      // reuse the disc slot for cleanup
+    }
+    if(key==="sunrise"||key==="moonrise"||key==="hearts"){
+      sun=document.createElement("div");
+      sun.className="fx-sun"+(key==="moonrise"?" fx-moon":key==="hearts"?" fx-heartsun":"");
+      root.insertBefore(sun,canvas);
+    }
+    /* line art picks up the theme's text colour so it reads on every palette */
+    try{
+      const cs=getComputedStyle(document.documentElement);
+      sceneInk=(cs.getPropertyValue("--text")||"#fff").trim()||"#fff";
+    }catch(e){ sceneInk="#fff"; }
+
+    const reduced=matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;
+    particles=reduced?[]:makeParticles(key);
+    if(!reduced) raf=requestAnimationFrame(frame);
+
+    timer=setTimeout(stop,DURATION);          // self-destruct, no leaks
+    return key;
+  }
+
+  function checkMessageForEffects(text){
+    let key=null;
+    try{ key=detect(text); }catch(e){ return null; }
+    if(!key) return null;
+    try{ play(key); }catch(e){}
+    return key;
+  }
+
+  // pause cleanly if the tab is backgrounded mid-effect
+  document.addEventListener("visibilitychange",()=>{ if(document.hidden) stop(); });
+
+  return {
+    checkMessageForEffects, play, stop, detect,
+    getActiveEffect:()=>activeEffect,
+    DICTIONARY
+  };
+})();
+
+/* ================================================================
+   INJECTION POINTS - the only two lines that touch the host app.
+   Both are wrapped in try/catch so the engine can be deleted whole
+   without leaving the messaging code broken.
+   ================================================================ */
+
 /* ---------- boot ---------- */
 async function start(){
   const name=$("name").value.trim()||"Anon";
@@ -3867,6 +4736,7 @@ async function start(){
   $("attachBtn").disabled=false;
   $("gifBtn").disabled=false;
   $("emojiBtn").disabled=false;
+  composerLive=true; toggleSend();      // mic becomes available immediately
   setState("unlocking\u2026",false,"warn");
 
   const derived=await deriveBoth(secret,room);
@@ -3986,6 +4856,10 @@ const THEMES=[
   {id:"ember",    name:"Ember",    note:"dark",    sw:["#151011","#ff9d8a","#271b1d"]},
   {id:"tide",     name:"Tide",     note:"dark",    sw:["#080d18","#4fe6cb","#172236"]},
   {id:"slate",    name:"Slate",    note:"dark",    sw:["#101317","#7aa2f7","#1f2530"]},
+  {id:"obsidian", name:"Obsidian", note:"premium", sw:["#0a0c10","#5b8cff","#171c25"]},
+  {id:"plum",     name:"Plum",     note:"premium", sw:["#0b0810","#b98cff","#1b1526"]},
+  {id:"abyss",    name:"Abyss",    note:"premium", sw:["#060d12","#3fd0c9","#13212c"]},
+  {id:"carbon",   name:"Carbon",   note:"premium", sw:["#07080b","#22e0d0","#151920"]},
   {id:"spider",   name:"Spider",   note:"hero",    sw:["#10121c","#e8434a","#232a3c"]},
   {id:"bat",      name:"Bat",      note:"hero",    sw:["#0c0c0f","#ffd633","#1e1e25"]},
   {id:"avenger",  name:"Assemble", note:"hero",    sw:["#0a0f1e","#e0a13a","#1c2742"]},
@@ -4097,7 +4971,9 @@ loadAvatar();                          // profile photo survives a re-login
 
 $("leave").addEventListener("click",leave);
 $("invite").addEventListener("click",copyInvite);
-$("sendBtn").addEventListener("click",sendMsg);
+$("sendBtn").addEventListener("click",actionButton);
+$("recSend").addEventListener("click",()=>endRecording(true));
+$("recCancel").addEventListener("click",()=>{ endRecording(false); toast("Voice note discarded"); });
 $("input").addEventListener("input",()=>{autosize();toggleSend();onTyping();});
 $("input").addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey){ e.preventDefault(); sendMsg(); } });
 ["room","secret","name"].forEach(id=>$(id).addEventListener("keydown",e=>{ if(e.key==="Enter") start(); }));
