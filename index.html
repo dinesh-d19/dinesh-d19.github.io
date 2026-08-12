@@ -139,119 +139,249 @@
 
 
   /* ============================================================
-     SCREEN EFFECTS ENGINE - presentation layer
-     Fully isolated: nothing here targets an existing selector.
-     The overlay never intercepts input (pointer-events:none), so
-     typing, tapping and scrolling continue while effects play.
+     SCREEN EFFECTS ENGINE v2 - presentation layer
+     Three stacked layers, all pointer-events:none:
+       .fxL-wash    full-screen colour/gradient washes
+       #fxCanvas    the physics particle field (screen-blended)
+       .fxL-dom     DOM pieces that need CSS filters (frost, shimmer)
      ============================================================ */
   #fxOverlay{
     position:fixed;inset:0;z-index:41;
     pointer-events:none;overflow:hidden;
-    contain:strict;                    /* isolate layout/paint from the app */
+    contain:strict;
   }
   #fxOverlay *{pointer-events:none}
-  #fxCanvas{position:absolute;inset:0;width:100%;height:100%;display:block}
-  .fx-wash{position:absolute;inset:0;opacity:0;will-change:opacity,transform}
+  #fxCanvas{
+    position:absolute;inset:0;width:100%;height:100%;display:block;
+    mix-blend-mode:screen;              /* overlapping particles bloom */
+  }
+  html[data-mode="dark"] #fxCanvas{mix-blend-mode:screen}
+  .fxL-wash,.fxL-dom{position:absolute;inset:0}
+  .fxL-wash{opacity:0;will-change:opacity,transform}
 
-  /* --- sunrise: warm wash + a sun disc climbing the screen --- */
-  .fx-wash.fx-sunrise{
-    background:
-      radial-gradient(125% 72% at 50% 118%, rgba(255,196,84,.50), rgba(255,138,76,.22) 46%, transparent 74%);
-    animation:fxWash 4s ease-out forwards;
+  /* ---------- washes ---------- */
+  @keyframes fxWash{0%{opacity:0}14%{opacity:1}70%{opacity:1}100%{opacity:0}}
+  @keyframes fxThrob{0%{opacity:0}10%{opacity:1}28%{opacity:.7}44%{opacity:1}62%{opacity:.74}80%{opacity:.92}100%{opacity:0}}
+  @keyframes fxFlash{0%{opacity:0}5%{opacity:1}20%{opacity:.3}32%{opacity:.8}58%{opacity:.36}100%{opacity:0}}
+  @keyframes fxBloom{0%{opacity:0;transform:scale(.9)}18%{opacity:1;transform:scale(1)}72%{opacity:.9}100%{opacity:0;transform:scale(1.06)}}
+
+  .fx-sunrise{background:
+      radial-gradient(150% 78% at 50% 122%, rgba(255,206,110,.62), rgba(255,150,60,.30) 44%, transparent 76%);
+    animation:fxWash 4.6s ease-out forwards}
+  .fx-moonrise{background:
+      radial-gradient(130% 76% at 50% 120%, rgba(126,146,240,.36), rgba(38,52,120,.22) 48%, transparent 78%);
+    animation:fxWash 4.6s ease-out forwards}
+  .fx-hearts,.fx-orbit{background:
+      radial-gradient(120% 80% at 50% 112%, rgba(255,70,130,.30), transparent 66%),
+      radial-gradient(100% 100% at 50% 50%, transparent 52%, rgba(190,20,70,.26) 100%);
+    animation:fxWash 4.6s ease-out forwards}
+  .fx-fury{background:
+      radial-gradient(115% 72% at 50% 46%, rgba(200,40,30,.34), transparent 66%);
+    animation:fxThrob 4.6s ease-out forwards}
+  .fx-fire{background:
+      radial-gradient(130% 82% at 50% 116%, rgba(255,132,26,.50), transparent 60%),
+      linear-gradient(0deg, rgba(180,50,6,.34), transparent 42%);
+    animation:fxThrob 4.6s ease-out forwards}
+  .fx-surprise{background:radial-gradient(80% 55% at 50% 42%, rgba(190,215,255,.36), transparent 66%);
+    animation:fxFlash 4.6s ease-out forwards}
+  .fx-crying{background:
+      radial-gradient(120% 70% at 50% -4%, rgba(88,148,228,.34), transparent 62%),
+      linear-gradient(180deg, rgba(40,80,150,.24), transparent 48%);
+    animation:fxWash 4.6s ease-out forwards}
+  .fx-angelic,.fx-halo{background:
+      radial-gradient(70% 44% at 50% -8%, rgba(255,246,212,.56), rgba(255,214,132,.26) 42%, transparent 74%);
+    animation:fxWash 4.6s ease-out forwards}
+  .fx-heatwave{background:
+      linear-gradient(180deg, rgba(255,138,40,.26), rgba(200,32,40,.30));
+    animation:fxWash 4.6s ease-out forwards}
+  .fx-freeze{background:
+      radial-gradient(120% 90% at 50% 50%, transparent 40%, rgba(150,210,255,.34) 100%);
+    animation:fxWash 4.6s ease-out forwards}
+  .fx-midas{background:radial-gradient(90% 60% at 50% 46%, rgba(255,206,90,.34), transparent 68%);
+    animation:fxBloom 4.6s ease-out forwards}
+  .fx-glimmer{background:
+      radial-gradient(80% 60% at 50% 46%, rgba(150,200,255,.26), transparent 66%),
+      linear-gradient(0deg, rgba(0,0,0,.34), rgba(0,0,0,.34));
+    animation:fxWash 4.6s ease-out forwards}
+  .fx-kiss{background:radial-gradient(90% 62% at 50% 48%, rgba(255,70,150,.28), transparent 68%);
+    animation:fxWash 4.6s ease-out forwards}
+  .fx-lick{background:radial-gradient(70% 50% at 50% 50%, rgba(255,90,190,.30), transparent 70%);
+    animation:fxBloom 4.6s ease-out forwards}
+  .fx-cash{background:radial-gradient(110% 70% at 50% 0%, rgba(60,220,120,.22), transparent 64%);
+    animation:fxWash 4.6s ease-out forwards}
+  .fx-dizzy{background:radial-gradient(100% 70% at 50% 50%, rgba(255,220,90,.18), transparent 70%);
+    animation:fxWash 4.6s ease-out forwards}
+  .fx-punch{background:radial-gradient(60% 45% at 50% 45%, rgba(255,255,255,.30), transparent 62%);
+    animation:fxFlash 1.2s ease-out forwards}
+  .fx-zip{background:radial-gradient(80% 40% at 50% 50%, rgba(80,230,255,.20), transparent 70%);
+    animation:fxWash 3s ease-out forwards}
+
+  /* ---------- rising discs (sun / moon / heart) ---------- */
+  .fx-disc{
+    position:absolute;left:50%;bottom:-80px;width:200px;height:200px;margin-left:-100px;border-radius:50%;
+    background:radial-gradient(circle,#fff8d8 0%,#ffc86b 50%,rgba(255,168,72,0) 72%);
+    transform:translate3d(0,60px,0) scale(.8);opacity:0;
+    animation:fxDiscRise 4.6s cubic-bezier(.2,.72,.28,1) forwards;
+    mix-blend-mode:screen;
   }
-  .fx-sun{
-    position:absolute;left:50%;bottom:-70px;width:190px;height:190px;margin-left:-95px;border-radius:50%;
-    background:radial-gradient(circle,#fff6cf 0%,#ffc86b 52%,rgba(255,168,72,0) 72%);
-    transform:translate3d(0,60px,0) scale(.82);opacity:0;
-    animation:fxSunRise 4s cubic-bezier(.22,.75,.28,1) forwards;
+  .fx-disc.moon{background:radial-gradient(circle,#ffffff 0%,#dfe6ff 46%,rgba(178,196,255,0) 72%)}
+  .fx-disc.heart{
+    background:radial-gradient(circle,#fff0f5 0%,#ff5c93 46%,rgba(224,42,99,0) 74%);
+    filter:drop-shadow(0 0 30px rgba(255,90,140,.7));
   }
-  @keyframes fxSunRise{
-    0%{transform:translate3d(0,60px,0) scale(.82);opacity:0}
-    22%{opacity:1}
-    68%{transform:translate3d(0,-130px,0) scale(1);opacity:1}
-    100%{transform:translate3d(0,-165px,0) scale(1.04);opacity:0}
+  @keyframes fxDiscRise{
+    0%{transform:translate3d(0,60px,0) scale(.8);opacity:0}
+    20%{opacity:1}
+    66%{transform:translate3d(0,-150px,0) scale(1.02);opacity:1}
+    100%{transform:translate3d(0,-190px,0) scale(1.08);opacity:0}
+  }
+  /* lens flare streak across the sunrise */
+  .fx-flare{
+    position:absolute;left:50%;top:52%;width:150%;height:5px;margin-left:-75%;
+    background:linear-gradient(90deg,transparent,rgba(255,232,170,.85),transparent);
+    transform:translate3d(0,0,0) scaleX(.2);opacity:0;mix-blend-mode:screen;
+    animation:fxFlare 4.6s cubic-bezier(.2,.8,.3,1) forwards;
+  }
+  @keyframes fxFlare{0%{opacity:0;transform:scaleX(.2)}26%{opacity:.95;transform:scaleX(1)}
+                     62%{opacity:.5}100%{opacity:0;transform:scaleX(1.25)}}
+
+  /* ---------- angelic halo, 3D tilted ---------- */
+  .fx-ring{
+    position:absolute;left:50%;top:13%;width:230px;height:230px;margin-left:-115px;border-radius:50%;
+    border:3px solid rgba(255,238,178,.95);
+    box-shadow:0 0 44px rgba(255,226,150,.8),inset 0 0 30px rgba(255,240,200,.6);
+    opacity:0;transform:perspective(500px) rotateX(70deg) scale(.7);
+    animation:fxRing 4.6s cubic-bezier(.2,.75,.3,1) forwards;mix-blend-mode:screen;
+  }
+  @keyframes fxRing{
+    0%{opacity:0;transform:perspective(500px) rotateX(70deg) rotateZ(0deg) scale(.7)}
+    24%{opacity:1}
+    100%{opacity:0;transform:perspective(500px) rotateX(70deg) rotateZ(300deg) scale(1.2)}
+  }
+  /* volumetric shaft of light from the top */
+  .fx-beam{
+    position:absolute;left:50%;top:-10%;width:60%;height:90%;margin-left:-30%;
+    background:linear-gradient(180deg, rgba(255,248,214,.44), rgba(255,236,170,.10) 55%, transparent 82%);
+    clip-path:polygon(38% 0,62% 0,100% 100%,0 100%);
+    opacity:0;mix-blend-mode:screen;animation:fxWash 4.6s ease-out forwards;
+    will-change:opacity;transform:translateZ(0);
   }
 
-  /* --- good night: cool indigo sky, silver moon --- */
-  .fx-wash.fx-moonrise{
-    background:
-      radial-gradient(125% 74% at 50% 118%, rgba(120,140,235,.34), rgba(40,54,120,.22) 48%, transparent 76%),
-      linear-gradient(180deg, rgba(10,16,44,.30), transparent 55%);
-    animation:fxWash 4s ease-out forwards;
+  /* ---------- frost creeping in from the edges ---------- */
+  .fx-frost{
+    position:absolute;inset:0;opacity:0;
+    box-shadow:inset 0 0 90px 28px rgba(214,240,255,.6);
+    transform:scale(1.06);
+    animation:fxFrost 4.6s cubic-bezier(.25,.7,.3,1) forwards;
+    will-change:opacity,transform;
   }
-  .fx-sun.fx-moon{
-    background:radial-gradient(circle,#ffffff 0%,#dfe6ff 46%,rgba(178,196,255,0) 72%);
-  }
-  /* a heart that climbs the screen exactly like the sunrise disc */
-  .fx-sun.fx-heartsun{
-    width:150px;height:150px;margin-left:-75px;
-    background:url("data:image/svg+xml,%3Csvg%20xmlns%3D%27http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%27%20viewBox%3D%270%200%20100%20100%27%3E%3Cdefs%3E%3CradialGradient%20id%3D%27g%27%20cx%3D%2738%25%27%20cy%3D%2732%25%27%3E%3Cstop%20offset%3D%270%25%27%20stop-color%3D%27%23fff1f5%27%2F%3E%3Cstop%20offset%3D%2742%25%27%20stop-color%3D%27%23ff6f9c%27%2F%3E%3Cstop%20offset%3D%27100%25%27%20stop-color%3D%27%23e02a63%27%2F%3E%3C%2FradialGradient%3E%3C%2Fdefs%3E%3Cpath%20fill%3D%27url%28%2523g%29%27%20d%3D%27M50%2089C22%2065%207%2047%207%2032A22%2022%200%200%201%2050%2023A22%2022%200%200%201%2093%2032C93%2047%2078%2065%2050%2089Z%27%2F%3E%3C%2Fsvg%3E") center/contain no-repeat;
-    filter:drop-shadow(0 0 26px rgba(255,92,140,.72));
+  @keyframes fxFrost{
+    0%{opacity:0;transform:scale(1.18)}
+    26%{opacity:1;transform:scale(1.02)}
+    72%{opacity:1;transform:scale(1)}
+    100%{opacity:0;transform:scale(1)}
   }
 
-  /* --- angry: a deep red throb, no flames --- */
-  .fx-wash.fx-fury{
-    background:
-      radial-gradient(110% 70% at 50% 45%, rgba(200,40,30,.30), transparent 66%),
-      linear-gradient(0deg, rgba(150,18,10,.20), transparent 48%);
-    animation:fxThrob 4s ease-out forwards;
+  /* ---------- lipstick stamp ---------- */
+  .fx-lips{
+    position:absolute;left:50%;top:44%;width:132px;height:132px;margin:-66px 0 0 -66px;
+    opacity:0;transform:scale(.3) rotate(-14deg);
+    animation:fxStamp 4.6s cubic-bezier(.16,1.1,.3,1) forwards;
+    filter:drop-shadow(0 0 18px rgba(255,60,140,.85));
   }
-  /* --- fire: amber heat licking up from the bottom edge --- */
-  .fx-wash.fx-fire{
-    background:
-      radial-gradient(125% 80% at 50% 114%, rgba(255,132,26,.46), transparent 60%),
-      linear-gradient(0deg, rgba(190,60,8,.30), transparent 40%);
-    animation:fxThrob 4s ease-out forwards;
-  }
-  /* --- surprise: one sharp bright flash --- */
-  .fx-wash.fx-surprise{
-    background:radial-gradient(80% 55% at 50% 42%, rgba(190,215,255,.34), transparent 66%);
-    animation:fxFlash 4s ease-out forwards;
-  }
-  /* --- angelic: a warm halo of light blooming from above --- */
-  .fx-wash.fx-angelic{
-    background:
-      radial-gradient(70% 42% at 50% -6%, rgba(255,244,205,.50), rgba(255,216,140,.24) 42%, transparent 74%),
-      radial-gradient(120% 80% at 50% 108%, rgba(255,232,178,.16), transparent 66%);
-    animation:fxHalo 4s ease-out forwards;
-  }
-  .fx-halo{
-    position:absolute;left:50%;top:14%;width:210px;height:210px;margin-left:-105px;
-    border-radius:50%;border:2px solid rgba(255,238,178,.9);
-    box-shadow:0 0 40px rgba(255,226,150,.75),inset 0 0 30px rgba(255,240,200,.55);
-    transform:translate3d(0,-24px,0) scale(.6);opacity:0;
-    animation:fxHaloRing 4s cubic-bezier(.2,.75,.3,1) forwards;
-  }
-  @keyframes fxHalo{0%{opacity:0}14%{opacity:1}70%{opacity:.9}100%{opacity:0}}
-  @keyframes fxHaloRing{
-    0%{transform:translate3d(0,-24px,0) scale(.6);opacity:0}
-    24%{opacity:.95}
-    62%{transform:translate3d(0,6px,0) scale(1.06);opacity:.8}
-    100%{transform:translate3d(0,14px,0) scale(1.22);opacity:0}
-  }
-  /* --- crying: a cold blue melancholy --- */
-  .fx-wash.fx-crying{
-    background:
-      radial-gradient(110% 70% at 50% 10%, rgba(78,132,214,.28), transparent 64%),
-      linear-gradient(180deg, rgba(40,80,150,.20), transparent 46%);
-    animation:fxWash 4s ease-out forwards;
-  }
-  @keyframes fxFlash{0%{opacity:0}6%{opacity:1}22%{opacity:.35}34%{opacity:.8}60%{opacity:.4}100%{opacity:0}}
-  /* --- hearts: soft rose glow --- */
-  .fx-wash.fx-hearts{
-    background:radial-gradient(110% 70% at 50% 112%, rgba(255,90,140,.24), transparent 66%);
-    animation:fxWash 4s ease-out forwards;
-  }
-  @keyframes fxWash{0%{opacity:0}16%{opacity:1}72%{opacity:1}100%{opacity:0}}
-  @keyframes fxThrob{
-    0%{opacity:0}12%{opacity:1}30%{opacity:.72}46%{opacity:1}64%{opacity:.76}80%{opacity:.9}100%{opacity:0}
+  @keyframes fxStamp{
+    0%{opacity:0;transform:scale(.3) rotate(-14deg)}
+    12%{opacity:1;transform:scale(1.18) rotate(-8deg)}
+    20%{transform:scale(.97) rotate(-10deg)}
+    28%{transform:scale(1.03) rotate(-9deg)}
+    70%{opacity:1;transform:scale(1) rotate(-9deg)}
+    100%{opacity:0;transform:scale(1.1) rotate(-9deg)}
   }
 
-  /* Motion-sensitive users get the colour wash only, never the particles. */
+  /* ---------- zipper ---------- */
+  .fx-zipL,.fx-zipR{
+    position:absolute;top:50%;height:8px;width:50%;margin-top:-4px;
+    background:linear-gradient(90deg,rgba(80,230,255,0),rgba(120,245,255,.95));
+    box-shadow:0 0 20px rgba(80,230,255,.9);opacity:0;
+  }
+  .fx-zipL{left:0;transform:translate3d(-100%,0,0);animation:fxZipL 3s cubic-bezier(.2,.9,.2,1) forwards}
+  .fx-zipR{right:0;transform:translate3d(100%,0,0);
+           background:linear-gradient(270deg,rgba(80,230,255,0),rgba(120,245,255,.95));
+           animation:fxZipR 3s cubic-bezier(.2,.9,.2,1) forwards}
+  @keyframes fxZipL{0%{opacity:0;transform:translate3d(-100%,0,0)}18%{opacity:1}
+                    58%{transform:translate3d(0,0,0);opacity:1}70%{transform:translate3d(0,0,0) scaleY(1.9)}
+                    100%{opacity:0;transform:translate3d(0,0,0)}}
+  @keyframes fxZipR{0%{opacity:0;transform:translate3d(100%,0,0)}18%{opacity:1}
+                    58%{transform:translate3d(0,0,0);opacity:1}70%{transform:translate3d(0,0,0) scaleY(1.9)}
+                    100%{opacity:0;transform:translate3d(0,0,0)}}
+
+  /* ---------- viewport-level motion applied to the app itself ---------- */
+  body.fx-shake .wrap{animation:fxShake .16s cubic-bezier(.36,.07,.19,.97) 2}
+  @keyframes fxShake{
+    0%,100%{transform:translate3d(0,0,0)}
+    20%{transform:translate3d(-7px,2px,0)}
+    40%{transform:translate3d(6px,-3px,0)}
+    60%{transform:translate3d(-4px,3px,0)}
+    80%{transform:translate3d(4px,-2px,0)}
+  }
+  body.fx-wobble .stream{animation:fxWobble 2.2s ease-in-out}
+  @keyframes fxWobble{
+    0%,100%{transform:rotate(0) skewX(0)}
+    18%{transform:rotate(1.4deg) skewX(1.2deg)}
+    38%{transform:rotate(-1.4deg) skewX(-1.2deg)}
+    58%{transform:rotate(.9deg) skewX(.8deg)}
+    78%{transform:rotate(-.5deg) skewX(-.4deg)}
+  }
+  body.fx-heat .stream{animation:fxHeat 3.2s ease-in-out}
+  @keyframes fxHeat{
+    0%,100%{transform:none}
+    25%{transform:skewX(.6deg) translate3d(1px,0,0)}
+    50%{transform:skewX(-.6deg) translate3d(-1px,0,0)}
+    75%{transform:skewX(.35deg)}
+  }
+  body.fx-lit .stream{animation:fxLit 4.6s ease-out}
+  @keyframes fxLit{0%,100%{opacity:1}30%{opacity:.94}60%{opacity:.97}}
+
+  /* ---------- v3 scenes ---------- */
+  /* warm amber grade for the autumn cascade */
+  .fx-autumn{background:
+      radial-gradient(120% 92% at 50% 0%, rgba(255,178,78,.30), transparent 62%),
+      linear-gradient(180deg, rgba(150,78,22,.20), rgba(58,28,8,.16));
+    animation:fxWash 4s ease-out forwards}
+  /* cold cast under the blizzard */
+  .fx-snow{background:
+      radial-gradient(125% 95% at 50% 0%, rgba(196,226,255,.28), transparent 66%);
+    animation:fxWash 4s ease-out forwards}
+  /* frost creeping in from all four corners */
+  .fx-frostc{position:absolute;width:48vmax;height:48vmax;border-radius:50%;
+    background:radial-gradient(circle, rgba(255,255,255,.60), rgba(206,232,255,.32) 40%, transparent 70%);
+    filter:blur(7px);opacity:0;transform:scale(.35);
+    animation:fxFrostIn 4s cubic-bezier(.16,.8,.3,1) forwards}
+  .fx-frostc.tl{top:-16vmax;left:-16vmax}
+  .fx-frostc.tr{top:-16vmax;right:-16vmax;animation-delay:.06s}
+  .fx-frostc.bl{bottom:-16vmax;left:-16vmax;animation-delay:.12s}
+  .fx-frostc.br{bottom:-16vmax;right:-16vmax;animation-delay:.18s}
+  @keyframes fxFrostIn{
+    0%{opacity:0;transform:scale(.35)}
+    24%{opacity:1;transform:scale(1)}
+    74%{opacity:.92;transform:scale(1.02)}
+    100%{opacity:0;transform:scale(1.1)}}
+  /* the bubble that triggered a mind-blown blows out, then settles back exactly
+     where it was - the message itself is never touched */
+  .msg.fx-detonate{animation:fxDetonate 1s cubic-bezier(.2,.9,.25,1)}
+  @keyframes fxDetonate{
+    0%{transform:scale(1)}
+    16%{transform:scale(1.11);filter:brightness(1.6)}
+    30%{transform:scale(.95);filter:brightness(2.1)}
+    48%{transform:scale(1.03);filter:brightness(1.05)}
+    100%{transform:scale(1);filter:none}}
+
   @media (prefers-reduced-motion:reduce){
     #fxCanvas{display:none}
-    .fx-sun{animation-duration:.01s;opacity:0}
-    .fx-wash{animation-duration:1.2s}
+    .fx-disc,.fx-ring,.fx-beam,.fx-flare,.fx-lips,.fx-zipL,.fx-zipR,.fx-frost,.fx-frostc{animation-duration:.01s;opacity:0}
+    .fxL-wash{animation-duration:1.2s}
+    .msg.fx-detonate{animation:none}
+    body.fx-shake .wrap,body.fx-wobble .stream,body.fx-heat .stream,body.fx-lit .stream{animation:none}
   }
 
 
@@ -747,6 +877,13 @@
 
   /* Anything the app says about itself is a note, not a message: it drifts
      away on its own instead of living in the transcript forever. */
+  /* only present while older messages are still held back from the DOM */
+  .older{align-self:center;margin:2px 0 8px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;
+         text-transform:uppercase;color:var(--dim);background:var(--surface);border:1px solid var(--hair-soft);
+         padding:7px 16px;border-radius:20px;transition:.15s}
+  .older:active{transform:scale(.96)}
+  .older:hover{color:var(--text);border-color:var(--hair)}
+
   .sys{align-self:center;font-family:var(--mono);font-size:10px;letter-spacing:.06em;color:var(--dim);background:var(--surface);border:1px solid var(--hair-soft);padding:4px 12px;border-radius:20px;transition:opacity .5s ease,transform .5s ease;max-width:90%;text-align:center}
   .sys.fade{opacity:0;transform:translateY(-6px)}
 
@@ -1658,9 +1795,11 @@ const MIN_CHUNK=48*1024;             // smaller chunks used on slow connections
 const MAX_FILE=8*1024*1024;          // 8 MB cap after processing
 const HIST_KEEP=500;                 // messages kept per room on this device
 const HIST_PART=90*1024;             // max chars per history sync packet
+const SYNC_HAVE=500;                 // ids we advertise as already held, newest first
+const SYNC_MAX=300;                  // most records replayed in answer to one sync
 const MB_MAX=40*1024;                // biggest record we will park in the relay mailbox
 const MB_TTL=21*24*3600*1000;        // undelivered mail older than this is abandoned
-const MB_LIMIT=25;                   // most records republished to the mailbox at once
+const MB_LIMIT=200;                  // most records republished to the mailbox at once
 const MB_ACK_PREFIX="ack.";          // companion slot: recipient's "I have this" receipt
 const MB_COLLECTED_KEY="sl.mbgot";   // ids this device has already durably collected
 const msgEls=new Map();              // msg id -> bubble element
@@ -1682,6 +1821,7 @@ const unseenIn=new Set();            // incoming ids rendered while tab was hidd
 const histParts=new Map();           // hid -> {parts, got, n}
 const syncAnswered=new Map();        // peerId -> last time we replayed history for them
 let db=null;
+let histReady=null;                  // resolves once this room's stored history is loaded
 const RANK={sent:1,delivered:2,seen:3};
 
 const ICON={
@@ -1896,47 +2036,152 @@ function idbOpen(){
     r.onerror=()=>res(null);
   });
 }
-function idbPut(row){ if(!db)return; try{ db.transaction("msgs","readwrite").objectStore("msgs").put(row); }catch(e){} }
+/* Resolves when the write is actually COMMITTED, not merely queued. The mailbox
+   hand-off below depends on that difference: confirming a record before its
+   transaction lands is how a message can be dropped for good. */
+function idbPut(row){
+  return new Promise(res=>{
+    if(!db){ res(false); return; }
+    try{
+      const tx=db.transaction("msgs","readwrite");
+      tx.objectStore("msgs").put(row);
+      tx.oncomplete=()=>res(true);
+      tx.onerror=()=>res(false);
+      tx.onabort=()=>res(false);
+    }catch(e){ res(false); }
+  });
+}
 function idbDel(k){ if(!db)return; try{ db.transaction("msgs","readwrite").objectStore("msgs").delete(k); }catch(e){} }
+/* Keys are "<topic>|<id>", so one bounded range returns exactly this room's
+   rows. The old cursor walked EVERY room ever opened on this device and threw
+   away most of what it read - on a phone with a few rooms that was the bulk of
+   the wait before the first bubble appeared. */
 function idbAllForTopic(){
   return new Promise(res=>{
     if(!db){ res([]); return; }
-    const out=[];
     try{
-      const cur=db.transaction("msgs").objectStore("msgs").openCursor();
-      cur.onsuccess=e=>{ const c=e.target.result; if(c){ if(c.value&&c.value.topic===topic) out.push(c.value); c.continue(); } else res(out); };
+      const st=db.transaction("msgs").objectStore("msgs");
+      const range=IDBKeyRange.bound(topic+"|",topic+"|￿");
+      if(st.getAll){
+        const rq=st.getAll(range);
+        rq.onsuccess=()=>res(rq.result||[]);
+        rq.onerror=()=>res([]);
+        return;
+      }
+      const out=[];                                   // very old engines
+      const cur=st.openCursor(range);
+      cur.onsuccess=e=>{ const c=e.target.result; if(c){ out.push(c.value); c.continue(); } else res(out); };
       cur.onerror=()=>res(out);
-    }catch(e){ res(out); }
+    }catch(e){ res([]); }
   });
 }
-async function saveRec(rec){
-  hist.set(rec.id,rec); knownIds.add(rec.id);
-  if(!db||!key) return;
-  try{ idbPut({k:topic+"|"+rec.id, topic, ts:rec.ts||0, ct:await encryptObj(rec)}); }catch(e){}
+/* Writes are coalesced per message. A single photo is stored as base64 inside
+   its record, so the old code re-encrypted and rewrote the whole thing on every
+   status bump - "sent" then "delivered" then "seen" meant three full AES passes
+   over megabytes, which is a large part of why the app felt heavy. Now a burst
+   of updates to one record settles into one write.
+     saveRec(rec,{now:true}) forces an immediate, awaitable, durable write. */
+const SAVE_WAIT=250;
+const writeTimers=new Map();
+async function writeRec(rec){
+  if(!db||!key) return false;
+  try{ return await idbPut({k:topic+"|"+rec.id, topic, ts:rec.ts||0, ct:await encryptObj(rec)}); }
+  catch(e){ return false; }
 }
+function saveRec(rec,opts){
+  hist.set(rec.id,rec); knownIds.add(rec.id);
+  if(!db||!key) return Promise.resolve(false);
+  const t=writeTimers.get(rec.id);
+  if(opts&&opts.now){
+    if(t){ clearTimeout(t); writeTimers.delete(rec.id); }
+    return writeRec(rec);
+  }
+  if(t) return Promise.resolve(true);                 // one already pending for this id
+  writeTimers.set(rec.id,setTimeout(()=>{ writeTimers.delete(rec.id); writeRec(rec); },SAVE_WAIT));
+  return Promise.resolve(true);
+}
+/* nothing may sit in that window when the tab goes away */
+function flushWrites(){
+  if(!writeTimers.size) return;
+  const ids=[...writeTimers.keys()];
+  ids.forEach(id=>{ clearTimeout(writeTimers.get(id)); writeTimers.delete(id); const r=hist.get(id); if(r) writeRec(r); });
+}
+addEventListener("pagehide",flushWrites);
+document.addEventListener("visibilitychange",()=>{ if(document.hidden) flushWrites(); });
 function serializeReacts(mid){
   const em=reactState.get(mid); if(!em) return undefined;
   const o={}; for(const[e,set]of em){ if(set.size) o[e]=[...set]; }
   return Object.keys(o).length?o:undefined;
 }
+/* Drawing 500 bubbles before the room can be used is what made opening a busy
+   conversation crawl: every one of them costs a DOM build, a sorted insert and
+   a forced layout measurement. Only the tail is drawn now. The rest stay fully
+   loaded in memory - so dedup, receipts and history sync are unchanged - and go
+   on screen in batches behind "show earlier". */
+const RENDER_FIRST=60;
+let pendingOlder=[];
+
 async function loadHistory(){
   db=await idbOpen();
   const rows=await idbAllForTopic();
-  const recs=[];
+  const cts=[];
   for(const row of rows){
     if(row.k===topic+"|__lastseen"){          // presence, not a message
       try{ for(const id in row.ls){ const v=row.ls[id]; if(v&&v.at) lastSeenMap.set(id,{name:v.name||"Peer",at:v.at}); } }catch(e){}
       continue;
     }
-    try{ const r=await decryptObj(row.ct); if(r&&r.id) recs.push(r); }catch(e){}
+    if(row.ct) cts.push(row.ct);
+  }
+  /* Decrypted in parallel batches. Awaiting crypto.subtle once per record meant
+     500 separate round trips through the crypto thread, one after another. */
+  const recs=[];
+  for(let i=0;i<cts.length;i+=48){
+    const batch=await Promise.all(cts.slice(i,i+48).map(ct=>decryptObj(ct).catch(()=>null)));
+    for(const r of batch) if(r&&r.id) recs.push(r);
   }
   recs.sort((a,b)=>(a.ts||0)-(b.ts||0));
   const drop=recs.slice(0,Math.max(0,recs.length-HIST_KEEP));
   drop.forEach(r=>idbDel(topic+"|"+r.id));
   const keep=recs.slice(-HIST_KEEP);
-  keep.forEach(r=>{ hist.set(r.id,r); knownIds.add(r.id); renderRecord(r); });
+  keep.forEach(r=>{ hist.set(r.id,r); knownIds.add(r.id); });
+  pendingOlder=keep.slice(0,Math.max(0,keep.length-RENDER_FIRST));
+  bulkRender(keep.slice(-RENDER_FIRST));
+  paintOlderBtn();
   if(keep.length){ flash("Restored "+keep.length+" earlier message"+(keep.length>1?"s":"")); scrollDown(); }
   restorePendingMedia();          // anything that never reached them, ready to retry
+}
+
+/* One render pass with the per-bubble scroll, grouping and measurement work
+   switched off, then a single grouping pass and a single batched re-measure. */
+let bulkMode=false;
+function bulkRender(list){
+  if(!list||!list.length) return;
+  bulkMode=true;
+  try{ list.forEach(renderRecord); }
+  finally{ bulkMode=false; }
+  regroup();
+  refitAll();
+}
+function paintOlderBtn(){
+  const s=$("stream");
+  let b=$("olderBtn");
+  if(!pendingOlder.length){ if(b) b.remove(); return; }
+  if(!b){
+    b=document.createElement("button");
+    b.id="olderBtn"; b.className="older";
+    b.addEventListener("click",loadOlder);
+  }
+  b.textContent="Show earlier messages ("+pendingOlder.length+")";
+  if(s.firstChild!==b) s.insertBefore(b,s.firstChild);   // always back on top
+}
+function loadOlder(){
+  const s=$("stream");
+  const before=s.scrollHeight, top=s.scrollTop;
+  const batch=pendingOlder.slice(-RENDER_FIRST);
+  pendingOlder=pendingOlder.slice(0,Math.max(0,pendingOlder.length-RENDER_FIRST));
+  bulkRender(batch);
+  paintOlderBtn();
+  s.scrollTop=top+(s.scrollHeight-before);              // hold the reading position
 }
 function bodyFromRec(rec){
   if(rec.kind==="text"){ const n=document.createElement("div"); n.innerHTML=textHTML(rec.text||""); return n; }
@@ -2055,8 +2300,11 @@ function syncMailbox(){
     .filter(r=>r.mine&&!r.delLocal&&(now-(r.ts||0))<MB_TTL&&(RANK[r.status||"sent"]||1)<RANK.delivered)
     .sort((a,b)=>(a.ts||0)-(b.ts||0))
     .slice(-MB_LIMIT);
-  /* spaced out so a reconnect never floods the relay in one burst */
-  pend.forEach((r,i)=>setTimeout(()=>mailboxPut(r),i*180));
+  /* Spaced out so a reconnect never floods the relay in one burst. The cap used
+     to be 25, which quietly abandoned anything older than the newest 25 unsent
+     messages - send 30 things to someone who is away and the first five were
+     never parked at all, so they simply never arrived. */
+  pend.forEach((r,i)=>setTimeout(()=>mailboxPut(r),i*150));
 }
 /* reactions on the other person's message need a slot of their own */
 function mailboxReact(mid){
@@ -2096,7 +2344,7 @@ async function mailboxConfirm(id){
   await mailboxPutRaw(MB_ACK_PREFIX+id,{t:"mback",from:me.id,id});   // durable receipt for an offline sender
   mailboxClear(id);                                                   // and free the message slot
 }
-function onMailbox(slot,m){
+async function onMailbox(slot,m){
   /* a receipt for one of OUR messages: the other side has it for good, so we can
      stop parking it and bin both the message slot and the receipt slot. */
   if(m&&m.t==="mback"){
@@ -2121,7 +2369,11 @@ function onMailbox(slot,m){
   /* someone else's parked record for us */
   if(m&&m.t==="hist"&&m.rec){
     const id=m.rec.id;
-    onHistRec(m.rec);                            // stores durably (idempotent if already known)
+    /* Already collected for good on a previous visit: the sender simply never
+       saw our receipt and re-parked it. Re-confirm and move on - this is what
+       mbGot is for, and skipping it meant re-doing the whole store every time. */
+    if(mbGot.has(id)&&knownIds.has(id)){ mailboxConfirm(id); return; }
+    await onHistRec(m.rec);                      // committed to disk before we confirm
     mbMarkGot(id);
     mailboxConfirm(id);                          // store-then-confirm, never confirm-then-hope
   }else if(m&&m.t==="rxs"){
@@ -2137,7 +2389,15 @@ function requestSync(){
   /* watermark = newest thing RECEIVED. Counting our own messages here meant that
      sending one made us skip everything older the other side still owed us. */
   let have=0; for(const r of hist.values()) if(!r.mine&&(r.ts||0)>have) have=r.ts;
-  publish({t:"syncq",from:me.id,name:me.name,have});
+  /* Say which records we already hold, not just how recent the newest one is.
+     A watermark alone cannot express "the mailbox already gave me these", so
+     every reconnect had the other side replay its whole backlog again - hundreds
+     of encrypted publishes down three relays, arriving as messages we then threw
+     away as duplicates. That backlog is what starved presence (each side decided
+     the other had gone quiet) and made the app crawl right after connecting.
+     Peers running an older build ignore `has` and behave exactly as before. */
+  const has=[...hist.values()].sort((a,b)=>(b.ts||0)-(a.ts||0)).slice(0,SYNC_HAVE).map(r=>r.id);
+  publish({t:"syncq",from:me.id,name:me.name,have,has});
 }
 async function answerSync(m){
   const last=syncAnswered.get(m.from)||0;
@@ -2146,10 +2406,12 @@ async function answerSync(m){
   /* tell them their messages stored here have been seen */
   const theirIds=[...hist.values()].filter(r=>r.from===m.from).map(r=>r.id).slice(-200);
   if(theirIds.length) publish({t:"seen",from:me.id,ids:theirIds});
-  /* replay everything they are missing (not authored by them) */
+  /* replay only what they are actually missing (and never their own) */
+  const held=new Set(Array.isArray(m.has)?m.has:[]);
   const recs=[...hist.values()]
-    .filter(r=>r.from!==m.from && (r.ts||0)>(m.have||0)-10000)
-    .sort((a,b)=>(a.ts||0)-(b.ts||0));
+    .filter(r=>r.from!==m.from && !held.has(r.id) && (r.ts||0)>(m.have||0)-10000)
+    .sort((a,b)=>(a.ts||0)-(b.ts||0))
+    .slice(-SYNC_MAX);
   for(const r of recs){
     if(r.delLocal) continue;                 // "delete for me" stays on this device
     const out=slimRec(r);
@@ -2162,13 +2424,18 @@ async function answerSync(m){
     await sleep(12);
   }
 }
-function onHistRec(rec){
+async function onHistRec(rec){
   if(!rec||!rec.id) return;
   if(knownIds.has(rec.id)){ mergeKnown(rec); return; }
   rec.mine=(rec.from===me.id);
   if(rec.mine) return;                        // never replay our own back to us
   rec.status=undefined;
-  saveRec(rec);
+  /* Durable BEFORE anything downstream tells the sender we have it. This await
+     is the whole point of the store-then-confirm hand-off: the write used to be
+     fired and forgotten, so the mailbox slot could be emptied while the record
+     was still in flight to disk, and closing the tab in that window lost the
+     message on both sides at once. */
+  await saveRec(rec,{now:true});
   renderRecord(rec);
   ackDelivered(rec.id);
   maybeMarkSeen(rec.id);
@@ -2226,7 +2493,13 @@ function saveOutbox(){ try{ localStorage.setItem(QKEY,JSON.stringify(outbox.slic
 function flushOutbox(){
   if(!outbox.length) return;
   const q=outbox.splice(0); saveOutbox();
-  q.forEach(o=>publish(o));
+  q.forEach(o=>{
+    publish(o);
+    /* A message written while offline was never parked in the mailbox, because
+       parking needs a live relay. Park it now that we have one, or it only ever
+       reaches someone who happens to be online at this exact second. */
+    if(o.t==="msg"&&o.id) ensureMailbox(o.id);
+  });
   toast("Sent "+q.length+" queued message"+(q.length>1?"s":""));
 }
 
@@ -2385,16 +2658,22 @@ function onLinkUp(){
        side stops hearing our ping and decides we have gone offline */
     announce();
     setTimeout(()=>{ announce(); broadcastAvatar(); },1200);   // hello again + our photo
-    setTimeout(flushOutbox,900);
-    setTimeout(flushPendingMedia,1600);
-    setTimeout(requestSync,2400);
-    setTimeout(syncMailbox,3600);
+    /* The catch-up half waits for local history. Asking for a sync before we
+       know what we already hold advertises an empty hand, and the other side
+       answers by replaying the entire room at us. */
+    (histReady||Promise.resolve()).then(()=>{
+      setTimeout(flushOutbox,300);
+      setTimeout(flushPendingMedia,1000);
+      setTimeout(requestSync,1800);
+      setTimeout(syncMailbox,3000);
+    });
   },400);
 }
 
 async function onPacket(t,payload){
   const mb=mbTopic&&t.lastIndexOf(mbTopic,0)===0;
   if(t!==topic&&!mb) return;
+  if(histReady) await histReady;      // never act before local history is in hand
   if(!payload||!payload.length) return;                                   // an emptied mailbox slot
   let m; try{ m=await decryptObj(payload.toString()); }catch(e){ return; } // wrong key or noise
   if(!m) return;
@@ -2461,13 +2740,14 @@ function heartbeat(){
   presenceStarted=true;
   setInterval(()=>{ if(anyLink()) publish({t:"ping",from:me.id,name:me.name}); },slowNet()?7000:5000);
   setInterval(sweep,2000);
-  /* Say hello periodically. If a heartbeat is missed while the link is busy the
-     other side used to write us off until the next reconnect; this brings the
-     presence back within seconds instead. */
-  setInterval(()=>{ if(anyLink()) heartbeat(); },12000);
-  /* and whenever the app comes back to the foreground */
+  /* Say hello periodically, so a heartbeat missed while the link was busy does
+     not have the other side write us off until the next reconnect. This called
+     heartbeat() again, which returns immediately on the guard above - the
+     re-announce it promised never actually happened. */
+  setInterval(()=>{ if(anyLink()) publish({t:"here",from:me.id,name:me.name}); },12000);
+  /* and whenever the app comes back to the foreground (wake() re-announces) */
   document.addEventListener("visibilitychange",()=>{
-    if(!document.hidden&&anyLink()){ heartbeat(); setTimeout(flushPendingMedia,1200); }
+    if(!document.hidden&&anyLink()) setTimeout(flushPendingMedia,1200);
   });
 }
 function seen(id,name){
@@ -2664,6 +2944,11 @@ function iconBtn(svg,title,fn){
 function insertSorted(div,ts){
   const s=$("stream");
   const kids=s.children;
+  /* Almost every message is newer than everything already on screen, and the
+     backwards scan below walked the whole list to discover that - O(n) per
+     bubble, so restoring a room was quadratic. Check the tail first. */
+  const last=s.lastElementChild;
+  if(last&&last.dataset&&Number(last.dataset.ts||0)&&Number(last.dataset.ts)<=ts){ s.appendChild(div); return; }
   for(let i=kids.length-1;i>=0;i--){
     const k=kids[i];
     const kts=Number(k.dataset&&k.dataset.ts||0);
@@ -2697,7 +2982,7 @@ function regroup(){
   });
 }
 function addBubble({id,name,mine,ts,reply,bodyNode,kind,edited}){
-  const stick=nearBottom();
+  const stick=bulkMode?false:nearBottom();
   const div=document.createElement("div");
   div.className="msg "+(mine?"me":"you");
   div.dataset.id=id;
@@ -2750,8 +3035,13 @@ function addBubble({id,name,mine,ts,reply,bodyNode,kind,edited}){
   div.dataset.sender=mine?"me":(name||"Peer");
   insertSorted(div,Number(div.dataset.ts));
   msgEls.set(id,div);
+  if((kind||"text")==="text") div.dataset.txt="1";
+  /* a bulk restore does the grouping, measuring and scrolling once at the end
+     instead of once per bubble - that per-bubble work is a forced layout each
+     time, and hundreds of them in a row is what stalls the open */
+  if(bulkMode) return {el:div,bodyEl:body};
   regroup();
-  if((kind||"text")==="text"){ div.dataset.txt="1"; fitMeta(div); }
+  if(div.dataset.txt==="1") fitMeta(div);
   if(mine||stick) scrollDown();
   else { unread++; updateFab(); }
   return {el:div,bodyEl:body};
@@ -2780,7 +3070,7 @@ function toggleTime(id){
 /* Reserve exactly as much room at the end of the text as the clock needs.
    Measured rather than guessed, because "edited" and the ticks come and go. */
 function fitMeta(div){
-  if(!div||div.dataset.txt!=="1") return;
+  if(!div||div.dataset.txt!=="1"||bulkMode) return;   // bulk restores re-measure in one pass
   const body=div.querySelector(".body"), foot=div.querySelector(".foot");
   if(!body||!foot) return;
   /* reaction chips now hang OFF the bubble, so they no longer fight the clock
@@ -2807,7 +3097,30 @@ function fitMeta(div){
 
 /* Space Mono arrives after first paint and the clock changes width with it,
    so every reserved gap is re-measured once the real font is in. */
-function refitAll(){ msgEls.forEach(el=>fitMeta(el)); }
+/* Split into one write pass, one read pass, one write pass. Calling fitMeta in
+   a loop interleaves "change a class" with "read offsetWidth", and the browser
+   has to re-run layout between every pair - hundreds of times over. */
+function refitAll(){
+  const live=[];
+  msgEls.forEach(el=>{
+    if(el.dataset.txt!=="1") return;
+    const body=el.querySelector(".body"), foot=el.querySelector(".foot");
+    if(!body||!foot) return;
+    const prev=body.querySelector(".metaspace"); if(prev) prev.remove();
+    if(el.querySelector(".gone")){ el.classList.remove("tight"); return; }
+    el.classList.add("tight");
+    el.classList.toggle("jumbomsg",!!body.querySelector(".jumbo"));
+    live.push({el,body,foot});
+  });
+  const widths=live.map(o=>o.foot.offsetWidth);          // every read together
+  live.forEach((o,i)=>{                                  // then every write
+    const w=widths[i];
+    const sp=document.createElement("span");
+    sp.className="metaspace";
+    sp.style.width=(o.el.classList.contains("showtime")?(w?w+8:56):(w?w+6:16))+"px";
+    o.body.appendChild(sp);
+  });
+}
 try{ if(document.fonts&&document.fonts.ready) document.fonts.ready.then(()=>setTimeout(refitAll,0)); }catch(e){}
 
 /* ---------- swipe to reply + long press for options (touch) ----------
@@ -2933,8 +3246,21 @@ function tombstoneNode(){
   d.innerHTML=ICON.gone+"<span>This message was deleted</span>";
   return d;
 }
+/* Every photo, voice note and file bubble holds a blob URL, and the browser
+   keeps the bytes alive until it is revoked. Nothing ever revoked them, so a
+   restored room pinned every attachment it had ever drawn in memory. */
+function revokeBlobs(el){
+  if(!el) return;
+  try{
+    el.querySelectorAll("img,audio,video,a.filecard").forEach(n=>{
+      const u=n.src||n.href||"";
+      if(u.lastIndexOf("blob:",0)===0){ try{ URL.revokeObjectURL(u); }catch(e){} }
+    });
+  }catch(e){}
+}
 function markDeletedDom(id){
   const el=msgEls.get(id); if(!el) return;
+  revokeBlobs(el);
   el.classList.add("gone-msg");
   el.style.transform="";
   const body=el.querySelector(".body");
@@ -3070,7 +3396,7 @@ function initSheet(){
   $("sheetBack").addEventListener("click",closeSheet);
   $("sheetBack").addEventListener("contextmenu",e=>{ e.preventDefault(); closeSheet(); });
   window.addEventListener("resize",closeSheet);
-  $("stream").addEventListener("scroll",closeSheet,{passive:true});
+  $("stream").addEventListener("scroll",()=>{ if(sheetTarget) closeSheet(); },{passive:true});
   document.addEventListener("keydown",e=>{ if(e.key==="Escape"&&sheetTarget) closeSheet(); });
 }
 function closeSheet(){
@@ -4360,117 +4686,104 @@ async function flipCam(){
 
 
 /* ================================================================
-   SCREEN EFFECTS ANIMATION TRIGGER ENGINE                v1.0
+   SCREEN EFFECTS ANIMATION ENGINE                          v2.0
    ----------------------------------------------------------------
-   A self-contained add-on. It reads message text, matches it against
-   a trigger dictionary, and plays a full-screen animation.
+   An isolated, plug-and-play add-on. It reads message text, matches
+   a trigger dictionary, and plays a cinematic full-screen sequence.
 
-   It does NOT touch messaging state, storage, transport or any
-   existing component. The only contact points with the host app are
-   two one-line calls (see INJECTION POINTS at the bottom of this
-   block), and it fails silently if it is ever removed.
+   Motion principles used throughout:
+     - real integration: velocity, gravity, per-particle drag
+     - wind: sine-driven horizontal sway, each particle its own phase
+     - organic spin and scale, eased rather than linear
+     - additive 'screen' compositing so overlaps bloom into hotspots
+     - trails: particles remember prior points and draw a fading tail
+     - everything eases OUT, nothing ever pops off-screen
 
-   Public surface:
-     ScreenFX.checkMessageForEffects(text) -> matched key | null
-     ScreenFX.play(key)                    -> force an effect
-     ScreenFX.stop()                       -> clear immediately
-     ScreenFX.getActiveEffect()            -> key | null
+   It touches no messaging state. Two one-line hooks, both wrapped
+   in try/catch, are the entire contact surface with the host app.
+
+   Public API:
+     ScreenFX.checkMessageForEffects(text) -> key | null
+     ScreenFX.play(key) / .stop() / .detect(text) / .getActiveEffect()
    ================================================================ */
 const ScreenFX=(function(){
   "use strict";
 
-  const DURATION=4000;            // self-destruct window, per spec
-  const MAX_DPR=2;                // cap retina cost on phones
+  const LIFE=4600;            // total effect duration (ms)
+  const MAX_DPR=2;
 
   /* ---------------------------------------------------------------
      1. TRIGGER DICTIONARY
-     `phrases` are matched case-insensitively anywhere in the string.
-     Short/ambiguous words carry `strict:true`, which requires a word
-     boundary so "mad" does not fire inside "made" or "nomad".
-     Emoji are matched as plain substrings, with variation selectors
-     normalised away so ❤ and ❤️ both hit.
      --------------------------------------------------------------- */
+  const NAME_RE=/n\s*a\s*n\s*d\s*i+\s*n\s*i+/i;
   const DICTIONARY=[
     { key:"confetti", phrases:["happy birthday","happybirthday","hbd","many happy returns"],
       emojis:["🎉","🥳","🎊","🎂"] },
     { key:"applause", phrases:["congratulations","congrats","congratz","well done","good job","nailed it"],
       emojis:["👏","🙌"] },
-    /* the proposal scene is a big moment - it should only fire for the words,
-       never for a lone heart emoji */
-    { key:"hearts",   phrases:["i love you","love you","love u","luv you","luv u"],
-      emojis:[] },
+    /* ---- v3 set pieces. These run hand-authored SCENES (section 5b), not the
+            generic particle field, so each one is a directed little film. ---- */
+    { key:"heartbeat", phrases:["i love you","love you","love u","luv you","luv u","mesmerizing effect of heart"],
+      emojis:["❤️","❤","💞","💓","💗"] },
+    { key:"sohot",     phrases:["you look so hot","you look so hott","looking hot","so hott","so hot"], emojis:["🥵"] },
+    { key:"splat",     phrases:["shitty"], emojis:["💩"] },
+    { key:"blizzard",  phrases:["snowing","freezing","so cold","blizzard"], strictPhrases:["snow"],
+      emojis:["🥶","❄","☃","⛄","🌨"] },
+    { key:"lickswipe", phrases:["lick","licking"], emojis:["👅"] },
+    { key:"bigkiss",   phrases:["kisses","muah","mwah"], strictPhrases:["kiss"], emojis:["💋","😘","😗","😙","😚"] },
+    { key:"apology",   phrases:["so sorry","apologies","my bad"], strictPhrases:["sorry","sry"], emojis:["🙇"] },
+    { key:"stickhug",  phrases:["hugs","cuddle"], strictPhrases:["hug"], emojis:["🤗","🫂"] },
+    { key:"mindblown", phrases:["mind blown","mindblown","blew my mind"], emojis:["🤯"] },
+    { key:"boo",       phrases:["spooky"], strictPhrases:["boo","ghost"], emojis:["👻"] },
+    { key:"autumn",    phrases:["autumn","fall vibes","leaves falling"], emojis:["🍂","🍁"] },
+    { key:"glimmer",  phrases:["so touched","means a lot"], emojis:["🥹"] },
+    { key:"punch",    phrases:["punch","knock out"], emojis:["👊","🥊"] },
+    { key:"halo",     phrases:["innocent"], emojis:["😇"] },
+    { key:"cash",     phrases:["payday","rich","money money"], emojis:["🤑","💸","💰"] },
+    { key:"zip",      phrases:["shut up","zip it","be quiet"], emojis:["🤐"] },
+    { key:"dizzy",    phrases:["dizzy","woozy"], emojis:["🥴","😵"] },
     { key:"sunrise",  phrases:["rise and shine","good morning","gud morning","morning!"],
       emojis:["☀","🌅","🌞","🌄"] },
     { key:"moonrise", phrases:["good night","goodnight","gud night","nighty night","sweet dreams","sleep well"],
       strictPhrases:["gn"], emojis:["🌙","🌜","🌛","🌃","😴","💤"] },
-    { key:"laughing", phrases:["haha","hehe","lol","lmao","rofl"],
-      emojis:["😂","🤣"] },
-    /* "wow" and "oh no" are opposite feelings, so they get their own effects
-       rather than one shared burst - same for anger versus fire. */
-    { key:"surprise", phrases:["wow","whoa","omg","oh my god","no way"],
-      emojis:["😮","😯","😲","🤯"] },
-    { key:"crying",   phrases:["oh no","ohno","so sad","heartbroken"],
-      emojis:["😢","😭","💧","🥺","😥"] },
-    { key:"fury",     phrases:["angry","furious","so mad"], strictPhrases:["mad"],
-      emojis:["😠","😡","🤬"] },
-    { key:"fire",     phrases:["on fire","lit up"],
-      emojis:["🔥"] }
+    { key:"laughing", phrases:["haha","hehe","lol","lmao","rofl"], emojis:["😂","🤣"] },
+    { key:"surprise", phrases:["wow","whoa","omg","oh my god","no way"], emojis:["😮","😯","😲"] },
+    { key:"crying",   phrases:["oh no","ohno","so sad","heartbroken"], emojis:["😢","😭","💧","🥺","😥"] },
+    { key:"fury",     phrases:["angry","furious","so mad"], strictPhrases:["mad"], emojis:["😠","😡","🤬"] },
+    { key:"fire",     phrases:["on fire","lit up"], emojis:["🔥"] }
   ];
 
-  /* strip emoji variation selectors + skin tones so comparisons are stable */
   const stripVS=t=>t.replace(/[\uFE0E\uFE0F\u200D]/g,"").replace(/[\u{1F3FB}-\u{1F3FF}]/gu,"");
   const escapeRe=t=>t.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");
 
-  /* Special-cased name trigger. A regex handles the repeated-i variants
-     (nandini, nandiniiii, Nandiiiniii...) that a fixed phrase list cannot. */
-  const NAME_RE=/n\s*a\s*n\s*d\s*i+\s*n\s*i+/i;
-
   function detect(input){
     if(typeof input!=="string") return null;
-    const raw=input.trim();
-    if(!raw) return null;
-    const text=raw.toLowerCase();
-    const bare=stripVS(raw);
+    const raw=input.trim(); if(!raw) return null;
+    const text=raw.toLowerCase(), bare=stripVS(raw);
     if(NAME_RE.test(text)) return "angelic";
-
-    for(const entry of DICTIONARY){
-      // emoji anywhere in the message
-      for(const e of (entry.emojis||[])){
-        if(bare.indexOf(stripVS(e))!==-1) return entry.key;
-      }
-      // free phrases: substring, case-insensitive
-      for(const p of (entry.phrases||[])){
-        if(text.indexOf(p.toLowerCase())!==-1) return entry.key;
-      }
-      // ambiguous words: require a word boundary
-      for(const p of (entry.strictPhrases||[])){
-        if(new RegExp("\\b"+escapeRe(p.toLowerCase())+"\\b").test(text)) return entry.key;
-      }
+    for(const e of DICTIONARY){
+      for(const m of (e.emojis||[])) if(bare.indexOf(stripVS(m))!==-1) return e.key;
+      for(const p of (e.phrases||[])) if(text.indexOf(p.toLowerCase())!==-1) return e.key;
+      for(const p of (e.strictPhrases||[]))
+        if(new RegExp("\\b"+escapeRe(p.toLowerCase())+"\\b").test(text)) return e.key;
     }
     return null;
   }
 
   /* ---------------------------------------------------------------
-     3. OVERLAY (built lazily, never present until first use)
+     2. OVERLAY (built lazily)
      --------------------------------------------------------------- */
-  let root=null,canvas=null,ctx=null,wash=null,sun=null;
-  let W=0,H=0,dpr=1;
-
+  let root=null,canvas=null,ctx=null,wash=null,dom=null,W=0,H=0,dpr=1;
   function build(){
     if(root) return;
-    root=document.createElement("div");
-    root.id="fxOverlay";
-    root.setAttribute("aria-hidden","true");     // decorative only
-    canvas=document.createElement("canvas");
-    canvas.id="fxCanvas";
-    wash=document.createElement("div");
-    wash.className="fx-wash";
-    root.appendChild(wash);
-    root.appendChild(canvas);
+    root=document.createElement("div"); root.id="fxOverlay"; root.setAttribute("aria-hidden","true");
+    wash=document.createElement("div"); wash.className="fxL-wash";
+    canvas=document.createElement("canvas"); canvas.id="fxCanvas";
+    dom=document.createElement("div"); dom.className="fxL-dom";
+    root.appendChild(wash); root.appendChild(canvas); root.appendChild(dom);
     document.body.appendChild(root);
     ctx=canvas.getContext("2d");
-    resize();
-    addEventListener("resize",resize,{passive:true});
+    resize(); addEventListener("resize",resize,{passive:true});
   }
   function resize(){
     if(!canvas) return;
@@ -4481,346 +4794,1338 @@ const ScreenFX=(function(){
   }
 
   /* ---------------------------------------------------------------
-     PARTICLE SYSTEM - one rAF loop, only alive while an effect runs
+     3. PHYSICS PARTICLE FIELD
+     Every particle integrates properly and eases out; nothing is a
+     rigid loop. Fields:
+       vx,vy velocity   g gravity   drag air resistance
+       sway,swaySpeed   wind        spin,vr rotation
+       trail  n points of history drawn as a fading tail
+       bounce  reflect off the viewport frame with energy loss
      --------------------------------------------------------------- */
-  let particles=[],raf=0,startedAt=0,activeEffect=null,timer=null;
+  let particles=[],raf=0,startedAt=0,activeEffect=null,timer=null,lastT=0;
   const rnd=(a,b)=>a+Math.random()*(b-a);
   const pick=a=>a[(Math.random()*a.length)|0];
-  const CONFETTI_COLORS=["#ff5c8a","#ffd166","#5ad2ff","#8ef0a8","#c08bff","#ff8a4c"];
+  const sat=v=>v<0?0:v>1?1:v;
+  const easeOut=v=>1-Math.pow(1-sat(v),3);
 
-  function makeParticles(key){
-    const P=[];
-    const n=v=>Math.round(v*(W<420?0.72:1));      // fewer pieces on a phone
+  function P(o){
+    o.x=o.x||0; o.y=o.y||0; o.vx=o.vx||0; o.vy=o.vy||0;
+    o.g=o.g||0; o.drag=(o.drag===undefined)?0.06:o.drag;
+    o.rot=o.rot||0; o.vr=o.vr||0;
+    o.delay=o.delay||0; o.born=0;
+    o.life=o.life||3.2;
+    o.phase=(o.phase===undefined)?Math.random()*6.28:o.phase;
+    if(o.trail) o.pts=[];
+    particles.push(o);
+    return o;
+  }
+
+  const GOLD=["#ffe9a8","#ffd166","#ffbe3d","#fff6d5"];
+  const CONF=["#ff5c8a","#ffd166","#5ad2ff","#8ef0a8","#c08bff","#ff8a4c"];
+
+  function seed(key){
+    particles=[];
+    const n=v=>Math.max(4,Math.round(v*(W<420?0.7:1)));
 
     if(key==="confetti"){
-      for(let i=0;i<n(84);i++) P.push({
-        x:rnd(0,W), y:rnd(-H*0.5,-10), vx:rnd(-45,45), vy:rnd(150,320),
-        rot:rnd(0,6.28), vr:rnd(-7,7), w:rnd(6,11), h:rnd(9,16),
-        color:pick(CONFETTI_COLORS), kind:"rect", delay:rnd(0,.5)
-      });
-      for(let i=0;i<n(14);i++) P.push({
-        x:rnd(0,W), y:rnd(-H*0.4,-10), vx:rnd(-35,35), vy:rnd(140,250),
-        rot:rnd(0,6.28), vr:rnd(-4,4), size:rnd(20,30),
-        glyph:pick(["🎉","🥳","🎊"]), kind:"glyph", delay:rnd(0,.6)
-      });
-    }
-    /* mild, unhurried hearts - the stick-figure scene is the main event now,
-       so these drift gently around it instead of filling the screen */
-    else if(key==="hearts"){
-      for(let i=0;i<n(16);i++) P.push({
-        x:rnd(W*0.06,W*0.94), y:H+rnd(10,150), vx:0, vy:rnd(-96,-58),
-        sway:rnd(10,30), swaySpeed:rnd(1.1,2.2), phase:rnd(0,6.28),
-        size:rnd(14,26), glyph:pick(["❤️","💖","💘","💕"]), kind:"glyph",
-        rot:0, vr:0, delay:rnd(0,2.2), pulse:true, soft:true
-      });
+      // one high-velocity central pop, shot diagonally, gravity + sway + glitter trail
+      const cx=W/2, cy=H*0.42;
+      for(let i=0;i<n(64);i++){
+        const a=rnd(-Math.PI*0.92,-Math.PI*0.08), sp=rnd(260,760);
+        P({x:cx+rnd(-14,14),y:cy+rnd(-10,10),vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,
+           g:900,drag:0.5,kind:"rect",w:rnd(6,13),h:rnd(9,17),color:pick(CONF),
+           vr:rnd(-11,11),sway:rnd(14,44),swaySpeed:rnd(1.6,3.4),
+           trail:Math.random()<0.28,life:rnd(2.6,3.6),delay:rnd(0,0.1)});
+      }
+      for(let i=0;i<n(16);i++){
+        const a=rnd(-Math.PI*0.85,-Math.PI*0.15), sp=rnd(220,540);
+        P({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,g:820,drag:0.55,
+           kind:"glyph",glyph:pick(["🎉","🥳","🎊"]),size:rnd(20,34),
+           vr:rnd(-5,5),sway:rnd(10,30),swaySpeed:rnd(1.4,2.6),life:3.2});
+      }
     }
     else if(key==="applause"){
-      for(let i=0;i<n(26);i++) P.push({
-        x:rnd(W*0.05,W*0.95), y:rnd(H*0.55,H*0.95), vx:rnd(-24,24), vy:rnd(-95,-45),
-        size:rnd(22,38), glyph:pick(["👏","🙌"]), kind:"glyph",
-        rot:rnd(-.35,.35), vr:rnd(-1.6,1.6), delay:rnd(0,1.3), pop:true
-      });
+      // hands rise from the bottom at staggered depths; each clap emits a ripple
+      for(let i=0;i<n(12);i++){
+        const depth=rnd(0.55,1.25);
+        P({x:rnd(W*0.06,W*0.94),y:H+rnd(20,120),vx:rnd(-16,16),vy:rnd(-150,-95)*depth,
+           g:120,drag:0.5,kind:"glyph",glyph:pick(["👏","🙌"]),size:rnd(26,48)*depth,
+           vr:rnd(-1.2,1.2),sway:rnd(8,22),swaySpeed:rnd(1.6,3),
+           clap:true,clapAt:rnd(0.5,1.5),clapped:false,depth:depth,
+           delay:rnd(0,1.2),life:3.4});
+      }
+    }
+    else if(key==="hearts"){
+      // a fountain from the centre bottom: heartbeat pulse + sine drift
+      for(let i=0;i<n(26);i++){
+        P({x:W/2+rnd(-70,70),y:H+rnd(10,90),vx:rnd(-40,40),vy:rnd(-210,-130),
+           g:-14,drag:0.35,kind:"heart",size:rnd(13,30),
+           color:pick(["#ff2d78","#ff5c93","#e0114f","#ff8ab5"]),
+           sway:rnd(20,56),swaySpeed:rnd(1.1,2.3),beat:true,
+           glow:true,delay:rnd(0,1.9),life:3.6});
+      }
+    }
+    else if(key==="orbit"){
+      // two or three neon hearts sweeping a spiral, each leaving a stardust tail
+      for(let i=0;i<3;i++)
+        P({kind:"orbiter",idx:i,size:rnd(20,28),
+           color:["#ff2d78","#ff7ab8","#ffd0e6"][i],
+           trail:true,tail:26,life:4.4,delay:i*0.18});
+      for(let i=0;i<n(26);i++)
+        P({x:rnd(0,W),y:rnd(0,H),vx:rnd(-10,10),vy:rnd(-18,-4),g:0,drag:0.1,
+           kind:"dot",size:rnd(1.4,3),color:"#ff9ec9",life:3.4,delay:rnd(0,2)});
     }
     else if(key==="laughing"){
-      for(let i=0;i<n(24);i++){
-        const fromLeft=Math.random()<.5;
-        P.push({
-          x:fromLeft?rnd(-40,W*0.3):rnd(W*0.7,W+40), y:H+rnd(10,120),
-          vx:fromLeft?rnd(18,64):rnd(-64,-18), vy:rnd(-165,-105),
-          size:rnd(24,44), glyph:pick(["😂","🤣"]), kind:"glyph",
-          rot:rnd(-.5,.5), vr:rnd(-3.2,3.2), delay:rnd(0,1.2), pulse:true
-        });
+      // chaotic joy: burst from centre, bounce off the frame, shatter into sparkles
+      const cx=W/2, cy=H*0.45;
+      for(let i=0;i<n(14);i++){
+        const a=rnd(0,6.28), sp=rnd(300,620);
+        P({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-120,g:1150,drag:0.16,
+           kind:"glyph",glyph:pick(["😂","🤣"]),size:rnd(26,46),
+           vr:rnd(-6,6),bounce:0.62,shatter:true,life:3.6,delay:rnd(0,0.25)});
       }
     }
-    /* WOW - a shocked burst radiating out from the middle of the screen */
+    else if(key==="crying"){
+      // glowing teardrops streaming down, rippling where they land
+      for(let i=0;i<n(26);i++)
+        P({x:rnd(0,W),y:rnd(-H*0.5,-10),vx:rnd(-6,6),vy:rnd(200,420),g:260,drag:0.02,
+           kind:"drop",size:rnd(7,14),color:"#bcdcff",ripple:true,
+           glow:Math.random()<0.45,delay:rnd(0,1.8),life:3.6});
+      for(let i=0;i<n(8);i++)
+        P({x:rnd(0,W),y:rnd(-H*0.4,-10),vx:0,vy:rnd(120,200),g:150,drag:0.02,
+           kind:"glyph",glyph:pick(["😢","😭"]),size:rnd(22,34),life:3.4,delay:rnd(0,1.4)});
+    }
     else if(key==="surprise"){
       const cx=W/2, cy=H*0.42;
-      for(let i=0;i<n(22);i++){
-        const a=rnd(0,Math.PI*2), sp=rnd(150,430);
-        P.push({
-          x:cx+Math.cos(a)*18, y:cy+Math.sin(a)*18,
-          vx:Math.cos(a)*sp, vy:Math.sin(a)*sp-40,
-          size:rnd(22,42), glyph:pick(["😮","😯","😲","🤯"]), kind:"glyph",
-          rot:0, vr:rnd(-1.2,1.2), delay:rnd(0,.35), pop:true
-        });
+      for(let i=0;i<n(20);i++){
+        const a=rnd(0,6.28), sp=rnd(260,600);
+        P({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,g:120,drag:0.9,
+           kind:"glyph",glyph:pick(["😮","😯","😲","🤯"]),size:rnd(22,44),
+           vr:rnd(-2,2),pop:true,life:2.6,delay:rnd(0,0.2)});
+      }
+      P({kind:"shock",x:cx,y:cy,r0:10,r1:Math.max(W,H)*0.75,color:"#cfe6ff",life:1.1});
+    }
+    else if(key==="fury"||key==="fire"){
+      const faces=key==="fury";
+      for(let i=0;i<n(26);i++){
+        const isFace=faces&&Math.random()<0.3;
+        P({x:rnd(0,W),y:H+rnd(4,90),vx:rnd(-24,24),vy:rnd(-280,-150),g:-90,drag:0.3,
+           kind:isFace?"glyph":"ember",
+           glyph:pick(["😠","😡","🤬"]),size:isFace?rnd(20,40):rnd(4,11),
+           color:pick(["#ffb03a","#ff6a1e","#ff3b12","#ffd98a"]),
+           sway:rnd(10,34),swaySpeed:rnd(2.4,5),flicker:true,glow:!isFace,
+           delay:rnd(0,1.4),life:3.2,jitter:isFace?rnd(2,5):0});
       }
     }
-    /* CRYING - slow teardrops running down the screen */
-    else if(key==="crying"){
-      for(let i=0;i<n(20);i++) P.push({
-        x:rnd(W*0.05,W*0.95), y:rnd(-H*0.3,-10), vx:rnd(-8,8), vy:rnd(95,180),
-        size:rnd(20,36), glyph:pick(["😢","😭","😥"]), kind:"glyph",
-        rot:0, vr:rnd(-.35,.35), delay:rnd(0,1.1)
-      });
-      for(let i=0;i<n(18);i++) P.push({
-        x:rnd(0,W), y:rnd(-H*0.35,-10), vx:rnd(-4,4), vy:rnd(200,330),
-        size:rnd(11,20), glyph:"💧", kind:"glyph",
-        rot:0, vr:0, delay:rnd(0,1.4)
-      });
-    }
-    /* ANGRY - faces jittering in place, no flames */
-    else if(key==="fury"){
-      for(let i=0;i<n(22);i++) P.push({
-        x:rnd(W*0.08,W*0.92), y:rnd(H*0.2,H*0.85), vx:rnd(-14,14), vy:rnd(-52,-14),
-        size:rnd(24,44), glyph:pick(["😠","😡","🤬"]), kind:"glyph",
-        rot:rnd(-.22,.22), vr:rnd(-1.1,1.1), delay:rnd(0,1), jitter:rnd(2.5,6)
-      });
-    }
-    /* FIRE - flames climbing the bottom edge, flickering */
-    else if(key==="fire"){
-      for(let i=0;i<n(38);i++) P.push({
-        x:rnd(0,W), y:H+rnd(6,110), vx:rnd(-26,26), vy:rnd(-260,-140),
-        size:rnd(16,44), glyph:"🔥", kind:"glyph",
-        rot:rnd(-.25,.25), vr:rnd(-1.2,1.2), delay:rnd(0,1.1), flicker:true,
-        sway:rnd(8,26), swaySpeed:rnd(3,6), phase:rnd(0,6.28)
-      });
-    }
-    /* ANGELIC - a halo of light: feathers drifting down through rising motes */
-    else if(key==="angelic"){
-      for(let i=0;i<n(30);i++) P.push({          // slow golden motes rising
-        x:rnd(0,W), y:H+rnd(10,200), vx:rnd(-10,10), vy:rnd(-84,-40),
-        sway:rnd(8,26), swaySpeed:rnd(.8,1.8), phase:rnd(0,6.28),
-        size:rnd(9,20), glyph:pick(["✨","🌟","💫"]), kind:"glyph",
-        rot:0, vr:rnd(-.4,.4), delay:rnd(0,2.2), pulse:true
-      });
-      for(let i=0;i<n(10);i++) P.push({          // feathers falling gently
-        x:rnd(0,W), y:rnd(-H*0.4,-20), vx:rnd(-16,16), vy:rnd(34,64),
-        sway:rnd(20,46), swaySpeed:rnd(1.1,2.1), phase:rnd(0,6.28),
-        size:rnd(18,30), glyph:pick(["🕊️","🪶"]), kind:"glyph",
-        rot:rnd(-.4,.4), vr:rnd(-.8,.8), delay:rnd(0,1.6)
-      });
-      for(let i=0;i<n(26);i++) P.push({          // fine dust catching the light
-        x:rnd(0,W), y:rnd(0,H), vx:rnd(-14,14), vy:rnd(-30,-8),
-        size:rnd(2,4.5), kind:"rect", w:rnd(2,3.6), h:rnd(2,3.6),
-        color:pick(["#fff6d5","#ffe9a8","#ffffff","#ffdf94"]),
-        rot:0, vr:0, delay:rnd(0,2.4), soft:true
-      });
-    }
-    /* GOOD NIGHT - stars twinkling while the moon climbs */
-    else if(key==="moonrise"){
-      for(let i=0;i<n(26);i++) P.push({
-        x:rnd(0,W), y:rnd(H*0.05,H*0.8), vx:rnd(-6,6), vy:rnd(-26,-6),
-        size:rnd(10,22), glyph:pick(["✨","⭐","🌟","💫"]), kind:"glyph",
-        rot:0, vr:rnd(-.5,.5), delay:rnd(0,1.8), pulse:true, phase:rnd(0,6.28)
-      });
-      for(let i=0;i<n(6);i++) P.push({
-        x:rnd(W*0.1,W*0.9), y:rnd(H*0.3,H*0.7), vx:rnd(-10,10), vy:rnd(-30,-12),
-        size:rnd(20,30), glyph:pick(["💤","😴"]), kind:"glyph",
-        rot:0, vr:rnd(-.3,.3), delay:rnd(.4,2), pulse:true, phase:rnd(0,6.28)
-      });
-    }
     else if(key==="sunrise"){
-      for(let i=0;i<n(16);i++) P.push({
-        x:rnd(0,W), y:rnd(H*0.25,H*0.9), vx:rnd(-10,10), vy:rnd(-46,-18),
-        size:rnd(12,22), glyph:pick(["✨","☀️","🌟"]), kind:"glyph",
-        rot:0, vr:rnd(-.7,.7), delay:rnd(0,1.6), pulse:true
-      });
+      for(let i=0;i<n(34);i++)
+        P({x:rnd(0,W),y:H+rnd(0,160),vx:rnd(-10,10),vy:rnd(-70,-26),g:0,drag:0.08,
+           kind:"dot",size:rnd(1.6,4),color:pick(GOLD),glow:true,
+           sway:rnd(10,30),swaySpeed:rnd(.7,1.7),life:3.8,delay:rnd(0,2.4)});
     }
-    return P;
+    else if(key==="moonrise"){
+      for(let i=0;i<n(30);i++)
+        P({x:rnd(0,W),y:rnd(0,H*0.9),vx:rnd(-5,5),vy:rnd(-22,-5),g:0,drag:0.06,
+           kind:"star",size:rnd(1.6,3.6),color:"#eaf0ff",twinkle:true,
+           life:3.8,delay:rnd(0,2.4)});
+      for(let i=0;i<n(5);i++)
+        P({x:rnd(W*0.1,W*0.9),y:rnd(H*0.3,H*0.7),vx:rnd(-8,8),vy:rnd(-26,-10),
+           kind:"glyph",glyph:pick(["💤","😴"]),size:rnd(20,30),drag:.1,life:3.4,delay:rnd(.4,2)});
+    }
+    else if(key==="angelic"||key==="halo"){
+      for(let i=0;i<n(34);i++)
+        P({x:rnd(0,W),y:rnd(0,H),vx:rnd(-12,12),vy:rnd(-28,-6),g:0,drag:0.05,
+           kind:"dot",size:rnd(1.4,3.6),color:pick(["#fff6d5","#ffffff","#ffe9a8"]),
+           glow:true,sway:rnd(6,20),swaySpeed:rnd(.6,1.4),twinkle:true,
+           life:4,delay:rnd(0,2.6)});
+      for(let i=0;i<n(7);i++)
+        P({x:rnd(0,W),y:rnd(-H*0.35,-20),vx:rnd(-14,14),vy:rnd(36,66),g:26,drag:0.5,
+           kind:"glyph",glyph:pick(["🕊️","🪶"]),size:rnd(18,30),
+           vr:rnd(-.7,.7),sway:rnd(22,50),swaySpeed:rnd(1,2),life:3.6,delay:rnd(0,1.6)});
+    }
+    else if(key==="heatwave"){
+      for(let i=0;i<n(18);i++)
+        P({x:rnd(0,W),y:H+rnd(0,80),vx:rnd(-14,14),vy:rnd(-120,-60),g:-30,drag:0.2,
+           kind:"ember",size:rnd(3,8),color:pick(["#ffb03a","#ff7a3a","#ffd08a"]),
+           glow:true,sway:rnd(18,44),swaySpeed:rnd(1.6,3.4),flicker:true,
+           life:3.4,delay:rnd(0,1.8)});
+      for(let i=0;i<3;i++)
+        P({kind:"shock",x:W/2,y:H*0.5,r0:20,r1:Math.max(W,H)*0.6,color:"#ff9a4a",
+           life:2.2,delay:i*0.5});
+    }
+    else if(key==="freeze"){
+      for(let i=0;i<n(34);i++)
+        P({x:rnd(0,W),y:rnd(-H*0.6,-10),vx:rnd(-8,8),vy:rnd(34,96),g:8,drag:0.12,
+           kind:"flake",size:rnd(3,8),color:"#ffffff",
+           sway:rnd(24,64),swaySpeed:rnd(.6,1.6),vr:rnd(-1.1,1.1),glow:Math.random()<0.4,
+           life:4,delay:rnd(0,2.2)});
+    }
+    else if(key==="midas"){
+      const cx=W/2, cy=H*0.44;
+      P({kind:"glyph",glyph:"💩",x:cx,y:cy,size:52,drag:1,pop:true,life:1.0});
+      for(let i=0;i<n(80);i++){
+        const a=rnd(0,6.28), sp=rnd(160,560);
+        P({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,g:260,drag:0.42,
+           kind:"star",size:rnd(2,6),color:pick(GOLD),glow:true,twinkle:true,
+           trail:Math.random()<0.4,life:rnd(2.4,3.4),delay:0.45+rnd(0,0.2)});
+      }
+    }
+    else if(key==="glimmer"){
+      const cx=W/2, cy=H*0.46;
+      for(let i=0;i<5;i++)
+        P({kind:"gloss",x:cx+rnd(-70,70),y:cy+rnd(-40,40),size:rnd(26,52),
+           swell:true,burstAt:rnd(1.5,2.3),life:3.2,delay:i*0.14});
+      for(let i=0;i<n(46);i++)
+        P({x:cx+rnd(-90,90),y:cy+rnd(-60,60),vx:rnd(-140,140),vy:rnd(-160,60),
+           g:220,drag:0.4,kind:"star",size:rnd(2,5),color:pick(["#ffffff","#cfe6ff","#ffe9a8"]),
+           glow:true,twinkle:true,life:2.6,delay:1.9+rnd(0,.5)});
+    }
+    else if(key==="kiss"){
+      for(let i=0;i<n(22);i++)
+        P({x:rnd(-40,W*0.4),y:rnd(-40,H*0.4),vx:rnd(40,120),vy:rnd(40,110),
+           g:26,drag:0.24,kind:"petal",size:rnd(10,22),
+           color:pick(["#ff4d7e","#e0114f","#ff86ac","#c40c46"]),
+           vr:rnd(-2.6,2.6),sway:rnd(16,40),swaySpeed:rnd(1,2.2),
+           life:3.8,delay:rnd(0,1.6)});
+    }
+    else if(key==="lick"){
+      for(let i=0;i<4;i++)
+        P({kind:"shock",x:W/2,y:H*0.5,r0:16,r1:Math.max(W,H)*0.85,
+           color:pick(["#ff5cc0","#ff8ad4","#ffc2ea"]),thick:true,life:2.4,delay:i*0.28});
+      for(let i=0;i<n(28);i++){
+        const a=rnd(0,6.28), sp=rnd(120,420);
+        P({x:W/2,y:H*0.5,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,g:0,drag:0.85,
+           kind:"dot",size:rnd(3,9),color:pick(["#ff6ec7","#ffa8de"]),glow:true,
+           trail:true,life:2.6,delay:rnd(0,.5)});
+      }
+    }
+    else if(key==="punch"){
+      P({kind:"shock",x:W/2,y:H*0.44,r0:8,r1:Math.max(W,H)*0.95,color:"#ffffff",
+         sharp:true,life:0.85});
+      for(let i=0;i<n(30);i++){
+        const a=rnd(0,6.28), sp=rnd(320,900);
+        P({x:W/2,y:H*0.44,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,g:180,drag:1.5,
+           kind:"shard",size:rnd(6,20),color:"#ffffff",vr:rnd(-8,8),life:1.1});
+      }
+    }
+    else if(key==="cash"){
+      for(let i=0;i<n(30);i++)
+        P({x:rnd(0,W),y:rnd(-H*0.7,-30),vx:rnd(-24,24),vy:rnd(90,190),g:230,drag:0.16,
+           kind:"bill",w:rnd(26,44),h:rnd(14,22),vr:rnd(-3.4,3.4),
+           sway:rnd(14,40),swaySpeed:rnd(1,2.2),burstLow:true,
+           life:3.6,delay:rnd(0,1.8)});
+    }
+    else if(key==="dizzy"){
+      for(let i=0;i<7;i++)
+        P({kind:"orbiter",idx:i,ring:true,size:rnd(11,17),color:"#ffe14d",
+           glow:true,life:3.2,delay:i*0.06});
+    }
+    else if(key==="zip"){
+      for(let i=0;i<n(16);i++)
+        P({x:W/2+rnd(-30,30),y:H/2+rnd(-6,6),vx:rnd(-260,260),vy:rnd(-160,160),
+           g:120,drag:1.1,kind:"dot",size:rnd(2,5),color:"#8df2ff",glow:true,
+           life:1.6,delay:rnd(0.1,0.35)});
+    }
+    return particles;
   }
 
   /* ---------------------------------------------------------------
-     STICK-FIGURE SCENE - drawn procedurally, no images, no library.
-     He walks up, kneels, offers the ring; she raises her arms.
+     4. DRAW HELPERS
      --------------------------------------------------------------- */
-  let sceneInk="#ffffff";
-  const lerp=(a,b,u)=>a+(b-a)*u;
-  const sat=v=>v<0?0:v>1?1:v;
-
-  function limb(ax,ay,bx,by){ ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke(); }
-  function ring(x,y,r,fill){ ctx.beginPath(); ctx.arc(x,y,r,0,6.2832); fill?ctx.fill():ctx.stroke(); }
-
-  function drawProposal(t,alpha){
-    const S=Math.max(46,Math.min(74,W*0.17));       // figure unit, scales with screen
-    const baseY=Math.min(H*0.84,H-S*0.5);
-    const cx=W/2;
-    const walk=sat(t/0.7);                           // he approaches
-    const kneel=sat((t-0.75)/0.85);                  // then goes down on one knee
-    const reach=sat((t-1.5)/0.55);                   // offers the ring
-    const joy=sat((t-2.1)/0.5);                      // her arms go up
-    const out=t>3.25?1-sat((t-3.25)/0.75):1;         // gentle exit
-
-    const gx=lerp(cx-S*2.0,cx-S*0.95,walk);          // him
-    const wx=cx+S*0.85;                              // her
-
-    ctx.save();
-    ctx.globalAlpha=Math.max(0,Math.min(1,alpha*out));
-    ctx.strokeStyle=sceneInk; ctx.fillStyle=sceneInk;
-    ctx.lineWidth=Math.max(2,S*0.05); ctx.lineCap="round"; ctx.lineJoin="round";
-
-    /* ---- him: standing -> kneeling ---- */
-    const hipY=lerp(baseY-S*0.78,baseY-S*0.52,kneel);
-    const headR=S*0.145;
-    const headY=hipY-S*0.62;
-    ring(gx,headY,headR,false);                       // head
-    limb(gx,headY+headR,gx,hipY);                     // spine
-    // back leg folds to the ground as he kneels
-    const kneeX=lerp(gx-S*0.16,gx-S*0.30,kneel), kneeY=lerp(baseY-S*0.36,baseY,kneel);
-    limb(gx,hipY,kneeX,kneeY);
-    limb(kneeX,kneeY,lerp(gx-S*0.30,gx-S*0.62,kneel),baseY);
-    // front leg stays planted, knee up
-    const fkX=lerp(gx+S*0.16,gx+S*0.26,kneel), fkY=lerp(baseY-S*0.36,baseY-S*0.46,kneel);
-    limb(gx,hipY,fkX,fkY);
-    limb(fkX,fkY,gx+S*0.26,baseY);
-    // arm offering the ring
-    const shY=hipY-S*0.46;
-    const handX=lerp(gx+S*0.18,gx+S*0.66,reach), handY=lerp(shY+S*0.18,shY-S*0.04,reach);
-    limb(gx,shY,handX,handY);
-    if(reach>0.15){                                   // the ring itself
-      ctx.save();
-      ctx.globalAlpha=Math.max(0,Math.min(1,alpha*out*reach));
-      ctx.strokeStyle="#ffd469"; ctx.lineWidth=Math.max(1.6,S*0.035);
-      ring(handX+S*0.07,handY-S*0.02,S*0.075,false);
-      ctx.fillStyle="#fff3c4";
-      ring(handX+S*0.07,handY-S*0.10,S*0.028,true);   // the stone
-      ctx.restore();
-      ctx.strokeStyle=sceneInk; ctx.lineWidth=Math.max(2,S*0.05);
+  /* shadowBlur is far too slow to run per-particle per-frame, so each glow is
+     pre-rendered once into a small offscreen canvas and then blitted. This is
+     what keeps twenty effects at 60fps. */
+  const spriteCache=new Map();
+  function glowSprite(color,r){
+    const R=Math.max(4,Math.min(64,Math.round(r)));
+    const k=color+"|"+R;
+    let c=spriteCache.get(k);
+    if(c) return c;
+    c=document.createElement("canvas");
+    c.width=c.height=R*4;
+    const g=c.getContext("2d");
+    const grd=g.createRadialGradient(R*2,R*2,0,R*2,R*2,R*2);
+    grd.addColorStop(0,color);
+    grd.addColorStop(.30,color);
+    grd.addColorStop(1,"rgba(0,0,0,0)");
+    g.globalAlpha=.85; g.fillStyle=grd;
+    g.beginPath(); g.arc(R*2,R*2,R*2,0,6.2832); g.fill();
+    spriteCache.set(k,c);
+    return c;
+  }
+  function blitGlow(g,color,size){
+    const sp=glowSprite(color,size);
+    g.drawImage(sp,-sp.width/2,-sp.height/2);
+  }
+  function heartPath(g,x,y,s){
+    g.beginPath();
+    g.moveTo(x,y+s*0.32);
+    g.bezierCurveTo(x,y-s*0.10, x-s*0.62,y-s*0.16, x-s*0.62,y+s*0.18);
+    g.bezierCurveTo(x-s*0.62,y+s*0.56, x-s*0.14,y+s*0.72, x,y+s*1.00);
+    g.bezierCurveTo(x+s*0.14,y+s*0.72, x+s*0.62,y+s*0.56, x+s*0.62,y+s*0.18);
+    g.bezierCurveTo(x+s*0.62,y-s*0.16, x,y-s*0.10, x,y+s*0.32);
+    g.closePath();
+  }
+  function starPath(g,x,y,r){
+    g.beginPath();
+    for(let i=0;i<8;i++){
+      const a=(Math.PI/4)*i, rr=(i%2===0)?r:r*0.38;
+      const px=x+Math.cos(a)*rr, py=y+Math.sin(a)*rr;
+      i?g.lineTo(px,py):g.moveTo(px,py);
     }
-
-    /* ---- her: skirt, arms lifting with joy ---- */
-    const wHipY=baseY-S*0.70, wHeadY=wHipY-S*0.62;
-    ring(wx,wHeadY,headR,false);
-    limb(wx,wHeadY+headR,wx,wHipY-S*0.18);
-    ctx.beginPath();                                  // skirt
-    ctx.moveTo(wx,wHipY-S*0.22);
-    ctx.lineTo(wx-S*0.30,wHipY+S*0.30);
-    ctx.lineTo(wx+S*0.30,wHipY+S*0.30);
-    ctx.closePath(); ctx.stroke();
-    limb(wx-S*0.16,wHipY+S*0.30,wx-S*0.18,baseY);     // legs
-    limb(wx+S*0.16,wHipY+S*0.30,wx+S*0.18,baseY);
-    const aShY=wHeadY+S*0.34;                         // arms rise as she reacts
-    const aY=lerp(aShY+S*0.30,aShY-S*0.34,joy);
-    limb(wx,aShY,wx-lerp(S*0.22,S*0.40,joy),aY);
-    limb(wx,aShY,wx+lerp(S*0.22,S*0.40,joy),aY);
-    // hair, so the two figures read differently at a glance
-    ctx.beginPath();
-    ctx.arc(wx,wHeadY,headR*1.18,Math.PI*0.15,Math.PI*0.85,false);
-    ctx.stroke();
-
-    /* ---- ground ---- */
-    ctx.globalAlpha=Math.max(0,Math.min(1,alpha*out*0.35));
-    limb(cx-S*2.2,baseY,cx+S*2.2,baseY);
-
-    /* ---- a couple of hearts between them once she reacts ---- */
-    if(joy>0){
-      ctx.globalAlpha=Math.max(0,Math.min(1,alpha*out*joy));
-      ctx.font=(S*0.34)+"px system-ui,'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
-      ctx.textAlign="center"; ctx.textBaseline="middle";
-      const midX=(gx+wx)/2;
-      for(let i=0;i<3;i++){
-        const u=sat(joy-i*0.18);
-        ctx.globalAlpha=Math.max(0,Math.min(1,alpha*out*u*(1-u*0.5)));
-        ctx.fillText("❤️",midX+(i-1)*S*0.34,headY-S*0.1-u*S*0.85);
-      }
-    }
-    ctx.restore();
+    g.closePath();
+  }
+  function dropPath(g,x,y,s){
+    g.beginPath();
+    g.moveTo(x,y-s);
+    g.bezierCurveTo(x+s*0.86,y+s*0.22, x+s*0.62,y+s, x,y+s);
+    g.bezierCurveTo(x-s*0.62,y+s, x-s*0.86,y+s*0.22, x,y-s);
+    g.closePath();
   }
 
-  function drawScene(key,t,alpha){
-    if(key==="hearts") drawProposal(t,alpha);
-  }
-
+  /* ---------------------------------------------------------------
+     5. THE LOOP
+     --------------------------------------------------------------- */
   function frame(now){
     if(!activeEffect){ raf=0; return; }
-    const elapsed=(now-startedAt)/1000;
-    const life=elapsed/(DURATION/1000);
-    if(life>=1){ stop(); return; }
+    const life=scene?SCENE_LIFE:LIFE;
+    const el=(now-startedAt)/1000, prog=el/(life/1000);
+    if(prog>=1){ stop(); return; }
+    const dt=Math.min(0.048,(now-(lastT||now))/1000); lastT=now;
 
-    // global fade-out over the last quarter so nothing vanishes abruptly
-    const fade=life<.75?1:1-((life-.75)/.25);
+    /* a scene owns the whole frame: its own compositing, its own state */
+    if(scene){
+      ctx.clearRect(0,0,W,H);
+      ctx.save();
+      ctx.globalCompositeOperation="source-over";
+      try{ scene.draw(ctx,st,el,prog,dt); }catch(e){}
+      ctx.restore();
+      raf=requestAnimationFrame(frame);
+      return;
+    }
+
+    const gFade=prog<0.72?1:1-((prog-0.72)/0.28);
+
     ctx.clearRect(0,0,W,H);
-    drawScene(activeEffect,elapsed,fade);        // scene sits behind the particles
-
-    const dt=Math.min(0.05,(now-(frame._last||now))/1000);
-    frame._last=now;
+    ctx.globalCompositeOperation="lighter";     // additive: overlaps bloom
 
     for(let i=0;i<particles.length;i++){
       const p=particles[i];
-      if(elapsed<p.delay) continue;
-      const t=elapsed-p.delay;
+      if(el<p.delay) continue;
+      const t=el-p.delay;
+      const u=sat(t/p.life);                    // 0..1 through its own life
+      if(u>=1) continue;
 
-      if(p.kind==="rect"&&!p.soft) p.vy+=520*dt;   // confetti falls; angelic dust floats
-      p.x+=p.vx*dt; p.y+=p.vy*dt; p.rot+=p.vr*dt;
-      if(p.sway) p.x+=Math.sin(t*p.swaySpeed+p.phase)*p.sway*dt;
-      const shakeX=p.jitter?Math.sin(t*34+p.x)*p.jitter:0;   // angry faces tremble
+      /* ---- integrate ---- */
+      if(p.kind!=="orbiter"&&p.kind!=="shock"&&p.kind!=="gloss"){
+        p.vy+=p.g*dt;
+        const d=Math.exp(-p.drag*dt*6);          // exponential air resistance
+        p.vx*=d; p.vy*=d;
+        p.x+=p.vx*dt; p.y+=p.vy*dt;
+        if(p.sway) p.x+=Math.sin(t*p.swaySpeed+p.phase)*p.sway*dt;
+        p.rot+=p.vr*dt;
+        if(p.bounce){                            // reflect off the frame
+          if(p.y>H-8){ p.y=H-8; p.vy*=-p.bounce; p.vx*=0.86;
+                       if(p.shatter&&Math.abs(p.vy)<90&&!p.done){ p.done=true; shatter(p); } }
+          if(p.x<10){ p.x=10; p.vx=Math.abs(p.vx)*p.bounce; }
+          if(p.x>W-10){ p.x=W-10; p.vx=-Math.abs(p.vx)*p.bounce; }
+        }
+        if(p.clap&&!p.clapped&&t>p.clapAt){      // applause shockwave
+          p.clapped=true;
+          particles.push({kind:"shock",x:p.x,y:p.y,r0:4,r1:70*p.depth,color:"#fff3c4",
+                          life:0.85,delay:el,born:0,phase:0,vx:0,vy:0,g:0,drag:0,rot:0,vr:0});
+        }
+        if(p.burstLow&&!p.done&&p.y>H*0.82){     // cash bursts near the floor
+          p.done=true; p.vy*=1.35;
+          for(let k=0;k<5;k++)
+            particles.push({kind:"dot",x:p.x,y:p.y,vx:rnd(-90,90),vy:rnd(-90,40),g:200,drag:.5,
+              size:rnd(2,4),color:"#7dffa8",glow:true,life:1.1,delay:el,phase:0,rot:0,vr:0});
+        }
+        if(p.trail){
+          p.pts.push(p.x,p.y);
+          const cap=(p.tail||8)*2;
+          if(p.pts.length>cap) p.pts.splice(0,p.pts.length-cap);
+        }
+      }
 
-      let alpha=fade;
-      if(p.pop)   alpha*=Math.max(0,1-t/1.5);      // clap bursts fade quickly
-      if(p.glyph&&!p.pop) alpha*=Math.max(0,1-t/3.2);
-      if(p.soft) alpha*=0.72;                       // gentler than the other bursts
-      if(p.flicker) alpha*=0.75+Math.sin(t*22+p.x)*0.25;
-      if(alpha<=0.01) continue;
+      /* ---- alpha & scale, always eased ---- */
+      let a=gFade;
+      if(p.pop) a*=1-Math.pow(u,2);
+      else a*=1-Math.pow(u,1.7);                 // soft tail-off, never a hard cut
+      if(u<0.10) a*=easeOut(u/0.10);             // ease in
+      if(p.flicker) a*=0.72+Math.sin(t*20+p.phase)*0.28;
+      if(p.twinkle) a*=0.55+Math.abs(Math.sin(t*3.2+p.phase))*0.45;
+      if(a<=0.012) continue;
 
-      let scale=1;
-      if(p.pop)   scale=Math.min(1,t/0.18);        // pop in
-      if(p.pulse) scale*=1+Math.sin(t*5+p.phase)*0.08;
+      let sc=1;
+      if(p.pop) sc=0.4+easeOut(sat(t/0.22))*0.85;
+      if(p.beat){                                 // heartbeat: double-thump
+        const b=t*2.4+p.phase;
+        sc*=1+0.13*Math.sin(b)+0.07*Math.sin(b*2);
+      }
+      if(p.kind==="shard") sc*=1-u*0.5;
 
       ctx.save();
-      ctx.globalAlpha=Math.max(0,Math.min(1,alpha));
-      ctx.translate(p.x+shakeX,p.y);
-      if(p.rot) ctx.rotate(p.rot);
-      if(scale!==1) ctx.scale(scale,scale);
-      if(p.kind==="rect"){
+      ctx.globalAlpha=sat(a);
+
+      /* ---- trails ---- */
+      if(p.trail&&p.pts&&p.pts.length>=4){
+        ctx.strokeStyle=p.color||"#fff";
+        ctx.lineCap="round"; ctx.lineJoin="round";
+        for(let k=2;k<p.pts.length;k+=2){
+          const f=k/p.pts.length;
+          ctx.globalAlpha=sat(a*f*0.5);
+          ctx.lineWidth=(p.size||3)*f*0.8;
+          ctx.beginPath();
+          ctx.moveTo(p.pts[k-2],p.pts[k-1]);
+          ctx.lineTo(p.pts[k],p.pts[k+1]);
+          ctx.stroke();
+        }
+        ctx.globalAlpha=sat(a);
+      }
+
+      /* glow is a cached sprite, applied inside the shape switch below */
+
+      /* ---- shapes that position themselves ---- */
+      if(p.kind==="shock"){
+        const k=easeOut(u);
+        const r=p.r0+(p.r1-p.r0)*k;
+        ctx.globalAlpha=sat(a*(1-k)*(p.sharp?1:0.8));
+        ctx.strokeStyle=p.color; ctx.lineWidth=p.sharp?3.5*(1-k)+0.6:(p.thick?7*(1-k)+1:2.4*(1-k)+0.5);
+        ctx.beginPath(); ctx.arc(p.x,p.y,r,0,6.2832); ctx.stroke();
+        ctx.restore(); continue;
+      }
+      if(p.kind==="orbiter"){
+        // sweeping spiral orbit around the centre
+        const isRing=p.ring;
+        const spin=isRing?t*3.4:t*1.5;
+        const ang=spin+(p.idx*(isRing?0.9:2.1));
+        const rad=isRing?46+Math.sin(t*2)*6
+                        :(Math.min(W,H)*0.3)*(0.45+0.55*Math.sin(t*0.7+p.idx));
+        const ox=W/2+Math.cos(ang)*rad*1.3, oy=(isRing?H*0.42:H*0.46)+Math.sin(ang)*rad*0.72;
+        p.x=ox; p.y=oy;
+        if(p.trail){ p.pts=p.pts||[]; p.pts.push(ox,oy);
+                     const cap=(p.tail||20)*2; if(p.pts.length>cap) p.pts.splice(0,p.pts.length-cap);
+                     ctx.strokeStyle=p.color; ctx.lineCap="round";
+                     for(let k=2;k<p.pts.length;k+=2){ const f=k/p.pts.length;
+                       ctx.globalAlpha=sat(a*f*0.55); ctx.lineWidth=p.size*f*0.5;
+                       ctx.beginPath(); ctx.moveTo(p.pts[k-2],p.pts[k-1]);
+                       ctx.lineTo(p.pts[k],p.pts[k+1]); ctx.stroke(); }
+                     ctx.globalAlpha=sat(a); }
+        ctx.save(); ctx.translate(ox,oy); blitGlow(ctx,p.color,p.size*1.15); ctx.restore();
         ctx.fillStyle=p.color;
-        ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
-      }else{
-        ctx.font=p.size+"px system-ui,'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
-        ctx.textAlign="center"; ctx.textBaseline="middle";
-        ctx.fillText(p.glyph,0,0);
+        if(isRing) starPath(ctx,ox,oy,p.size*0.6), ctx.fill();
+        else heartPath(ctx,ox,oy-p.size*0.5,p.size), ctx.fill();
+        ctx.restore(); continue;
+      }
+      if(p.kind==="gloss"){
+        // a swelling glossy teardrop that bursts into sparkles
+        const sw=t<p.burstAt?easeOut(sat(t/p.burstAt)):1;
+        if(t>p.burstAt+0.25){ ctx.restore(); continue; }
+        const s=p.size*(0.4+sw*0.9)*(t>p.burstAt?1+(t-p.burstAt)*2:1);
+        const al=t>p.burstAt?sat(a*(1-(t-p.burstAt)/0.25)):a;
+        ctx.globalAlpha=sat(al);
+        const grd=ctx.createRadialGradient(p.x-s*0.3,p.y-s*0.4,s*0.1,p.x,p.y,s);
+        grd.addColorStop(0,"#ffffff"); grd.addColorStop(.45,"#cfe6ff"); grd.addColorStop(1,"rgba(120,170,255,0)");
+        ctx.fillStyle=grd;
+        dropPath(ctx,p.x,p.y,s); ctx.fill();
+        ctx.restore(); continue;
+      }
+
+      ctx.translate(p.x+(p.jitter?Math.sin(t*30+p.x)*p.jitter:0), p.y);
+      if(p.rot) ctx.rotate(p.rot);
+      if(sc!==1) ctx.scale(sc,sc);
+
+      switch(p.kind){
+        case "rect":
+          ctx.fillStyle=p.color;
+          ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h*(0.4+0.6*Math.abs(Math.cos(p.rot))));
+          break;
+        case "glyph":
+          ctx.font=p.size+"px system-ui,'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
+          ctx.textAlign="center"; ctx.textBaseline="middle";
+          ctx.fillText(p.glyph,0,0);
+          break;
+        case "heart":
+          if(p.glow) blitGlow(ctx,p.color,p.size*1.1);
+          ctx.fillStyle=p.color;
+          heartPath(ctx,0,-p.size*0.5,p.size); ctx.fill(); break;
+        case "star":
+          if(p.glow) blitGlow(ctx,p.color,p.size*1.6);
+          ctx.fillStyle=p.color; starPath(ctx,0,0,p.size); ctx.fill(); break;
+        case "dot":
+        case "ember":
+          if(p.glow) blitGlow(ctx,p.color,p.size*1.5);
+          ctx.fillStyle=p.color;
+          ctx.beginPath(); ctx.arc(0,0,p.size,0,6.2832); ctx.fill(); break;
+        case "drop":
+          if(p.glow) blitGlow(ctx,"#9ec8ff",p.size*1.2);
+          ctx.fillStyle=p.color;
+          dropPath(ctx,0,0,p.size); ctx.fill(); break;
+        case "flake":
+          if(p.glow) blitGlow(ctx,"#dff1ff",p.size*1.1);
+          ctx.strokeStyle=p.color; ctx.lineWidth=Math.max(1,p.size*0.16); ctx.lineCap="round";
+          for(let k=0;k<3;k++){ const a2=(Math.PI/3)*k;
+            ctx.beginPath();
+            ctx.moveTo(-Math.cos(a2)*p.size,-Math.sin(a2)*p.size);
+            ctx.lineTo(Math.cos(a2)*p.size,Math.sin(a2)*p.size); ctx.stroke(); }
+          break;
+        case "petal":
+          ctx.fillStyle=p.color;
+          ctx.beginPath();
+          ctx.ellipse(0,0,p.size,p.size*0.5,0,0,6.2832);
+          ctx.fill(); break;
+        case "bill":
+          ctx.fillStyle="#2f9e5e"; ctx.strokeStyle="#9df7bf"; ctx.lineWidth=1.2;
+          const bh=p.h*(0.35+0.65*Math.abs(Math.cos(p.rot)));
+          ctx.fillRect(-p.w/2,-bh/2,p.w,bh);
+          ctx.strokeRect(-p.w/2,-bh/2,p.w,bh);
+          ctx.fillStyle="#d9ffe9"; ctx.font=(p.h*0.62)+"px var(--mono),monospace";
+          ctx.textAlign="center"; ctx.textBaseline="middle"; ctx.fillText("$",0,0);
+          break;
+        case "shard":
+          ctx.fillStyle=p.color;
+          ctx.beginPath(); ctx.moveTo(-p.size/2,0); ctx.lineTo(0,-p.size*0.16);
+          ctx.lineTo(p.size/2,0); ctx.lineTo(0,p.size*0.16); ctx.closePath(); ctx.fill();
+          break;
       }
       ctx.restore();
     }
+    ctx.globalCompositeOperation="source-over";
     raf=requestAnimationFrame(frame);
   }
 
+  function shatter(p){
+    for(let k=0;k<10;k++)
+      particles.push({kind:"star",x:p.x,y:p.y,vx:rnd(-190,190),vy:rnd(-260,-40),
+        g:520,drag:.4,size:rnd(2,5),color:pick(["#ffe27a","#fff6d5","#ffd166"]),
+        glow:true,twinkle:true,life:1.2,delay:0,born:0,phase:Math.random()*6.28,rot:0,vr:0});
+  }
+
+  /* ===============================================================
+     5b. SCENES - directed set pieces
+     ---------------------------------------------------------------
+     The particle field above is a good general-purpose sprinkler, but
+     the pieces below are choreographed: each owns its own state, its
+     own timeline and its own drawing, and each runs for a strict 4s.
+
+     A scene is { screen, wash, body, dom, init(st), draw(g,st,el,t,dt) }
+       screen  true  -> canvas composites with screen blend (neon bloom)
+               false -> normal blend, for anything with real local colour
+                        (a brown emoji or ink linework vanishes under screen)
+       el      seconds since the scene began
+       t       0..1 across the 4s window
+     Everything is integrated with velocity, gravity and drag, and every
+     transition runs through an easing curve - nothing moves linearly.
+     =============================================================== */
+  const SCENE_LIFE=4000;
+  let scene=null, st=null, detonated=null, ink="#ffffff";
+
+  /* eased sub-timeline: seg(t,a,b) is 0 before a, 1 after b */
+  const seg=(v,a,b)=>sat((v-a)/(b-a));
+  const E={
+    outCubic:v=>1-Math.pow(1-sat(v),3),
+    inCubic:v=>Math.pow(sat(v),3),
+    outQuint:v=>1-Math.pow(1-sat(v),5),
+    inOutSine:v=>-(Math.cos(Math.PI*sat(v))-1)/2,
+    outBack:v=>{const c=1.70158,x=sat(v);return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2);},
+    outElastic:v=>{const x=sat(v);if(x===0||x===1)return x;
+      return Math.pow(2,-10*x)*Math.sin((x*10-0.75)*(2*Math.PI/3))+1;},
+    outBounce:v=>{let x=sat(v);const n=7.5625,d=2.75;
+      if(x<1/d)return n*x*x;
+      if(x<2/d)return n*(x-=1.5/d)*x+0.75;
+      if(x<2.5/d)return n*(x-=2.25/d)*x+0.9375;
+      return n*(x-=2.625/d)*x+0.984375;}
+  };
+  const EMOJI_FONT="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif";
+
+  /* ---------- shared geometry ---------- */
+  /* the classic parametric heart - smoother and rounder than a bezier pair */
+  function heartPath(g,cx,cy,r){
+    g.beginPath();
+    for(let a=0;a<=6.2832;a+=0.045){
+      const x=16*Math.pow(Math.sin(a),3);
+      const y=13*Math.cos(a)-5*Math.cos(2*a)-2*Math.cos(3*a)-Math.cos(4*a);
+      const px=cx+(x/16.5)*r, py=cy-(y/16.5)*r;
+      if(a===0) g.moveTo(px,py); else g.lineTo(px,py);
+    }
+    g.closePath();
+  }
+  function softDot(g,x,y,r,c0,c1){
+    const gr=g.createRadialGradient(x,y,0,x,y,r);
+    gr.addColorStop(0,c0); gr.addColorStop(1,c1);
+    g.fillStyle=gr; g.beginPath(); g.arc(x,y,r,0,6.2832); g.fill();
+  }
+  /* six arms, each with two pairs of branches - a real flake silhouette */
+  function snowflake(g,r,lw){
+    g.lineWidth=lw; g.lineCap="round"; g.lineJoin="round";
+    for(let i=0;i<6;i++){
+      g.rotate(Math.PI/3);
+      g.beginPath(); g.moveTo(0,0); g.lineTo(0,-r); g.stroke();
+      for(const f of [0.42,0.68,0.88]){
+        const b=r*(1-f)*0.5;
+        g.beginPath();
+        g.moveTo(0,-r*f); g.lineTo(b,-r*f-b);
+        g.moveTo(0,-r*f); g.lineTo(-b,-r*f-b);
+        g.stroke();
+      }
+    }
+  }
+  /* five-lobed maple, drawn from the stem outwards */
+  function leafPath(g,r){
+    g.beginPath();
+    g.moveTo(0,r);
+    g.quadraticCurveTo(-r*0.10,r*0.45,-r*0.14,r*0.22);
+    g.quadraticCurveTo(-r*0.52,r*0.40,-r*0.46,r*0.10);
+    g.quadraticCurveTo(-r*0.30,r*0.06,-r*0.34,-r*0.06);
+    g.quadraticCurveTo(-r*0.78,-r*0.10,-r*0.62,-r*0.34);
+    g.quadraticCurveTo(-r*0.36,-r*0.26,-r*0.34,-r*0.40);
+    g.quadraticCurveTo(-r*0.22,-r*0.72,0,-r);
+    g.quadraticCurveTo(r*0.22,-r*0.72,r*0.34,-r*0.40);
+    g.quadraticCurveTo(r*0.36,-r*0.26,r*0.62,-r*0.34);
+    g.quadraticCurveTo(r*0.78,-r*0.10,r*0.34,-r*0.06);
+    g.quadraticCurveTo(r*0.30,r*0.06,r*0.46,r*0.10);
+    g.quadraticCurveTo(r*0.52,r*0.40,r*0.14,r*0.22);
+    g.quadraticCurveTo(r*0.10,r*0.45,0,r);
+    g.closePath();
+  }
+  /* glossy lips: cupid's bow on top, one full sweep below */
+  function lipsPath(g,r){
+    g.beginPath();
+    g.moveTo(-r,0);
+    g.bezierCurveTo(-r*0.66,-r*0.52,-r*0.24,-r*0.50,0,-r*0.16);
+    g.bezierCurveTo(r*0.24,-r*0.50,r*0.66,-r*0.52,r,0);
+    g.bezierCurveTo(r*0.62,r*0.66,-r*0.62,r*0.66,-r,0);
+    g.closePath();
+  }
+  function ghostPath(g,r){
+    g.beginPath();
+    g.arc(0,-r*0.12,r*0.78,Math.PI,0);            // domed head
+    g.lineTo(r*0.78,r*0.52);
+    const n=4, w=(r*1.56)/n;                       // scalloped hem
+    for(let i=0;i<n;i++){
+      const x0=r*0.78-i*w;
+      g.quadraticCurveTo(x0-w*0.5,r*0.52+(i%2?-r*0.20:r*0.26),x0-w,r*0.52);
+    }
+    g.closePath();
+  }
+  /* One stick body. Everything above the hips is drawn inside a rotation so a
+     bow is a single angle rather than a pile of hand-placed limbs. */
+  function stick(g,o){
+    const s=o.s, col=o.color||ink;
+    g.save(); g.translate(o.x,o.y);
+    g.strokeStyle=col; g.fillStyle=col;
+    g.lineWidth=Math.max(2,s*0.085); g.lineCap="round"; g.lineJoin="round";
+    /* legs from the hip */
+    const la=o.legA||0, lb=o.legB||0;
+    g.beginPath(); g.moveTo(0,0); g.lineTo(Math.sin(la)*s*0.34,s*0.52); g.stroke();
+    g.beginPath(); g.moveTo(0,0); g.lineTo(Math.sin(lb)*s*0.34,s*0.52); g.stroke();
+    g.save(); g.rotate(o.bow||0);
+    if(o.skirt){
+      g.beginPath(); g.moveTo(-s*0.30,0); g.lineTo(s*0.30,0);
+      g.lineTo(s*0.13,-s*0.34); g.lineTo(-s*0.13,-s*0.34); g.closePath(); g.fill();
+    }
+    g.beginPath(); g.moveTo(0,0); g.lineTo(0,-s*0.62); g.stroke();      // spine
+    const sh=-s*0.50;
+    g.beginPath(); g.moveTo(0,sh); g.lineTo(Math.cos(o.armA)*s*0.40,sh+Math.sin(o.armA)*s*0.40); g.stroke();
+    g.beginPath(); g.moveTo(0,sh); g.lineTo(Math.cos(o.armB)*s*0.40,sh+Math.sin(o.armB)*s*0.40); g.stroke();
+    g.beginPath(); g.arc(0,-s*0.80,s*0.19,0,6.2832); g.stroke();        // head
+    if(o.hair){ g.beginPath(); g.arc(0,-s*0.84,s*0.19,Math.PI*0.95,Math.PI*2.05); g.stroke();
+                g.beginPath(); g.moveTo(-s*0.19,-s*0.80); g.lineTo(-s*0.23,-s*0.58); g.stroke();
+                g.beginPath(); g.moveTo(s*0.19,-s*0.80); g.lineTo(s*0.23,-s*0.58); g.stroke(); }
+    const ex=(o.eye||0)*s*0.05;
+    g.beginPath(); g.arc(-s*0.07+ex,-s*0.82,s*0.022,0,6.2832); g.fill();
+    g.beginPath(); g.arc( s*0.07+ex,-s*0.82,s*0.022,0,6.2832); g.fill();
+    g.restore(); g.restore();
+  }
+
+  const SCENES={};
+
   /* ---------------------------------------------------------------
-     2. ENGINE - state + 4s self-destruct, restart-safe
+     ❤ MESMERIZING HEART
+     A red vignette breathes at the edges while a shaded neon heart
+     swells out of the middle on a real lub-dub rhythm, shedding glitter
+     that falls away slowly.
      --------------------------------------------------------------- */
+  function thump(p){                       // one anatomical beat, 0..1 -> 0..1
+    if(p<0.10) return E.outCubic(p/0.10);
+    if(p<0.24) return 1-E.outCubic((p-0.10)/0.14)*0.58;
+    if(p<0.36) return 0.42+E.outCubic((p-0.24)/0.12)*0.52;
+    if(p<0.66) return 0.94-E.outCubic((p-0.36)/0.30)*0.94;
+    return 0;
+  }
+  SCENES.heartbeat={
+    screen:true,
+    init(s){ s.em=[]; s.last=0; },
+    draw(g,s,el,t,dt){
+      const cx=W/2, cy=H*0.46;
+      const beats=seg(t,0.16,0.94)*2;                     // exactly two beats
+      const amp=t<0.16?0:thump(beats%1);
+      const grow=E.outBack(seg(t,0,0.30));
+      const fade=1-E.inCubic(seg(t,0.84,1));
+      const r=Math.min(W,H)*0.235*grow*(1+amp*0.20);
+
+      const vg=g.createRadialGradient(cx,cy,Math.min(W,H)*0.16,cx,cy,Math.max(W,H)*0.74);
+      vg.addColorStop(0,"rgba(255,40,110,0)");
+      vg.addColorStop(0.55,"rgba(255,28,102,"+(0.04+amp*0.09)*fade+")");
+      vg.addColorStop(1,"rgba(255,18,88,"+(0.20+amp*0.30)*fade+")");
+      g.fillStyle=vg; g.fillRect(0,0,W,H);
+
+      if(r>2){
+        g.save(); g.globalAlpha=fade;
+        g.shadowColor="rgba(255,45,120,.95)"; g.shadowBlur=34+amp*70;
+        const fill=g.createRadialGradient(cx-r*0.34,cy-r*0.40,r*0.06,cx,cy,r*1.18);
+        fill.addColorStop(0,"#ffd9e6"); fill.addColorStop(0.34,"#ff5c96");
+        fill.addColorStop(0.72,"#ff1f63"); fill.addColorStop(1,"#8e0030");
+        heartPath(g,cx,cy,r); g.fillStyle=fill; g.fill();
+        g.shadowBlur=0;
+        heartPath(g,cx,cy,r); g.strokeStyle="rgba(255,190,215,"+(0.45+amp*0.4)+")";
+        g.lineWidth=Math.max(1.5,r*0.018); g.stroke();
+        g.save(); g.clip();                                 // specular, inside the shape
+        softDot(g,cx-r*0.34,cy-r*0.44,r*0.42,"rgba(255,255,255,.55)","rgba(255,255,255,0)");
+        softDot(g,cx+r*0.30,cy+r*0.12,r*0.30,"rgba(255,140,190,.35)","rgba(255,140,190,0)");
+        g.restore(); g.restore();
+      }
+      /* a shower of embers on every upstroke */
+      if(amp>0.72&&el-s.last>0.28){
+        s.last=el;
+        for(let i=0;i<16;i++){
+          const a=Math.random()*6.2832, d=r*(0.55+Math.random()*0.5);
+          s.em.push({x:cx+Math.cos(a)*d,y:cy+Math.sin(a)*d*0.9,
+            vx:Math.cos(a)*rnd(8,34),vy:rnd(-14,10),sz:rnd(1.2,3.1),
+            ph:Math.random()*6.28,born:el,life:rnd(1.6,2.8)});
+        }
+      }
+      for(const p of s.em){
+        const u=(el-p.born)/p.life; if(u<0||u>=1) continue;
+        p.vy+=42*dt; p.vx*=0.985;                           // gentle settle downward
+        p.x+=p.vx*dt; p.y+=p.vy*dt;
+        const a=(1-u)*(0.5+Math.abs(Math.sin(el*3+p.ph))*0.5)*fade;
+        softDot(g,p.x+Math.sin(el*1.6+p.ph)*6,p.y,p.sz*3.4,
+                "rgba(255,214,232,"+(a*0.95)+")","rgba(255,60,130,0)");
+      }
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     🥵 YOU ARE SOO HOT
+     Neon signage with a proper filament flicker, the chat glass bending
+     behind it, embers climbing out of the floor.
+     --------------------------------------------------------------- */
+  SCENES.sohot={
+    screen:true, body:"fx-heat",
+    init(s){
+      s.em=[];
+      for(let i=0;i<34;i++) s.em.push({x:rnd(0,W),y:H+rnd(0,140),
+        vy:rnd(-150,-64),vx:rnd(-16,16),sz:rnd(1.6,4.2),ph:Math.random()*6.28,
+        born:rnd(0,1.6),life:rnd(1.8,3.0)});
+    },
+    draw(g,s,el,t,dt){
+      for(const p of s.em){                                  // rising heat
+        const u=(el-p.born)/p.life; if(u<0||u>=1) continue;
+        p.y+=p.vy*dt; p.x+=(p.vx+Math.sin(el*2.2+p.ph)*26)*dt; p.vy*=0.995;
+        const a=(1-u)*(0.55+Math.abs(Math.sin(el*9+p.ph))*0.45);
+        softDot(g,p.x,p.y,p.sz*4.2,"rgba(255,226,150,"+(a*0.9)+")","rgba(255,88,20,0)");
+      }
+      const inT=E.outBack(seg(t,0.02,0.30)), out=1-E.inCubic(seg(t,0.80,1));
+      if(inT<=0) return;
+      const fl=0.80+Math.sin(el*31)*0.07+Math.sin(el*13.3)*0.08+Math.random()*0.05;
+      const txt="YOU ARE SOO HOT";
+      let size=Math.min(H*0.13,W*0.135);
+      g.save();
+      g.textAlign="center"; g.textBaseline="middle";
+      g.font="800 "+size+"px "+"'Fraunces',Georgia,serif";
+      const wNeed=g.measureText(txt).width;
+      if(wNeed>W*0.88){ size*=W*0.88/wNeed; g.font="800 "+size+"px 'Fraunces',Georgia,serif"; }
+      g.translate(W/2,H*0.44);
+      g.scale(0.72+inT*0.28,0.72+inT*0.28);
+      g.globalAlpha=out*Math.min(1,inT*1.2)*fl;
+      const grad=g.createLinearGradient(0,-size*0.6,0,size*0.6);
+      grad.addColorStop(0,"#fff3cf"); grad.addColorStop(0.45,"#ffb347"); grad.addColorStop(1,"#ff4d12");
+      g.shadowColor="rgba(255,122,24,.95)"; g.shadowBlur=26+fl*34;
+      g.fillStyle=grad; g.fillText(txt,0,0);
+      g.shadowBlur=12; g.lineWidth=Math.max(1,size*0.02);
+      g.strokeStyle="rgba(255,236,196,.55)"; g.strokeText(txt,0,0);
+      g.restore();
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     💩 SPLAT
+     Heavy fall, squash on impact, a couple of dying bounces, and flies
+     that never quite fly straight.
+     --------------------------------------------------------------- */
+  SCENES.splat={
+    screen:false,
+    init(s){
+      s.size=Math.min(W,H)*0.17;
+      s.x=W/2; s.y=-s.size; s.vy=0; s.sq=0; s.hits=0; s.floor=H-s.size*0.46;
+      s.flies=[]; for(let i=0;i<7;i++) s.flies.push({a:Math.random()*6.28,
+        r:rnd(0.7,1.5),sp:rnd(2.2,4.6)*(Math.random()<0.5?-1:1),
+        ph:Math.random()*6.28,wob:rnd(0.6,1.9)});
+    },
+    draw(g,s,el,t,dt){
+      if(s.y<s.floor||Math.abs(s.vy)>4){
+        s.vy+=2100*dt; s.y+=s.vy*dt;
+        if(s.y>=s.floor){
+          s.y=s.floor;
+          if(s.vy>140){ s.sq=Math.min(0.62,s.vy/2600); s.vy*=-0.36; s.hits++; }
+          else s.vy=0;
+        }
+      }
+      s.sq*=Math.pow(0.0016,dt);                      // squash springs back out
+      const wob=s.hits?Math.sin(el*22)*0.02*Math.exp(-(el-0.5)*3):0;
+      const sx=1+s.sq+wob, sy=1-s.sq*0.86-wob;
+      const out=1-E.inCubic(seg(t,0.72,1));           // dissolves after ~2s of buzzing
+      g.save(); g.globalAlpha=out;
+      g.translate(s.x,s.y); g.scale(sx,sy);
+      g.font=s.size+"px "+EMOJI_FONT;
+      g.textAlign="center"; g.textBaseline="middle";
+      g.fillText("💩",0,0);
+      g.restore();
+      if(s.hits){                                     // flies only turn up after the landing
+        g.save(); g.globalAlpha=out*0.9;
+        g.strokeStyle="rgba(28,24,26,.85)"; g.fillStyle="rgba(28,24,26,.9)";
+        for(const f of s.flies){
+          f.a+=f.sp*dt;
+          const jr=s.size*(0.42+0.20*Math.sin(el*f.wob*3.1+f.ph));
+          const x=s.x+Math.cos(f.a)*jr*f.r+Math.sin(el*7+f.ph)*4;
+          const y=s.y-s.size*0.12+Math.sin(f.a*1.3+f.ph)*jr*0.42*f.r;
+          g.beginPath(); g.ellipse(x,y,2.6,1.9,f.a,0,6.2832); g.fill();
+          const w=Math.sin(el*40+f.ph)*2.4;           // blurred wing beat
+          g.lineWidth=1;
+          g.beginPath(); g.moveTo(x,y-1); g.quadraticCurveTo(x-3,y-4-w,x-5,y-1); g.stroke();
+          g.beginPath(); g.moveTo(x,y-1); g.quadraticCurveTo(x+3,y-4+w,x+5,y-1); g.stroke();
+        }
+        g.restore();
+      }
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     🥶 BLIZZARD
+     Corners frost inward (CSS), flakes fall on their own vectors, and a
+     travelling wind wave pushes the whole field sideways in gusts. What
+     lands builds a drift along the floor, which melts at the end.
+     --------------------------------------------------------------- */
+  SCENES.blizzard={
+    screen:false, wash:"snow",
+    dom:()=>'<i class="fx-frostc tl"></i><i class="fx-frostc tr"></i>'+
+            '<i class="fx-frostc bl"></i><i class="fx-frostc br"></i>',
+    init(s){
+      s.f=[]; const n=W<420?54:92;
+      for(let i=0;i<n;i++){
+        const d=rnd(0.35,1);                        // depth: size, speed and alpha
+        /* seeded across the whole viewport, not stacked above it - a blizzard
+           has to be falling everywhere the moment it starts */
+        s.f.push({x:rnd(-40,W+40),y:rnd(-H*0.5,H),d,r:5+d*17,
+          vy:40+d*130,rot:Math.random()*6.28,vr:rnd(-1.1,1.1),ph:Math.random()*6.28});
+      }
+      s.cols=Math.max(8,Math.round(W/26)); s.drift=new Array(s.cols).fill(0);
+    },
+    draw(g,s,el,t,dt){
+      const gust=Math.sin(el*0.85)*54+Math.sin(el*0.31+1.7)*30;
+      const melt=1-E.inOutSine(seg(t,0.80,1));
+      for(const p of s.f){
+        const wind=gust*p.d+Math.sin(el*1.6+p.y*0.006+p.ph)*26*p.d;
+        p.x+=wind*dt; p.y+=p.vy*dt; p.rot+=p.vr*dt;
+        if(p.y>H+20){                                 // settles into the drift
+          const c=Math.max(0,Math.min(s.cols-1,Math.floor(p.x/W*s.cols)));
+          s.drift[c]=Math.min(30,s.drift[c]+1.5*p.d);
+          p.y=-20; p.x=rnd(-40,W+40);
+        }
+        if(p.x<-60) p.x=W+50; if(p.x>W+60) p.x=-50;
+        g.save(); g.translate(p.x,p.y); g.rotate(p.rot);
+        g.globalAlpha=(0.35+p.d*0.6)*melt;
+        g.strokeStyle="#ffffff";
+        g.shadowColor="rgba(120,170,225,.85)"; g.shadowBlur=6;   // keeps it visible on light themes
+        snowflake(g,p.r,Math.max(1,p.r*0.10));
+        g.restore();
+      }
+      let any=false; for(const d of s.drift) if(d>0.5){ any=true; break; }
+      if(any){                                        // powder along the floor
+        g.save(); g.globalAlpha=0.85*melt;
+        const gr=g.createLinearGradient(0,H-34,0,H);
+        gr.addColorStop(0,"rgba(255,255,255,0)"); gr.addColorStop(1,"rgba(255,255,255,.92)");
+        g.fillStyle=gr;
+        g.beginPath(); g.moveTo(0,H);
+        for(let i=0;i<s.cols;i++){
+          const x=(i+0.5)/s.cols*W, y=H-s.drift[i]*melt;
+          i===0?g.lineTo(0,y):g.quadraticCurveTo(x-W/s.cols*0.5,y,x,y);
+        }
+        g.lineTo(W,H); g.closePath(); g.fill(); g.restore();
+      }
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     👅 LICK
+     One glossy sweep up the glass, a wet trail with a travelling
+     highlight and rising bubbles, then the trail wipes itself away.
+     --------------------------------------------------------------- */
+  SCENES.lickswipe={
+    screen:false,
+    init(s){
+      s.b=[]; for(let i=0;i<16;i++) s.b.push({x:rnd(0.1,0.9),y:Math.random(),
+        r:rnd(2.5,7),sp:rnd(0.05,0.16),ph:Math.random()*6.28});
+    },
+    draw(g,s,el,t,dt){
+      const sw=E.inOutSine(seg(t,0.02,0.46));
+      const tipY=H+H*0.30-sw*(H+H*0.60);              // tongue tip, bottom -> off the top
+      const wipe=E.inOutSine(seg(t,0.62,0.98));
+      const botY=H-wipe*H;                            // trail floor rises as it wipes
+      const alpha=1-seg(t,0.88,1);
+      if(botY>tipY){                                  // ---- wet trail ----
+        g.save(); g.globalAlpha=alpha;
+        g.beginPath(); g.rect(0,tipY,W,botY-tipY); g.clip();
+        const gr=g.createLinearGradient(0,tipY,0,botY);
+        gr.addColorStop(0,"rgba(255,120,190,.34)");
+        gr.addColorStop(0.5,"rgba(255,86,168,.20)");
+        gr.addColorStop(1,"rgba(255,150,205,.30)");
+        g.fillStyle=gr; g.fillRect(0,tipY,W,botY-tipY);
+        const lx=((el*0.45)%1.4-0.2)*W;               // light sliding over the film
+        const sh=g.createLinearGradient(lx-W*0.22,0,lx+W*0.22,0);
+        sh.addColorStop(0,"rgba(255,255,255,0)");
+        sh.addColorStop(0.5,"rgba(255,255,255,.30)");
+        sh.addColorStop(1,"rgba(255,255,255,0)");
+        g.fillStyle=sh; g.fillRect(0,tipY,W,botY-tipY);
+        for(const b of s.b){                          // bubbles in the film
+          b.y-=b.sp*dt*2.2; if(b.y<0) b.y=1;
+          const bx=b.x*W+Math.sin(el*2+b.ph)*7, by=tipY+(botY-tipY)*b.y;
+          g.beginPath(); g.arc(bx,by,b.r,0,6.2832);
+          g.fillStyle="rgba(255,255,255,.20)"; g.fill();
+          g.lineWidth=1; g.strokeStyle="rgba(255,255,255,.45)"; g.stroke();
+          g.beginPath(); g.arc(bx-b.r*0.3,by-b.r*0.34,b.r*0.26,0,6.2832);
+          g.fillStyle="rgba(255,255,255,.7)"; g.fill();
+        }
+        g.restore();
+      }
+      if(sw>0&&sw<1){                                 // ---- the tongue ----
+        const w=Math.min(W*0.34,190), h=w*1.5;
+        const cx=W/2+Math.sin(sw*Math.PI*1.6)*W*0.06;
+        g.save(); g.globalAlpha=alpha;
+        g.translate(cx,tipY+h*0.42);
+        g.rotate(Math.sin(sw*Math.PI*1.6)*0.10);
+        g.shadowColor="rgba(255,60,150,.55)"; g.shadowBlur=26;
+        g.beginPath();
+        g.moveTo(0,-h*0.5);
+        g.bezierCurveTo(w*0.56,-h*0.44,w*0.52,h*0.26,w*0.20,h*0.5);
+        g.lineTo(-w*0.20,h*0.5);
+        g.bezierCurveTo(-w*0.52,h*0.26,-w*0.56,-h*0.44,0,-h*0.5);
+        g.closePath();
+        const tg=g.createLinearGradient(-w*0.5,-h*0.5,w*0.4,h*0.5);
+        tg.addColorStop(0,"#ff9ec6"); tg.addColorStop(0.42,"#ff4f9c"); tg.addColorStop(1,"#c8206b");
+        g.fillStyle=tg; g.fill();
+        g.shadowBlur=0;
+        g.beginPath();                                 // central groove
+        g.moveTo(0,-h*0.34); g.quadraticCurveTo(w*0.05,0,0,h*0.34);
+        g.lineWidth=Math.max(2,w*0.035); g.strokeStyle="rgba(190,20,90,.45)"; g.stroke();
+        g.beginPath();                                 // gloss
+        g.ellipse(-w*0.16,-h*0.24,w*0.16,h*0.16,-0.4,0,6.2832);
+        g.fillStyle="rgba(255,255,255,.42)"; g.fill();
+        g.restore();
+      }
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     💋 KISS
+     Lips arrive with a bounce, pucker, and throw a ring that breaks
+     into hearts flying at the viewer.
+     --------------------------------------------------------------- */
+  SCENES.bigkiss={
+    screen:false,
+    init(s){ s.h=[]; s.fired=false; },
+    draw(g,s,el,t,dt){
+      const cx=W/2, cy=H*0.44, R=Math.min(W,H)*0.17;
+      const inT=E.outBack(seg(t,0,0.26));
+      const puck=Math.sin(seg(t,0.28,0.46)*Math.PI);        // squeeze and release
+      const out=1-E.inCubic(seg(t,0.82,1));
+      if(inT>0.01){
+        g.save(); g.globalAlpha=out;
+        g.translate(cx,cy);
+        g.scale(inT*(1-puck*0.20),inT*(1+puck*0.16));
+        g.shadowColor="rgba(220,10,60,.6)"; g.shadowBlur=30;
+        lipsPath(g,R);
+        const lg=g.createLinearGradient(0,-R*0.5,0,R*0.6);
+        lg.addColorStop(0,"#ff5f86"); lg.addColorStop(0.42,"#e00b45"); lg.addColorStop(1,"#8d0026");
+        g.fillStyle=lg; g.fill();
+        g.shadowBlur=0;
+        g.save(); lipsPath(g,R); g.clip();
+        softDot(g,-R*0.34,-R*0.20,R*0.34,"rgba(255,255,255,.55)","rgba(255,255,255,0)");
+        softDot(g, R*0.30, R*0.22,R*0.26,"rgba(255,160,190,.4)","rgba(255,160,190,0)");
+        g.restore();
+        g.beginPath(); g.moveTo(-R*0.92,0); g.quadraticCurveTo(0,R*0.10,R*0.92,0);
+        g.lineWidth=Math.max(1.5,R*0.03); g.strokeStyle="rgba(120,0,32,.55)"; g.stroke();
+        g.restore();
+      }
+      for(let i=0;i<3;i++){                                  // the blown wave
+        const rt=seg(t,0.42+i*0.05,0.78+i*0.05);
+        if(rt>0&&rt<1){
+          g.save(); g.globalAlpha=(1-rt)*0.5*out;
+          g.strokeStyle="#ff5f96"; g.lineWidth=Math.max(2,R*0.05*(1-rt));
+          g.beginPath(); g.arc(cx,cy,R*(0.6+E.outQuint(rt)*2.6),0,6.2832); g.stroke();
+          g.restore();
+        }
+      }
+      if(!s.fired&&t>0.44){                                  // burst
+        s.fired=true;
+        for(let i=0;i<26;i++){
+          const a=Math.random()*6.2832, sp=rnd(120,420);
+          s.h.push({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-40,
+            z:rnd(0.35,1),vr:rnd(-3,3),rot:Math.random()*6.28,born:el,life:rnd(1.1,1.8)});
+        }
+      }
+      for(const p of s.h){
+        const u=(el-p.born)/p.life; if(u<0||u>=1) continue;
+        const d=Math.exp(-0.9*dt*6); p.vx*=d; p.vy*=d; p.vy+=90*dt;
+        p.x+=p.vx*dt; p.y+=p.vy*dt; p.rot+=p.vr*dt;
+        g.save(); g.globalAlpha=(1-u*u)*out;
+        g.translate(p.x,p.y); g.rotate(p.rot);
+        g.shadowColor="rgba(255,40,100,.7)"; g.shadowBlur=12;
+        heartPath(g,0,0,7+p.z*16*(1+u*0.9));                 // grows as it nears you
+        g.fillStyle="#ff2f68"; g.fill();
+        g.restore();
+      }
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     🙇 APOLOGY
+     Slides in, bows properly from the hips, shifts his eyes about,
+     straightens up and leaves.
+     --------------------------------------------------------------- */
+  SCENES.apology={
+    screen:false,
+    init(s){ s.s=Math.min(H*0.34,190); },
+    draw(g,s,el,t){
+      const S=s.s, ground=H*0.78;
+      const inX=E.outCubic(seg(t,0,0.20)), offX=E.inCubic(seg(t,0.80,1));
+      const x=-S*0.8+(W*0.42+S*0.8)*inX-(W*0.42+S*1.6)*offX;
+      const bow=E.outCubic(seg(t,0.22,0.40))-E.outCubic(seg(t,0.64,0.78));
+      const eye=Math.sin(el*4.2)*(seg(t,0.40,0.46)-seg(t,0.62,0.68));
+      const a=1-seg(t,0.92,1);
+      g.save(); g.globalAlpha=a;
+      stick(g,{x,y:ground,s:S,bow:bow*Math.PI*0.5,
+               armA:0.5,armB:2.64,eye,legA:0.06,legB:-0.06});
+      /* the sign stays in his hand, so it rotates with him */
+      g.save();
+      g.translate(x,ground); g.rotate(bow*Math.PI*0.5);
+      g.translate(Math.cos(0.5)*S*0.40,-S*0.50+Math.sin(0.5)*S*0.40);
+      g.rotate(-0.18+bow*0.5);
+      const w=S*0.46,h=S*0.24;
+      g.fillStyle="#fdf6e6"; g.strokeStyle=ink; g.lineWidth=Math.max(1.6,S*0.014);
+      g.beginPath();
+      if(g.roundRect) g.roundRect(-w/2,-h/2,w,h,S*0.03); else g.rect(-w/2,-h/2,w,h);
+      g.fill(); g.stroke();
+      g.fillStyle="#2b2b2b"; g.textAlign="center"; g.textBaseline="middle";
+      g.font="700 "+(S*0.115)+"px 'Space Mono',monospace";
+      g.fillText("SORRY",0,0);
+      g.restore(); g.restore();
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     🤗 THE STICK HUG
+     Two walkers meet in the middle, squeeze, pop hearts, wave, leave.
+     --------------------------------------------------------------- */
+  SCENES.stickhug={
+    screen:false,
+    init(s){ s.s=Math.min(H*0.30,168); s.h=[]; s.fired=0; },
+    draw(g,s,el,t,dt){
+      const S=s.s, ground=H*0.78, cx=W/2;
+      const walkIn=E.outCubic(seg(t,0,0.30));
+      const close=E.outCubic(seg(t,0.30,0.42));
+      const part=E.outCubic(seg(t,0.62,0.72));
+      const leave=E.inCubic(seg(t,0.80,1));
+      const apart=S*0.62-close*S*0.30+part*S*0.34;
+      const lx=-S+(cx-apart+S)*walkIn-(cx+S*1.4)*leave;
+      const rx= W+S-(W+S-(cx+apart))*walkIn+(cx+S*1.4)*leave;
+      const hugging=t>0.36&&t<0.66;
+      const moving=walkIn<1||leave>0;
+      const step=moving?Math.sin(el*11)*0.55:0;
+      const bob=hugging?Math.abs(Math.sin(el*7))*S*0.03:(moving?Math.abs(Math.sin(el*11))*S*0.012:0);
+      const wave=t>0.68&&t<0.82?Math.sin(el*13)*0.6:0;
+      const a=1-seg(t,0.93,1);
+      g.save(); g.globalAlpha=a;
+      /* arms go round the other one during the squeeze */
+      stick(g,{x:lx,y:ground-bob,s:S,bow:hugging?0.06:0,
+        armA:hugging?-0.30:(wave?-1.5+wave:0.7),armB:hugging?0.24:2.5,
+        legA:step,legB:-step,eye:0});
+      stick(g,{x:rx,y:ground-bob,s:S,bow:hugging?-0.06:0,hair:true,skirt:true,
+        armA:hugging?Math.PI+0.30:(wave?Math.PI+1.5-wave:Math.PI-0.7),
+        armB:hugging?Math.PI-0.24:Math.PI-2.5,
+        legA:-step,legB:step,eye:0});
+      if(hugging&&el-s.fired>0.22){                       // hearts over their heads
+        s.fired=el;
+        s.h.push({x:cx+rnd(-S*0.4,S*0.4),y:ground-S*1.0,vy:rnd(-64,-38),
+          vx:rnd(-16,16),r:rnd(6,13),born:el,life:rnd(1.0,1.7),ph:Math.random()*6.28});
+      }
+      for(const p of s.h){
+        const u=(el-p.born)/p.life; if(u<0||u>=1) continue;
+        p.y+=p.vy*dt; p.x+=p.vx*dt; p.vy*=0.99;
+        g.save(); g.globalAlpha=(1-u)*a;
+        heartPath(g,p.x+Math.sin(el*3+p.ph)*5,p.y,p.r*(0.7+u*0.5));
+        g.fillStyle="#ff4d7d"; g.fill(); g.restore();
+      }
+      g.restore();
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     🤯 MIND BLOWN
+     The bubble detonates (CSS), then a nebula opens up and a ring of
+     equations, binary and pixel shrapnel is thrown at the edges.
+     --------------------------------------------------------------- */
+  const GLYPHS=["E=mc²","∑","∫","π","Δ","∞","√2","λ","θ","∂","Φ","≠"];
+  const BITS=["01001","1101","0110","10011","001","1010"];
+  SCENES.mindblown={
+    screen:true, body:"fx-shake",
+    init(s){
+      s.p=[]; const cx=W/2, cy=H*0.44;
+      for(let i=0;i<30;i++){
+        const a=Math.random()*6.2832, sp=rnd(220,640);
+        s.p.push({kind:Math.random()<0.5?"eq":"bit",x:cx,y:cy,
+          vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,rot:rnd(-0.5,0.5),vr:rnd(-2.4,2.4),
+          txt:Math.random()<0.5?pick(GLYPHS):pick(BITS),sz:rnd(11,22),
+          born:rnd(0.12,0.34),life:rnd(1.4,2.4)});
+      }
+      for(let i=0;i<40;i++){
+        const a=Math.random()*6.2832, sp=rnd(260,780);
+        s.p.push({kind:"px",x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,
+          rot:0,vr:rnd(-6,6),sz:rnd(2,6),
+          col:pick(["#8f6bff","#4fd6ff","#ff5ec7","#ffe27a"]),
+          born:rnd(0.10,0.30),life:rnd(1.0,1.9)});
+      }
+      s.cl=[]; for(let i=0;i<7;i++) s.cl.push({a:Math.random()*6.28,
+        d:rnd(0,0.35),sp:rnd(0.5,1.4),hue:pick([[143,107,255],[79,214,255],[255,94,199],[104,60,220]])});
+    },
+    draw(g,s,el,t,dt){
+      const cx=W/2, cy=H*0.44;
+      const gr=E.outQuint(seg(t,0.04,0.60)), fade=1-E.inCubic(seg(t,0.62,1));
+      for(const c of s.cl){                               // volumetric bloom
+        const R=Math.max(W,H)*(0.10+gr*0.52)*(0.6+c.sp*0.5);
+        const dx=cx+Math.cos(c.a+el*c.sp*0.5)*Math.max(W,H)*c.d*gr;
+        const dy=cy+Math.sin(c.a*1.3+el*c.sp*0.4)*Math.max(W,H)*c.d*0.7*gr;
+        const k=c.hue, al=0.30*fade*(1-gr*0.35);
+        softDot(g,dx,dy,R,"rgba("+k[0]+","+k[1]+","+k[2]+","+al+")",
+                          "rgba("+k[0]+","+k[1]+","+k[2]+",0)");
+      }
+      const st1=seg(t,0.06,0.46);                         // leading shockwave
+      if(st1>0&&st1<1){
+        g.save(); g.globalAlpha=(1-st1)*0.55;
+        g.strokeStyle="#cfe0ff"; g.lineWidth=Math.max(2,10*(1-st1));
+        g.beginPath(); g.arc(cx,cy,Math.max(W,H)*0.62*E.outQuint(st1),0,6.2832); g.stroke();
+        g.restore();
+      }
+      for(const p of s.p){
+        const u=(el-p.born)/p.life; if(u<0||u>=1) continue;
+        const d=Math.exp(-1.5*dt*6); p.vx*=d; p.vy*=d; p.vy+=70*dt;
+        p.x+=p.vx*dt; p.y+=p.vy*dt; p.rot+=p.vr*dt;
+        g.save(); g.globalAlpha=(1-u*u)*fade;
+        g.translate(p.x,p.y); g.rotate(p.rot);
+        if(p.kind==="px"){ g.fillStyle=p.col; g.fillRect(-p.sz/2,-p.sz/2,p.sz,p.sz); }
+        else{
+          g.font=(p.kind==="bit"?"700 ":"600 ")+p.sz+"px 'Space Mono',monospace";
+          g.textAlign="center"; g.textBaseline="middle";
+          g.shadowColor=p.kind==="bit"?"rgba(90,255,170,.9)":"rgba(150,190,255,.9)";
+          g.shadowBlur=10;
+          g.fillStyle=p.kind==="bit"?"#7dffb4":"#dbe7ff";
+          g.fillText(p.txt,0,0);
+        }
+        g.restore();
+      }
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     👻 BOO
+     Rises out of the last bubble, ducks, pops back with a peek-a-boo,
+     drifts along a sine, winks, and goes up in smoke.
+     --------------------------------------------------------------- */
+  SCENES.boo={
+    screen:false,
+    init(s){
+      s.x=W*0.5; s.y=H*0.62;
+      try{
+        const b=document.querySelector("#stream .msg:last-child");
+        if(b){ const r=b.getBoundingClientRect();
+               if(r.width){ s.x=Math.min(W-70,Math.max(70,r.left+r.width/2)); s.y=r.top+r.height/2; } }
+      }catch(e){}
+      s.puff=[];
+    },
+    draw(g,s,el,t,dt){
+      const R=Math.min(W,H)*0.11;
+      const rise=E.outBack(seg(t,0,0.18));
+      const duck=Math.sin(seg(t,0.20,0.32)*Math.PI);        // hides...
+      const peek=E.outBack(seg(t,0.32,0.44));               // ...then BOO
+      const goneT=seg(t,0.80,0.94);
+      const sc=rise*(1-duck*0.55)*(1+peek*0.18)*(1-goneT);
+      const x=s.x+Math.sin(el*2.1)*R*0.55;
+      const y=s.y-seg(t,0,1)*H*0.22+Math.sin(el*3.1)*R*0.16+duck*R*0.5;
+      if(sc>0.02){
+        g.save();
+        g.globalAlpha=(1-goneT)*0.94;
+        g.translate(x,y); g.scale(sc,sc);
+        g.shadowColor="rgba(190,225,255,.9)"; g.shadowBlur=26;
+        ghostPath(g,R);
+        g.fillStyle="rgba(255,255,255,.90)"; g.fill();
+        g.shadowBlur=0;
+        g.strokeStyle="rgba(150,200,255,.55)"; g.lineWidth=2; g.stroke();
+        /* little arms */
+        g.lineWidth=Math.max(2,R*0.10); g.lineCap="round";
+        const sw=Math.sin(el*6)*0.4;
+        g.beginPath(); g.moveTo(-R*0.62,R*0.02); g.lineTo(-R*0.92,R*0.02+sw*R*0.2); g.stroke();
+        g.beginPath(); g.moveTo( R*0.62,R*0.02); g.lineTo( R*0.92,R*0.02-sw*R*0.2); g.stroke();
+        const wink=t>0.58&&t<0.68;
+        g.fillStyle="#2a2340"; g.strokeStyle="#2a2340";
+        g.beginPath(); g.ellipse(-R*0.26,-R*0.18,R*0.10,R*0.14,0,0,6.2832); g.fill();
+        if(wink){ g.lineWidth=R*0.07; g.beginPath();
+                  g.moveTo(R*0.14,-R*0.16); g.quadraticCurveTo(R*0.26,-R*0.26,R*0.38,-R*0.16); g.stroke(); }
+        else { g.beginPath(); g.ellipse(R*0.26,-R*0.18,R*0.10,R*0.14,0,0,6.2832); g.fill(); }
+        g.beginPath(); g.ellipse(0,R*0.20,R*0.13,R*0.17,0,0,6.2832); g.fill();
+        g.restore();
+      }
+      if(goneT>0&&!s.puff.length){                          // cartoon smoke
+        for(let i=0;i<12;i++){
+          const a=Math.random()*6.2832;
+          s.puff.push({x,y,vx:Math.cos(a)*rnd(30,110),vy:Math.sin(a)*rnd(30,110)-30,
+            r:rnd(R*0.2,R*0.5),born:el,life:rnd(0.5,0.9)});
+        }
+      }
+      for(const p of s.puff){
+        const u=(el-p.born)/p.life; if(u<0||u>=1) continue;
+        p.x+=p.vx*dt; p.y+=p.vy*dt; p.vx*=0.95; p.vy*=0.95;
+        softDot(g,p.x,p.y,p.r*(1+u*1.9),"rgba(226,238,255,"+(0.5*(1-u))+")","rgba(226,238,255,0)");
+      }
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     🍂 AUTUMN
+     Warm tint, and leaves that actually behave like leaves - they flip
+     edge-on as they rotate about their long axis, and ride a breeze.
+     --------------------------------------------------------------- */
+  const LEAF=[["#b5451b","#7d2c0e"],["#d2691e","#8f4413"],["#e08a1e","#a35d10"],
+              ["#f0b429","#b07d12"],["#c25b28","#87381a"],["#9c6b1f","#6b460f"]];
+  SCENES.autumn={
+    screen:false, wash:"autumn",
+    init(s){
+      s.l=[]; const n=W<420?26:44;
+      for(let i=0;i<n;i++){
+        const d=rnd(0.4,1);
+        /* already mid-fall at t=0, so the cascade reads immediately */
+        s.l.push({x:rnd(-40,W+40),y:rnd(-H*0.5,H),d,r:13+d*22,
+          vy:38+d*78,rot:Math.random()*6.28,vr:rnd(-1.5,1.5),
+          flip:Math.random()*6.28,fs:rnd(1.6,3.6),ph:Math.random()*6.28,
+          col:pick(LEAF)});
+      }
+    },
+    draw(g,s,el,t,dt){
+      const fade=1-E.inCubic(seg(t,0.86,1));
+      const breeze=Math.sin(el*0.62)*30+Math.sin(el*0.27+2.1)*16;
+      for(const p of s.l){
+        p.flip+=p.fs*dt; p.rot+=p.vr*dt;
+        const flap=Math.cos(p.flip);                    // edge-on when this passes 0
+        p.y+=(p.vy+Math.abs(flap)*14)*dt;               // falls faster face-on
+        p.x+=(breeze*p.d+Math.sin(el*1.3+p.ph)*30*p.d+flap*26)*dt;
+        if(p.y>H+40){ p.y=-40; p.x=rnd(-40,W+40); }
+        if(p.x<-70) p.x=W+60; if(p.x>W+70) p.x=-60;
+        g.save();
+        g.globalAlpha=(0.55+p.d*0.45)*fade;
+        g.translate(p.x,p.y); g.rotate(p.rot);
+        g.scale(Math.max(0.10,Math.abs(flap)),1);       // the aerodynamic tumble
+        leafPath(g,p.r);
+        const lg=g.createLinearGradient(0,-p.r,0,p.r);
+        lg.addColorStop(0,p.col[0]); lg.addColorStop(1,p.col[1]);
+        g.fillStyle=lg; g.fill();
+        g.strokeStyle="rgba(60,26,8,.35)"; g.lineWidth=Math.max(0.6,p.r*0.035); g.stroke();
+        g.beginPath();                                   // midrib + veins
+        g.moveTo(0,p.r*0.9); g.lineTo(0,-p.r*0.75);
+        g.moveTo(0,-p.r*0.12); g.lineTo(-p.r*0.42,-p.r*0.30);
+        g.moveTo(0,-p.r*0.12); g.lineTo( p.r*0.42,-p.r*0.30);
+        g.moveTo(0,p.r*0.24); g.lineTo(-p.r*0.34,p.r*0.16);
+        g.moveTo(0,p.r*0.24); g.lineTo( p.r*0.34,p.r*0.16);
+        g.strokeStyle="rgba(70,32,10,.42)"; g.lineWidth=Math.max(0.5,p.r*0.028); g.stroke();
+        g.restore();
+      }
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     6. LIFECYCLE - strict teardown so nothing survives the window
+     --------------------------------------------------------------- */
+  const BODY_FX=["fx-shake","fx-wobble","fx-heat","fx-lit"];
   function stop(){
     if(timer){ clearTimeout(timer); timer=null; }
     if(raf){ cancelAnimationFrame(raf); raf=0; }
-    frame._last=0;
-    particles.length=0;
-    activeEffect=null;
+    lastT=0; particles=[]; activeEffect=null;
+    scene=null; st=null;                                  // scene state goes with it
+    if(canvas) canvas.style.mixBlendMode="";
+    if(detonated){ try{ detonated.classList.remove("fx-detonate"); }catch(e){} detonated=null; }
     if(ctx) ctx.clearRect(0,0,W,H);
-    if(wash){ wash.className="fx-wash"; }
-    if(sun&&sun.parentNode){ sun.parentNode.removeChild(sun); sun=null; }
+    if(wash) wash.className="fxL-wash";
+    if(dom) dom.innerHTML="";
+    BODY_FX.forEach(c=>document.body.classList.remove(c));
   }
+
+  const WASH={sunrise:1,moonrise:1,hearts:1,orbit:1,fury:1,fire:1,surprise:1,crying:1,
+              angelic:1,halo:1,heatwave:1,freeze:1,midas:1,glimmer:1,kiss:1,lick:1,
+              cash:1,dizzy:1,punch:1,zip:1};
+
+  function addDom(html){ const d=document.createElement("div"); d.innerHTML=html; while(d.firstChild) dom.appendChild(d.firstChild); }
 
   function play(key){
     if(!key) return null;
-    build();
-    stop();                                   // a new trigger instantly replaces the old
-    resize();
-    activeEffect=key;
-    startedAt=performance.now();
+    build(); stop(); resize();
+    activeEffect=key; startedAt=performance.now(); lastT=0;
 
-    // colour wash layer (restart the CSS animation by reflowing the class)
-    wash.className="fx-wash";
-    void wash.offsetWidth;
-    if(["sunrise","moonrise","fury","fire","surprise","crying","hearts","angelic"].indexOf(key)!==-1){
-      wash.className="fx-wash fx-"+key;
+    wash.className="fxL-wash"; void wash.offsetWidth;
+    if(WASH[key]) wash.className="fxL-wash fx-"+key;
+
+    /* ---- a directed scene takes over completely ---- */
+    const sc=SCENES[key];
+    if(sc){
+      const reducedS=matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;
+      try{ ink=(getComputedStyle(document.documentElement).getPropertyValue("--text")||"#fff").trim()||"#fff"; }
+      catch(e){ ink="#fff"; }
+      /* Screen blend blooms neon beautifully but erases anything with real local
+         colour - a brown emoji or ink linework simply disappears - so each scene
+         states which one it wants. */
+      canvas.style.mixBlendMode=sc.screen?"screen":"normal";
+      if(sc.wash) wash.className="fxL-wash fx-"+sc.wash;
+      if(sc.dom) addDom(sc.dom());
+      if(sc.body) document.body.classList.add(sc.body);
+      if(key==="mindblown"){                       // the bubble that said it detonates
+        try{
+          const b=document.querySelector("#stream .msg:last-child");
+          if(b){ b.classList.remove("fx-detonate"); void b.offsetWidth;
+                 b.classList.add("fx-detonate"); detonated=b; }
+        }catch(e){}
+      }
+      scene=sc; st={};
+      try{ sc.init(st); }catch(e){ scene=null; st=null; }
+      if(scene&&!reducedS) raf=requestAnimationFrame(frame); else scene=null;
+      timer=setTimeout(stop,SCENE_LIFE);
+      return key;
     }
-    if(key==="angelic"){
-      const halo=document.createElement("div"); halo.className="fx-halo";
-      root.insertBefore(halo,canvas); sun=halo;      // reuse the disc slot for cleanup
-    }
-    if(key==="sunrise"||key==="moonrise"||key==="hearts"){
-      sun=document.createElement("div");
-      sun.className="fx-sun"+(key==="moonrise"?" fx-moon":key==="hearts"?" fx-heartsun":"");
-      root.insertBefore(sun,canvas);
-    }
-    /* line art picks up the theme's text colour so it reads on every palette */
-    try{
-      const cs=getComputedStyle(document.documentElement);
-      sceneInk=(cs.getPropertyValue("--text")||"#fff").trim()||"#fff";
-    }catch(e){ sceneInk="#fff"; }
+
+    /* DOM pieces that need CSS filters or 3D, which canvas cannot do well */
+    if(key==="sunrise"){ addDom('<div class="fx-disc"></div><div class="fx-flare"></div>');
+                         document.body.classList.add("fx-lit"); }
+    if(key==="moonrise") addDom('<div class="fx-disc moon"></div>');
+    if(key==="hearts")   addDom('<div class="fx-disc heart"></div>');
+    if(key==="angelic"||key==="halo") addDom('<div class="fx-beam"></div><div class="fx-ring"></div>');
+    if(key==="freeze")   addDom('<div class="fx-frost"></div>');
+    if(key==="heatwave") document.body.classList.add("fx-heat");
+    if(key==="dizzy")    document.body.classList.add("fx-wobble");
+    if(key==="punch")    document.body.classList.add("fx-shake");
+    if(key==="zip")      addDom('<div class="fx-zipL"></div><div class="fx-zipR"></div>');
+    if(key==="kiss")     addDom('<svg class="fx-lips" viewBox="0 0 100 100"><path fill="#ff3d8b" d="M50 30c8-12 26-14 34-4 7 9 2 22-8 30-9 7-19 13-26 18-7-5-17-11-26-18-10-8-15-21-8-30 8-10 26-8 34 4z"/><path fill="#ff86b5" opacity=".55" d="M50 34c6-8 19-10 25-3-6 2-13 5-25 9-12-4-19-7-25-9 6-7 19-5 25 3z"/></svg>');
 
     const reduced=matchMedia&&matchMedia("(prefers-reduced-motion:reduce)").matches;
-    particles=reduced?[]:makeParticles(key);
-    if(!reduced) raf=requestAnimationFrame(frame);
-
-    timer=setTimeout(stop,DURATION);          // self-destruct, no leaks
+    if(!reduced){ seed(key); raf=requestAnimationFrame(frame); }
+    timer=setTimeout(stop,LIFE);
     return key;
   }
 
@@ -4832,21 +6137,11 @@ const ScreenFX=(function(){
     return key;
   }
 
-  // pause cleanly if the tab is backgrounded mid-effect
   document.addEventListener("visibilitychange",()=>{ if(document.hidden) stop(); });
 
-  return {
-    checkMessageForEffects, play, stop, detect,
-    getActiveEffect:()=>activeEffect,
-    DICTIONARY
-  };
+  return { checkMessageForEffects, play, stop, detect,
+           getActiveEffect:()=>activeEffect, DICTIONARY };
 })();
-
-/* ================================================================
-   INJECTION POINTS - the only two lines that touch the host app.
-   Both are wrapped in try/catch so the engine can be deleted whole
-   without leaving the messaging code broken.
-   ================================================================ */
 
 /* ---------- boot ---------- */
 async function start(){
@@ -4878,17 +6173,24 @@ async function start(){
   const derived=await deriveBoth(secret,room);
   key=derived.key; topic=derived.topic; mbTopic=topic+"/mb/";
 
-  await loadHistory();
-
+  /* Reaching the relays and unwrapping local history are independent, and they
+     used to run one after the other - nothing touched the network until every
+     stored message had been decrypted and drawn. They now overlap, so the slow
+     part (the websocket handshake to three brokers) is already under way while
+     the history is still being read. Anything that arrives early waits on
+     histReady, so a packet can never be handled before we know what we hold. */
   setState("connecting",false,"warn");
   window._room={room,secret,broker};
   askNotifyPermission();
   ntfyPing(name+" is online in room \""+room+"\"");
+  histReady=loadHistory();
   connect(broker).catch(()=>toast("Could not reach the relay"));
 
   const wantEmail=$("notify")&&$("notify").checked;
   try{ localStorage.setItem("sl.notify",wantEmail?"1":""); }catch(e){}
   if(wantEmail) sendNotify(room,secret,name);
+
+  await histReady;
 }
 
 function leave(){
@@ -5120,12 +6422,16 @@ function wipeChat(){
   }
   wipeArmed=0;
   try{ [...hist.keys()].forEach(id=>{ mailboxClear(id); mailboxClear("rx."+id); }); }catch(e){}
+  /* drop any debounced write still in flight, or it would put a record straight
+     back after the wipe */
+  try{ writeTimers.forEach(t=>clearTimeout(t)); writeTimers.clear(); }catch(e){}
+  try{ msgEls.forEach(revokeBlobs); }catch(e){}          // before msgEls is emptied
   try{ hist.clear(); knownIds.clear(); msgInfo.clear(); reactState.clear(); msgEls.clear(); }catch(e){}
-  try{ pendingMedia.clear(); }catch(e){}
+  try{ pendingMedia.clear(); pendingOlder=[]; }catch(e){}
   try{ if(db&&topic){ const st=db.transaction("msgs","readwrite").objectStore("msgs");
-        const cur=st.openCursor();
+        const cur=st.openCursor(IDBKeyRange.bound(topic+"|",topic+"|￿"));   // this room only
         cur.onsuccess=ev=>{ const c=ev.target.result; if(!c) return;
-          if(c.value&&c.value.topic===topic&&c.key!==topic+"|__lastseen") st.delete(c.key);
+          if(c.key!==topic+"|__lastseen") st.delete(c.key);
           c.continue(); }; } }catch(e){}
   try{ outbox.length=0; saveOutbox(); }catch(e){}
   const st=$("stream"); if(st) st.innerHTML="";
@@ -5270,7 +6576,13 @@ $("input").addEventListener("focus",()=>{
 });
 
 /* ---------- jump to latest ---------- */
-$("stream").addEventListener("scroll",updateFab,{passive:true});
+/* scroll fires far faster than the screen refreshes, and updateFab reads the
+   scroll geometry - one check per frame is the most that can ever be seen */
+let fabRaf=0;
+$("stream").addEventListener("scroll",()=>{
+  if(fabRaf) return;
+  fabRaf=requestAnimationFrame(()=>{ fabRaf=0; updateFab(); });
+},{passive:true});
 $("fab").addEventListener("click",()=>{ scrollDown(); $("stream").focus&&$("stream").focus(); });
 
 /* ---------- header menu ---------- */
