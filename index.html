@@ -188,7 +188,9 @@
       radial-gradient(120% 70% at 50% -4%, rgba(88,148,228,.34), transparent 62%),
       linear-gradient(180deg, rgba(40,80,150,.24), transparent 48%);
     animation:fxWash 4.6s ease-out forwards}
-  .fx-angelic,.fx-halo{background:
+  /* 😇 keeps this wash, renamed so that .fx-halo below is free to be the ring
+     element it is meant to be rather than a full-screen background */
+  .fx-halowash{background:
       radial-gradient(70% 44% at 50% -8%, rgba(255,246,212,.56), rgba(255,214,132,.26) 42%, transparent 74%);
     animation:fxWash 4.6s ease-out forwards}
   .fx-heatwave{background:
@@ -342,6 +344,31 @@
   body.fx-lit .stream{animation:fxLit 4.6s ease-out}
   @keyframes fxLit{0%,100%{opacity:1}30%{opacity:.94}60%{opacity:.97}}
 
+  /* ---------- the angelic halo (fires on her name) ----------
+     Supplied verbatim bar one thing: the wash layer is .fxL-wash in this
+     build, not .fx-wash, so the selector is retargeted or it would never
+     match the element it is meant to paint. */
+  .fxL-wash.fx-angelic{
+    background:
+      radial-gradient(70% 42% at 50% -6%, rgba(255,244,205,.50), rgba(255,216,140,.24) 42%, transparent 74%),
+      radial-gradient(120% 80% at 50% 108%, rgba(255,232,178,.16), transparent 66%);
+    animation:fxHalo 4s ease-out forwards;
+  }
+  .fx-halo{
+    position:absolute;left:50%;top:14%;width:210px;height:210px;margin-left:-105px;
+    border-radius:50%;border:2px solid rgba(255,238,178,.9);
+    box-shadow:0 0 40px rgba(255,226,150,.75),inset 0 0 30px rgba(255,240,200,.55);
+    transform:translate3d(0,-24px,0) scale(.6);opacity:0;
+    animation:fxHaloRing 4s cubic-bezier(.2,.75,.3,1) forwards;
+  }
+  @keyframes fxHalo{0%{opacity:0}14%{opacity:1}70%{opacity:.9}100%{opacity:0}}
+  @keyframes fxHaloRing{
+    0%{transform:translate3d(0,-24px,0) scale(.6);opacity:0}
+    24%{opacity:.95}
+    62%{transform:translate3d(0,6px,0) scale(1.06);opacity:.8}
+    100%{transform:translate3d(0,14px,0) scale(1.22);opacity:0}
+  }
+
   /* ---------- v3 scenes ---------- */
   /* warm amber grade for the autumn cascade */
   .fx-autumn{background:
@@ -378,7 +405,7 @@
 
   @media (prefers-reduced-motion:reduce){
     #fxCanvas{display:none}
-    .fx-disc,.fx-ring,.fx-beam,.fx-flare,.fx-lips,.fx-zipL,.fx-zipR,.fx-frost,.fx-frostc{animation-duration:.01s;opacity:0}
+    .fx-disc,.fx-ring,.fx-beam,.fx-flare,.fx-lips,.fx-zipL,.fx-zipR,.fx-frost,.fx-frostc,.fx-halo{animation-duration:.01s;opacity:0}
     .fxL-wash{animation-duration:1.2s}
     .msg.fx-detonate{animation:none}
     body.fx-shake .wrap,body.fx-wobble .stream,body.fx-heat .stream,body.fx-lit .stream{animation:none}
@@ -4723,14 +4750,20 @@ const ScreenFX=(function(){
       emojis:["👏","🙌"] },
     /* ---- v3 set pieces. These run hand-authored SCENES (section 5b), not the
             generic particle field, so each one is a directed little film. ---- */
-    { key:"heartbeat", phrases:["i love you","love you","love u","luv you","luv u","mesmerizing effect of heart"],
-      emojis:["❤️","❤","💞","💓","💗"] },
+    /* Said in words it is a proposal; sent as a bare heart it is the heartbeat.
+       Listed first so "love you ❤" still gets the proposal - the big moment
+       wins over the ambient one. */
+    { key:"propose",   phrases:["i love you","love you","love u","luv you","luv u","marry me"], emojis:[] },
+    { key:"heartbeat", phrases:["mesmerizing effect of heart"],
+      emojis:["❤️","❤","💞","💓","💗","🤍","🖤","🫀","💖","🩶","🤎"] },
     { key:"sohot",     phrases:["you look so hot","you look so hott","looking hot","so hott","so hot"], emojis:["🥵"] },
     { key:"splat",     phrases:["shitty"], emojis:["💩"] },
     { key:"blizzard",  phrases:["snowing","freezing","so cold","blizzard"], strictPhrases:["snow"],
       emojis:["🥶","❄","☃","⛄","🌨"] },
     { key:"lickswipe", phrases:["lick","licking"], emojis:["👅"] },
-    { key:"bigkiss",   phrases:["kisses","muah","mwah"], strictPhrases:["kiss"], emojis:["💋","😘","😗","😙","😚"] },
+    { key:"bigkiss",   phrases:["kisses","muah","mwah","blow you a kiss"], strictPhrases:["kiss"],
+      emojis:["😘","💋","😗","😙","😚","🌸","🕊","🌷"] },
+    { key:"thanks",    phrases:["thank you","thankyou","thank u","thanks a lot","many thanks"], strictPhrases:["thanks","thx","ty"], emojis:["🙏"] },
     { key:"apology",   phrases:["so sorry","apologies","my bad"], strictPhrases:["sorry","sry"], emojis:["🙇"] },
     { key:"stickhug",  phrases:["hugs","cuddle"], strictPhrases:["hug"], emojis:["🤗","🫂"] },
     { key:"mindblown", phrases:["mind blown","mindblown","blew my mind"], emojis:["🤯"] },
@@ -5415,7 +5448,7 @@ const ScreenFX=(function(){
     const s=o.s, col=o.color||ink;
     g.save(); g.translate(o.x,o.y);
     g.strokeStyle=col; g.fillStyle=col;
-    g.lineWidth=Math.max(2,s*0.085); g.lineCap="round"; g.lineJoin="round";
+    g.lineWidth=Math.max(1.2,s*(o.lw||0.085)); g.lineCap="round"; g.lineJoin="round";
     /* legs from the hip */
     const la=o.legA||0, lb=o.legB||0;
     g.beginPath(); g.moveTo(0,0); g.lineTo(Math.sin(la)*s*0.34,s*0.52); g.stroke();
@@ -5442,111 +5475,213 @@ const ScreenFX=(function(){
   const SCENES={};
 
   /* ---------------------------------------------------------------
-     ❤ MESMERIZING HEART
-     A red vignette breathes at the edges while a shaded neon heart
-     swells out of the middle on a real lub-dub rhythm, shedding glitter
-     that falls away slowly.
+     🤍 THE QUIET HEART
+     Restraint over spectacle. A fine line draws a heart on, a blush
+     settles inside it, it breathes twice - barely - and a little
+     sparkle lifts off it. No sirens, no full-screen red.
      --------------------------------------------------------------- */
-  function thump(p){                       // one anatomical beat, 0..1 -> 0..1
-    if(p<0.10) return E.outCubic(p/0.10);
-    if(p<0.24) return 1-E.outCubic((p-0.10)/0.14)*0.58;
-    if(p<0.36) return 0.42+E.outCubic((p-0.24)/0.12)*0.52;
-    if(p<0.66) return 0.94-E.outCubic((p-0.36)/0.30)*0.94;
-    return 0;
+  function star4(g,x,y,r,a){
+    g.save(); g.translate(x,y); g.globalAlpha=a;
+    g.beginPath();
+    g.moveTo(0,-r); g.quadraticCurveTo(0,0,r,0);
+    g.quadraticCurveTo(0,0,0,r); g.quadraticCurveTo(0,0,-r,0);
+    g.quadraticCurveTo(0,0,0,-r); g.closePath();
+    g.fillStyle="#fff"; g.shadowColor="rgba(255,214,228,.9)"; g.shadowBlur=8; g.fill();
+    g.restore();
   }
   SCENES.heartbeat={
-    screen:true,
-    init(s){ s.em=[]; s.last=0; },
-    draw(g,s,el,t,dt){
-      const cx=W/2, cy=H*0.46;
-      const beats=seg(t,0.16,0.94)*2;                     // exactly two beats
-      const amp=t<0.16?0:thump(beats%1);
-      const grow=E.outBack(seg(t,0,0.30));
-      const fade=1-E.inCubic(seg(t,0.84,1));
-      const r=Math.min(W,H)*0.235*grow*(1+amp*0.20);
+    screen:false,
+    init(s){
+      s.sp=[];
+      for(let i=0;i<14;i++) s.sp.push({a:Math.random()*6.2832,d:rnd(0.55,1.25),
+        r:rnd(1.6,3.4),ph:Math.random()*6.28,born:rnd(0.2,2.2),life:rnd(1.1,1.9),
+        drift:rnd(14,40)});
+    },
+    draw(g,s,el,t){
+      const cx=W/2, cy=H*0.44, R=Math.min(W,H)*0.13;
+      const draw=E.outCubic(seg(t,0.02,0.34));            // the outline arrives
+      const fill=E.outCubic(seg(t,0.26,0.56));            // then the blush
+      const fade=1-E.inCubic(seg(t,0.70,1));
+      /* two shallow breaths - 3.5%, not a thump */
+      const br=1+Math.sin(seg(t,0.30,0.95)*Math.PI*4)*0.035*fill;
+      const r=R*br;
 
-      const vg=g.createRadialGradient(cx,cy,Math.min(W,H)*0.16,cx,cy,Math.max(W,H)*0.74);
-      vg.addColorStop(0,"rgba(255,40,110,0)");
-      vg.addColorStop(0.55,"rgba(255,28,102,"+(0.04+amp*0.09)*fade+")");
-      vg.addColorStop(1,"rgba(255,18,88,"+(0.20+amp*0.30)*fade+")");
-      g.fillStyle=vg; g.fillRect(0,0,W,H);
+      g.save(); g.globalAlpha=fade;
+      softDot(g,cx,cy,R*2.6,"rgba(255,190,205,"+(0.16*fill)+")","rgba(255,190,205,0)");
+      heartPath(g,cx,cy,r);
+      g.save(); g.clip();                                  // blush, kept inside the line
+      const bg=g.createRadialGradient(cx-r*0.3,cy-r*0.34,r*0.05,cx,cy,r*1.15);
+      bg.addColorStop(0,"rgba(255,255,255,"+(0.62*fill)+")");
+      bg.addColorStop(0.55,"rgba(255,196,212,"+(0.50*fill)+")");
+      bg.addColorStop(1,"rgba(238,150,175,"+(0.34*fill)+")");
+      g.fillStyle=bg; g.fillRect(cx-r*1.4,cy-r*1.4,r*2.8,r*2.8);
+      g.restore();
+      /* the outline literally draws itself on */
+      const per=r*6.6;
+      g.setLineDash([per,per]);
+      g.lineDashOffset=per*(1-draw);
+      g.lineWidth=Math.max(1.2,r*0.035); g.lineJoin="round"; g.lineCap="round";
+      g.strokeStyle="rgba(226,132,158,.92)";
+      g.shadowColor="rgba(255,170,195,.55)"; g.shadowBlur=10;
+      heartPath(g,cx,cy,r); g.stroke();
+      g.setLineDash([]); g.shadowBlur=0;
+      g.restore();
 
-      if(r>2){
-        g.save(); g.globalAlpha=fade;
-        g.shadowColor="rgba(255,45,120,.95)"; g.shadowBlur=34+amp*70;
-        const fill=g.createRadialGradient(cx-r*0.34,cy-r*0.40,r*0.06,cx,cy,r*1.18);
-        fill.addColorStop(0,"#ffd9e6"); fill.addColorStop(0.34,"#ff5c96");
-        fill.addColorStop(0.72,"#ff1f63"); fill.addColorStop(1,"#8e0030");
-        heartPath(g,cx,cy,r); g.fillStyle=fill; g.fill();
-        g.shadowBlur=0;
-        heartPath(g,cx,cy,r); g.strokeStyle="rgba(255,190,215,"+(0.45+amp*0.4)+")";
-        g.lineWidth=Math.max(1.5,r*0.018); g.stroke();
-        g.save(); g.clip();                                 // specular, inside the shape
-        softDot(g,cx-r*0.34,cy-r*0.44,r*0.42,"rgba(255,255,255,.55)","rgba(255,255,255,0)");
-        softDot(g,cx+r*0.30,cy+r*0.12,r*0.30,"rgba(255,140,190,.35)","rgba(255,140,190,0)");
-        g.restore(); g.restore();
-      }
-      /* a shower of embers on every upstroke */
-      if(amp>0.72&&el-s.last>0.28){
-        s.last=el;
-        for(let i=0;i<16;i++){
-          const a=Math.random()*6.2832, d=r*(0.55+Math.random()*0.5);
-          s.em.push({x:cx+Math.cos(a)*d,y:cy+Math.sin(a)*d*0.9,
-            vx:Math.cos(a)*rnd(8,34),vy:rnd(-14,10),sz:rnd(1.2,3.1),
-            ph:Math.random()*6.28,born:el,life:rnd(1.6,2.8)});
-        }
-      }
-      for(const p of s.em){
+      for(const p of s.sp){                                // sparkle, lifting away
         const u=(el-p.born)/p.life; if(u<0||u>=1) continue;
-        p.vy+=42*dt; p.vx*=0.985;                           // gentle settle downward
-        p.x+=p.vx*dt; p.y+=p.vy*dt;
-        const a=(1-u)*(0.5+Math.abs(Math.sin(el*3+p.ph))*0.5)*fade;
-        softDot(g,p.x+Math.sin(el*1.6+p.ph)*6,p.y,p.sz*3.4,
-                "rgba(255,214,232,"+(a*0.95)+")","rgba(255,60,130,0)");
+        const rr=R*(0.95+p.d*0.5);
+        const x=cx+Math.cos(p.a)*rr+Math.sin(el*1.4+p.ph)*5;
+        const y=cy+Math.sin(p.a)*rr*0.86-u*p.drift;
+        star4(g,x,y,p.r*(0.5+u*0.8),Math.sin(u*Math.PI)*0.9*fade);
       }
     }
   };
 
   /* ---------------------------------------------------------------
-     🥵 YOU ARE SOO HOT
-     Neon signage with a proper filament flicker, the chat glass bending
-     behind it, embers climbing out of the floor.
+     💍 THE PROPOSAL  ("love you")
+     The original stick-figure scene, brought back unchanged: he walks
+     up, goes down on one knee, offers the ring, and her arms fly up.
+     It fires on the WORDS only - a bare ❤ plays the heartbeat instead,
+     because this one is the big moment and should stay rare.
+     Drawn in the theme's own ink, so it reads on light and dark alike.
+     --------------------------------------------------------------- */
+  const lerp=(a,b,u)=>a+(b-a)*u;
+  SCENES.propose={
+    screen:false,
+    init(s){},
+    draw(g,s,el){
+      const t=el;                                     // this scene thinks in seconds
+      const S=Math.max(46,Math.min(74,W*0.17));       // figure unit, scales with screen
+      const baseY=Math.min(H*0.84,H-S*0.5);
+      const cx=W/2;
+      const walk=sat(t/0.7);                          // he approaches
+      const kneel=sat((t-0.75)/0.85);                 // then goes down on one knee
+      const reach=sat((t-1.5)/0.55);                  // offers the ring
+      const joy=sat((t-2.1)/0.5);                     // her arms go up
+      const out=t>3.25?1-sat((t-3.25)/0.75):1;        // gentle exit
+      const alpha=1;
+      const limb=(ax,ay,bx,by)=>{ g.beginPath(); g.moveTo(ax,ay); g.lineTo(bx,by); g.stroke(); };
+      const ring=(x,y,r,fill)=>{ g.beginPath(); g.arc(x,y,r,0,6.2832); fill?g.fill():g.stroke(); };
+
+      const gx=lerp(cx-S*2.0,cx-S*0.95,walk);         // him
+      const wx=cx+S*0.85;                             // her
+
+      g.save();
+      g.globalAlpha=Math.max(0,Math.min(1,alpha*out));
+      g.strokeStyle=ink; g.fillStyle=ink;
+      g.lineWidth=Math.max(2,S*0.05); g.lineCap="round"; g.lineJoin="round";
+
+      /* ---- him: standing -> kneeling ---- */
+      const hipY=lerp(baseY-S*0.78,baseY-S*0.52,kneel);
+      const headR=S*0.145;
+      const headY=hipY-S*0.62;
+      ring(gx,headY,headR,false);                     // head
+      limb(gx,headY+headR,gx,hipY);                   // spine
+      const kneeX=lerp(gx-S*0.16,gx-S*0.30,kneel), kneeY=lerp(baseY-S*0.36,baseY,kneel);
+      limb(gx,hipY,kneeX,kneeY);                      // back leg folds to the ground
+      limb(kneeX,kneeY,lerp(gx-S*0.30,gx-S*0.62,kneel),baseY);
+      const fkX=lerp(gx+S*0.16,gx+S*0.26,kneel), fkY=lerp(baseY-S*0.36,baseY-S*0.46,kneel);
+      limb(gx,hipY,fkX,fkY);                          // front leg planted, knee up
+      limb(fkX,fkY,gx+S*0.26,baseY);
+      const shY=hipY-S*0.46;                          // arm offering the ring
+      const handX=lerp(gx+S*0.18,gx+S*0.66,reach), handY=lerp(shY+S*0.18,shY-S*0.04,reach);
+      limb(gx,shY,handX,handY);
+      if(reach>0.15){
+        g.save();
+        g.globalAlpha=Math.max(0,Math.min(1,alpha*out*reach));
+        g.strokeStyle="#ffd469"; g.lineWidth=Math.max(1.6,S*0.035);
+        ring(handX+S*0.07,handY-S*0.02,S*0.075,false);
+        g.fillStyle="#fff3c4";
+        ring(handX+S*0.07,handY-S*0.10,S*0.028,true); // the stone
+        g.restore();
+        g.strokeStyle=ink; g.lineWidth=Math.max(2,S*0.05);
+      }
+
+      /* ---- her: skirt, arms lifting with joy ---- */
+      const wHipY=baseY-S*0.70, wHeadY=wHipY-S*0.62;
+      ring(wx,wHeadY,headR,false);
+      limb(wx,wHeadY+headR,wx,wHipY-S*0.18);
+      g.beginPath();                                  // skirt
+      g.moveTo(wx,wHipY-S*0.22);
+      g.lineTo(wx-S*0.30,wHipY+S*0.30);
+      g.lineTo(wx+S*0.30,wHipY+S*0.30);
+      g.closePath(); g.stroke();
+      limb(wx-S*0.16,wHipY+S*0.30,wx-S*0.18,baseY);   // legs
+      limb(wx+S*0.16,wHipY+S*0.30,wx+S*0.18,baseY);
+      const aShY=wHeadY+S*0.34;                       // arms rise as she reacts
+      const aY=lerp(aShY+S*0.30,aShY-S*0.34,joy);
+      limb(wx,aShY,wx-lerp(S*0.22,S*0.40,joy),aY);
+      limb(wx,aShY,wx+lerp(S*0.22,S*0.40,joy),aY);
+      g.beginPath();                                  // hair, so the two read differently
+      g.arc(wx,wHeadY,headR*1.18,Math.PI*0.15,Math.PI*0.85,false);
+      g.stroke();
+
+      /* ---- ground ---- */
+      g.globalAlpha=Math.max(0,Math.min(1,alpha*out*0.35));
+      limb(cx-S*2.2,baseY,cx+S*2.2,baseY);
+
+      /* ---- a couple of hearts between them once she reacts ---- */
+      if(joy>0){
+        g.font=(S*0.34)+"px system-ui,"+EMOJI_FONT;
+        g.textAlign="center"; g.textBaseline="middle";
+        const midX=(gx+wx)/2;
+        for(let i=0;i<3;i++){
+          const u=sat(joy-i*0.18);
+          g.globalAlpha=Math.max(0,Math.min(1,alpha*out*u*(1-u*0.5)));
+          g.fillText("❤️",midX+(i-1)*S*0.34,headY-S*0.1-u*S*0.85);
+        }
+      }
+      g.restore();
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     🥵 SLOW BURN
+     The old version shouted - giant neon type and the whole interface
+     bending behind it. This one just warms the room: a low amber glow,
+     a slow haze rolling up through it, and a few embers taking their
+     time. Nothing moves the UI, nothing is written on screen.
      --------------------------------------------------------------- */
   SCENES.sohot={
-    screen:true, body:"fx-heat",
+    screen:true,
     init(s){
       s.em=[];
-      for(let i=0;i<34;i++) s.em.push({x:rnd(0,W),y:H+rnd(0,140),
-        vy:rnd(-150,-64),vx:rnd(-16,16),sz:rnd(1.6,4.2),ph:Math.random()*6.28,
-        born:rnd(0,1.6),life:rnd(1.8,3.0)});
+      for(let i=0;i<16;i++) s.em.push({x:rnd(W*0.08,W*0.92),y:H+rnd(0,120),
+        vy:rnd(-58,-26),sz:rnd(1.1,2.6),ph:Math.random()*6.28,
+        born:rnd(0,2.0),life:rnd(2.0,3.0),sway:rnd(8,22)});
+      s.hz=[];
+      for(let i=0;i<4;i++) s.hz.push({y:rnd(0.55,1.05),sp:rnd(0.05,0.11),
+        h:rnd(0.05,0.11),ph:Math.random()*6.28});
     },
-    draw(g,s,el,t,dt){
-      for(const p of s.em){                                  // rising heat
-        const u=(el-p.born)/p.life; if(u<0||u>=1) continue;
-        p.y+=p.vy*dt; p.x+=(p.vx+Math.sin(el*2.2+p.ph)*26)*dt; p.vy*=0.995;
-        const a=(1-u)*(0.55+Math.abs(Math.sin(el*9+p.ph))*0.45);
-        softDot(g,p.x,p.y,p.sz*4.2,"rgba(255,226,150,"+(a*0.9)+")","rgba(255,88,20,0)");
+    draw(g,s,el,t){
+      const up=E.outCubic(seg(t,0,0.42)), fade=1-E.inCubic(seg(t,0.60,1));
+      const a=up*fade;
+      /* a low warm glow, weighted to the floor */
+      const gr=g.createLinearGradient(0,H,0,H*(1-0.62*up));
+      gr.addColorStop(0,"rgba(255,146,64,"+(0.30*a)+")");
+      gr.addColorStop(0.42,"rgba(255,112,72,"+(0.13*a)+")");
+      gr.addColorStop(1,"rgba(255,96,96,0)");
+      g.fillStyle=gr; g.fillRect(0,0,W,H);
+      /* haze bands drifting upward - suggests the shimmer without touching
+         a single pixel of the interface */
+      for(const b of s.hz){
+        const y=(b.y-((el*b.sp)%1.5))*H;
+        const hh=H*b.h;
+        if(y<-hh||y>H+hh) continue;
+        const bg=g.createLinearGradient(0,y-hh,0,y+hh);
+        bg.addColorStop(0,"rgba(255,180,110,0)");
+        bg.addColorStop(0.5,"rgba(255,186,120,"+(0.055*a)+")");
+        bg.addColorStop(1,"rgba(255,180,110,0)");
+        g.fillStyle=bg;
+        g.fillRect(0,y-hh,W,hh*2);
       }
-      const inT=E.outBack(seg(t,0.02,0.30)), out=1-E.inCubic(seg(t,0.80,1));
-      if(inT<=0) return;
-      const fl=0.80+Math.sin(el*31)*0.07+Math.sin(el*13.3)*0.08+Math.random()*0.05;
-      const txt="YOU ARE SOO HOT";
-      let size=Math.min(H*0.13,W*0.135);
-      g.save();
-      g.textAlign="center"; g.textBaseline="middle";
-      g.font="800 "+size+"px "+"'Fraunces',Georgia,serif";
-      const wNeed=g.measureText(txt).width;
-      if(wNeed>W*0.88){ size*=W*0.88/wNeed; g.font="800 "+size+"px 'Fraunces',Georgia,serif"; }
-      g.translate(W/2,H*0.44);
-      g.scale(0.72+inT*0.28,0.72+inT*0.28);
-      g.globalAlpha=out*Math.min(1,inT*1.2)*fl;
-      const grad=g.createLinearGradient(0,-size*0.6,0,size*0.6);
-      grad.addColorStop(0,"#fff3cf"); grad.addColorStop(0.45,"#ffb347"); grad.addColorStop(1,"#ff4d12");
-      g.shadowColor="rgba(255,122,24,.95)"; g.shadowBlur=26+fl*34;
-      g.fillStyle=grad; g.fillText(txt,0,0);
-      g.shadowBlur=12; g.lineWidth=Math.max(1,size*0.02);
-      g.strokeStyle="rgba(255,236,196,.55)"; g.strokeText(txt,0,0);
-      g.restore();
+      for(const p of s.em){                       // sparse, unhurried embers
+        const u=(el-p.born)/p.life; if(u<0||u>=1) continue;
+        const y=p.y+p.vy*(el-p.born);
+        const x=p.x+Math.sin((el-p.born)*1.3+p.ph)*p.sway;
+        const al=Math.sin(u*Math.PI)*(0.55+Math.sin(el*4+p.ph)*0.2)*fade;
+        softDot(g,x,y,p.sz*4.6,"rgba(255,222,168,"+(al*0.85)+")","rgba(255,120,40,0)");
+      }
     }
   };
 
@@ -5729,144 +5864,427 @@ const ScreenFX=(function(){
   };
 
   /* ---------------------------------------------------------------
-     💋 KISS
-     Lips arrive with a bounce, pucker, and throw a ring that breaks
-     into hearts flying at the viewer.
+     😘 BLOWN KISS
+     The giant glossy mouth is gone. What is left is the gesture: one
+     small heart lifts off, sways as it rises, and a drift of soft
+     petals turns through the light behind it.
      --------------------------------------------------------------- */
+  function petalPath(g,r){
+    g.beginPath();
+    for(let i=0;i<5;i++){
+      const a0=i*1.2566-1.5708, a1=a0+1.2566;
+      const mx=Math.cos(a0+0.6283)*r*1.34, my=Math.sin(a0+0.6283)*r*1.34;
+      if(i===0) g.moveTo(Math.cos(a0)*r*0.30,Math.sin(a0)*r*0.30);
+      g.quadraticCurveTo(mx,my,Math.cos(a1)*r*0.30,Math.sin(a1)*r*0.30);
+    }
+    g.closePath();
+  }
+  const PETAL=[["#ffd9e4","#f2a8bf"],["#ffe8ef","#f5bccd"],["#fdcfd8","#e79ab0"],
+               ["#fff2e2","#f3ccb0"]];
   SCENES.bigkiss={
     screen:false,
-    init(s){ s.h=[]; s.fired=false; },
+    init(s){
+      s.p=[];
+      const n=W<420?12:18;
+      for(let i=0;i<n;i++) s.p.push({x:rnd(-30,W+30),y:rnd(-H*0.45,H*0.55),
+        r:rnd(7,15),vy:rnd(26,58),rot:Math.random()*6.28,vr:rnd(-1.1,1.1),
+        flip:Math.random()*6.28,fs:rnd(1.1,2.4),ph:Math.random()*6.28,
+        col:pick(PETAL),d:rnd(0.5,1)});
+    },
     draw(g,s,el,t,dt){
-      const cx=W/2, cy=H*0.44, R=Math.min(W,H)*0.17;
-      const inT=E.outBack(seg(t,0,0.26));
-      const puck=Math.sin(seg(t,0.28,0.46)*Math.PI);        // squeeze and release
-      const out=1-E.inCubic(seg(t,0.82,1));
-      if(inT>0.01){
-        g.save(); g.globalAlpha=out;
-        g.translate(cx,cy);
-        g.scale(inT*(1-puck*0.20),inT*(1+puck*0.16));
-        g.shadowColor="rgba(220,10,60,.6)"; g.shadowBlur=30;
-        lipsPath(g,R);
-        const lg=g.createLinearGradient(0,-R*0.5,0,R*0.6);
-        lg.addColorStop(0,"#ff5f86"); lg.addColorStop(0.42,"#e00b45"); lg.addColorStop(1,"#8d0026");
-        g.fillStyle=lg; g.fill();
-        g.shadowBlur=0;
-        g.save(); lipsPath(g,R); g.clip();
-        softDot(g,-R*0.34,-R*0.20,R*0.34,"rgba(255,255,255,.55)","rgba(255,255,255,0)");
-        softDot(g, R*0.30, R*0.22,R*0.26,"rgba(255,160,190,.4)","rgba(255,160,190,0)");
-        g.restore();
-        g.beginPath(); g.moveTo(-R*0.92,0); g.quadraticCurveTo(0,R*0.10,R*0.92,0);
-        g.lineWidth=Math.max(1.5,R*0.03); g.strokeStyle="rgba(120,0,32,.55)"; g.stroke();
-        g.restore();
-      }
-      for(let i=0;i<3;i++){                                  // the blown wave
-        const rt=seg(t,0.42+i*0.05,0.78+i*0.05);
-        if(rt>0&&rt<1){
-          g.save(); g.globalAlpha=(1-rt)*0.5*out;
-          g.strokeStyle="#ff5f96"; g.lineWidth=Math.max(2,R*0.05*(1-rt));
-          g.beginPath(); g.arc(cx,cy,R*(0.6+E.outQuint(rt)*2.6),0,6.2832); g.stroke();
-          g.restore();
-        }
-      }
-      if(!s.fired&&t>0.44){                                  // burst
-        s.fired=true;
-        for(let i=0;i<26;i++){
-          const a=Math.random()*6.2832, sp=rnd(120,420);
-          s.h.push({x:cx,y:cy,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp-40,
-            z:rnd(0.35,1),vr:rnd(-3,3),rot:Math.random()*6.28,born:el,life:rnd(1.1,1.8)});
-        }
-      }
-      for(const p of s.h){
-        const u=(el-p.born)/p.life; if(u<0||u>=1) continue;
-        const d=Math.exp(-0.9*dt*6); p.vx*=d; p.vy*=d; p.vy+=90*dt;
-        p.x+=p.vx*dt; p.y+=p.vy*dt; p.rot+=p.vr*dt;
-        g.save(); g.globalAlpha=(1-u*u)*out;
+      const fade=1-E.inCubic(seg(t,0.74,1));
+      const breeze=Math.sin(el*0.7)*16;
+      for(const p of s.p){                          // petals turning as they fall
+        p.flip+=p.fs*dt; p.rot+=p.vr*dt;
+        const flap=Math.cos(p.flip);
+        p.y+=p.vy*dt; p.x+=(breeze*p.d+Math.sin(el*1.1+p.ph)*16*p.d+flap*10)*dt;
+        if(p.y>H+30){ p.y=-30; p.x=rnd(-30,W+30); }
+        g.save();
+        g.globalAlpha=(0.45+p.d*0.45)*fade;
         g.translate(p.x,p.y); g.rotate(p.rot);
-        g.shadowColor="rgba(255,40,100,.7)"; g.shadowBlur=12;
-        heartPath(g,0,0,7+p.z*16*(1+u*0.9));                 // grows as it nears you
-        g.fillStyle="#ff2f68"; g.fill();
+        g.scale(Math.max(0.12,Math.abs(flap)),1);
+        petalPath(g,p.r);
+        const lg=g.createRadialGradient(0,-p.r*0.2,p.r*0.1,0,0,p.r*1.3);
+        lg.addColorStop(0,p.col[0]); lg.addColorStop(1,p.col[1]);
+        g.fillStyle=lg; g.fill();
+        g.restore();
+      }
+      /* the kiss itself: one heart, lifting and swaying, growing as it nears */
+      const rise=E.outCubic(seg(t,0.06,0.86));
+      const pop=E.outBack(seg(t,0.04,0.24));
+      const gone=1-E.inCubic(seg(t,0.68,0.98));
+      if(pop>0.01){
+        const r=Math.min(W,H)*0.035*pop*(1+rise*0.9);
+        const x=W/2+Math.sin(rise*Math.PI*1.7)*W*0.10;
+        const y=H*0.70-rise*H*0.44;
+        g.save(); g.globalAlpha=gone*fade;
+        g.shadowColor="rgba(240,120,155,.6)"; g.shadowBlur=18;
+        heartPath(g,x,y,r);
+        const hg=g.createRadialGradient(x-r*0.3,y-r*0.35,r*0.06,x,y,r*1.2);
+        hg.addColorStop(0,"#fff3f6"); hg.addColorStop(0.5,"#ffb3c8"); hg.addColorStop(1,"#e2718f");
+        g.fillStyle=hg; g.fill();
+        g.shadowBlur=0;
+        for(let i=1;i<=3;i++){                      // a soft wake behind it
+          const u=sat(rise-i*0.13);
+          if(u<=0) continue;
+          g.globalAlpha=gone*fade*0.18*(1-i/4);
+          heartPath(g,x-Math.sin(u*Math.PI*1.7)*W*0.02*i,y+i*r*1.5,r*(1-i*0.18));
+          g.fillStyle="#ffc2d3"; g.fill();
+        }
         g.restore();
       }
     }
   };
+
+  /* ---------------------------------------------------------------
+     ARTICULATED FIGURE
+     The earlier figures were single straight lines from hip to foot and
+     shoulder to hand, which is why they read as a diagram rather than a
+     character. These have real joints: the caller gives a hand or foot
+     target and a two-bone solver puts the elbow or knee where it belongs,
+     so a pose is a few numbers and the limb bends the way a limb does.
+     Weight varies (torso heavier than limbs), the spine curves, the head
+     tilts, and a contact shadow keeps everyone on the floor.
+     --------------------------------------------------------------- */
+  function limb2(g,x0,y0,x1,y1,bone,bend){
+    const dx=x1-x0, dy=y1-y0;
+    const d=Math.min(Math.hypot(dx,dy),bone*1.998)||0.001;
+    const ang=Math.atan2(dy,dx);
+    const h=Math.sqrt(Math.max(0,bone*bone-(d/2)*(d/2)));   // joint offset
+    const mx=x0+Math.cos(ang)*d*0.5, my=y0+Math.sin(ang)*d*0.5;
+    const jx=mx+Math.cos(ang+Math.PI/2)*h*bend, jy=my+Math.sin(ang+Math.PI/2)*h*bend;
+    g.beginPath(); g.moveTo(x0,y0); g.lineTo(jx,jy); g.lineTo(x1,y1); g.stroke();
+    return {x:jx,y:jy};
+  }
+  /* eyes and mouth, all drawn as arcs so nothing looks stamped on */
+  function face(g,r,o){
+    const ex=r*0.40, ey=-r*0.12, look=(o.look||0)*r*0.16;
+    g.lineCap="round";
+    if(o.eyes==="closed"||o.eyes==="happy"){
+      g.lineWidth=r*0.13;
+      for(const sx of [-1,1]){
+        g.beginPath();
+        if(o.eyes==="happy") g.arc(sx*ex,ey+r*0.06,r*0.22,Math.PI*1.15,Math.PI*1.85);
+        else g.arc(sx*ex,ey-r*0.04,r*0.22,Math.PI*0.15,Math.PI*0.85);
+        g.stroke();
+      }
+    }else{
+      g.lineWidth=r*0.10;
+      for(const sx of [-1,1]){                     // lids, so a downcast look reads
+        g.beginPath(); g.arc(sx*ex,ey,r*0.19,0,6.2832); g.fillStyle="#fff"; g.fill();
+        g.beginPath(); g.arc(sx*ex+look,ey+(o.down?r*0.07:0),r*0.085,0,6.2832);
+        g.fillStyle=o.col; g.fill();
+        if(o.down){ g.beginPath(); g.moveTo(sx*ex-r*0.19,ey-r*0.06);
+                    g.lineTo(sx*ex+r*0.19,ey-r*0.02); g.lineWidth=r*0.07; g.stroke(); }
+      }
+    }
+    g.lineWidth=r*0.11; g.strokeStyle=o.col;
+    g.beginPath();
+    if(o.mouth==="sad") g.arc(0,r*0.62,r*0.30,Math.PI*1.20,Math.PI*1.80);
+    else if(o.mouth==="smile") g.arc(0,r*0.24,r*0.34,Math.PI*0.18,Math.PI*0.82);
+    else g.arc(0,r*0.34,r*0.16,Math.PI*0.15,Math.PI*0.85);
+    g.stroke();
+  }
+  /* o: {x, y(ground), s, hip, bow, lean, tilt, footL, footR, hand{L,R}, noArms,
+         hair, skirt, face:{...}, shW, shA} */
+  function figure(g,o){
+    const s=o.s, col=o.ink||ink;
+    const hip=o.hip===undefined?s*0.86:o.hip;
+    const torso=s*0.60, hr=s*0.155;
+    const legBone=hip*0.56, armBone=torso*0.40;
+    const base=g.globalAlpha;
+    g.save(); g.translate(o.x,o.y);
+    g.strokeStyle=col; g.fillStyle=col; g.lineJoin="round"; g.lineCap="round";
+
+    g.save();                                       // contact shadow, keeps him on the floor
+    g.globalAlpha=base*0.16*(o.shA===undefined?1:o.shA);
+    g.beginPath(); g.ellipse(0,0,s*0.30*(o.shW||1),s*0.05,0,0,6.2832);
+    g.fillStyle=col; g.fill(); g.restore();
+
+    g.lineWidth=s*0.052;                            // limbs: lighter than the torso
+    limb2(g,0,-hip,(o.footL||0),0,legBone,1);
+    limb2(g,0,-hip,(o.footR||0),0,legBone,1);
+
+    g.save(); g.translate(0,-hip); g.rotate(o.bow||0);
+    if(o.skirt){
+      const sw=s*0.30, sh=s*0.34, sway=(o.sway||0)*s*0.05;
+      g.beginPath(); g.moveTo(-s*0.11,-s*0.02);
+      g.quadraticCurveTo(-sw+sway,sh*0.72,-sw*0.86+sway,sh);
+      g.lineTo(sw*0.86+sway,sh); g.quadraticCurveTo(sw+sway,sh*0.72,s*0.11,-s*0.02);
+      g.closePath(); g.fillStyle=col; g.globalAlpha=base*0.9; g.fill(); g.globalAlpha=base;
+    }
+    g.lineWidth=s*0.072;                            // spine, gently curved
+    g.beginPath(); g.moveTo(0,0);
+    g.quadraticCurveTo((o.spine||0)*s*0.1,-torso*0.55,0,-torso); g.stroke();
+    const shY=-torso;
+    if(!o.noArms){
+      g.lineWidth=s*0.050;
+      const L=o.handL||{x:-s*0.30,y:shY+s*0.34,b:1};
+      const R=o.handR||{x: s*0.30,y:shY+s*0.34,b:-1};
+      limb2(g,0,shY,L.x,L.y,armBone,L.b===undefined?1:L.b);
+      limb2(g,0,shY,R.x,R.y,armBone,R.b===undefined?-1:R.b);
+    }
+    g.save(); g.translate(0,shY); g.rotate(o.tilt||0);
+    g.lineWidth=s*0.050;
+    g.beginPath(); g.moveTo(0,0); g.lineTo(0,-hr*0.5); g.stroke();      // neck
+    const hy=-hr*0.5-hr;
+    if(o.hair){                                     // drawn behind the face
+      g.save(); g.globalAlpha=base*0.92;
+      g.beginPath(); g.arc(0,hy,hr*1.20,Math.PI*0.98,Math.PI*2.02); g.fill();
+      g.beginPath();
+      g.moveTo(-hr*1.16,hy); g.quadraticCurveTo(-hr*1.36,hy+hr*1.5,-hr*0.86+(o.sway||0)*hr*0.3,hy+hr*1.9);
+      g.lineTo(-hr*0.5,hy+hr*0.6); g.closePath(); g.fill();
+      g.beginPath();
+      g.moveTo(hr*1.16,hy); g.quadraticCurveTo(hr*1.36,hy+hr*1.5,hr*0.86+(o.sway||0)*hr*0.3,hy+hr*1.9);
+      g.lineTo(hr*0.5,hy+hr*0.6); g.closePath(); g.fill();
+      g.restore();
+    }
+    g.lineWidth=s*0.056;
+    g.beginPath(); g.arc(0,hy,hr,0,6.2832);
+    g.fillStyle=o.headFill||"transparent";
+    if(o.headFill) g.fill();
+    g.strokeStyle=col; g.stroke();
+    g.save(); g.translate(0,hy);
+    face(g,hr,Object.assign({col:col},o.face||{}));
+    g.restore();
+    g.restore(); g.restore(); g.restore();
+    return {shoulderY:o.y-hip-torso, hipY:o.y-hip};
+  }
+  /* a soft pool of light so the scene is staged rather than floating */
+  function floorPool(g,cx,y,w,a,warm){
+    const gr=g.createRadialGradient(cx,y,0,cx,y,w);
+    gr.addColorStop(0,warm?"rgba(255,206,150,"+a+")":"rgba(190,200,225,"+a+")");
+    gr.addColorStop(1,"rgba(255,255,255,0)");
+    g.save(); g.translate(0,0); g.scale(1,0.30);
+    g.fillStyle=gr; g.beginPath(); g.arc(cx,y/0.30,w,0,6.2832); g.fill(); g.restore();
+  }
 
   /* ---------------------------------------------------------------
      🙇 APOLOGY
-     Slides in, bows properly from the hips, shifts his eyes about,
-     straightens up and leaves.
+     He walks on, plants himself, and bows properly - hinged at the hips
+     with a little overshoot and settle. The card is held in both hands
+     and tips with him; his eyes stay down, and one small drop of
+     cartoon sweat gives the whole thing away.
      --------------------------------------------------------------- */
   SCENES.apology={
     screen:false,
-    init(s){ s.s=Math.min(H*0.34,190); },
+    init(s){ s.s=Math.min(H*0.30,180); },
     draw(g,s,el,t){
-      const S=s.s, ground=H*0.78;
-      const inX=E.outCubic(seg(t,0,0.20)), offX=E.inCubic(seg(t,0.80,1));
-      const x=-S*0.8+(W*0.42+S*0.8)*inX-(W*0.42+S*1.6)*offX;
-      const bow=E.outCubic(seg(t,0.22,0.40))-E.outCubic(seg(t,0.64,0.78));
-      const eye=Math.sin(el*4.2)*(seg(t,0.40,0.46)-seg(t,0.62,0.68));
-      const a=1-seg(t,0.92,1);
+      const S=s.s, ground=Math.min(H*0.80,H-S*0.22), cx=W*0.46;
+      const inT=E.outCubic(seg(t,0,0.22)), offT=E.inCubic(seg(t,0.82,1));
+      const x=-S*0.9+(cx+S*0.9)*inT-(cx+S*1.8)*offT;
+      const walking=inT<1||offT>0;
+      const gait=el*10;
+      /* bow: overshoot then settle, then come back up */
+      const bow=E.outBack(seg(t,0.26,0.44))*0.95-E.outCubic(seg(t,0.68,0.80))*0.95;
+      const hold=seg(t,0.44,0.52)-seg(t,0.70,0.78);
+      const breathe=Math.sin(el*2.6)*0.012*hold;
+      const a=1-seg(t,0.93,1);
+      const bowA=(bow+breathe)*1.05;
+
       g.save(); g.globalAlpha=a;
-      stick(g,{x,y:ground,s:S,bow:bow*Math.PI*0.5,
-               armA:0.5,armB:2.64,eye,legA:0.06,legB:-0.06});
-      /* the sign stays in his hand, so it rotates with him */
+      floorPool(g,x,ground,S*1.15,0.26,true);
+
+      const step=walking?Math.sin(gait)*S*0.20:0;
+      const lift=walking?Math.max(0,Math.sin(gait))*S*0.10:0;
+      const hipH=S*0.86-(walking?Math.abs(Math.sin(gait))*S*0.02:0)-bowA*S*0.06;
+      /* hands hold the card out in front, and stay in front through the bow */
+      const reach=0.30+hold*0.16+bowA*0.10;
+      const hy=-S*0.60+S*0.30-bowA*S*0.02;
+      figure(g,{x,y:ground,s:S,hip:hipH,bow:bowA,tilt:bowA*0.30+0.06,
+        footL:-step*0.9,footR:step*0.9+ (walking?0:S*0.10),
+        handL:{x:-S*reach*0.55,y:hy,b:1}, handR:{x:S*reach*0.55,y:hy,b:-1},
+        spine:-0.5,
+        shW:1-bowA*0.10, shA:1-bowA*0.15,
+        face:{eyes:"open",down:true,look:Math.sin(el*3.4)*(hold>0.4?1:0),mouth:"sad"}});
+      if(lift){} // (gait bob is folded into hipH)
+
+      /* the card, carried in those hands */
       g.save();
-      g.translate(x,ground); g.rotate(bow*Math.PI*0.5);
-      g.translate(Math.cos(0.5)*S*0.40,-S*0.50+Math.sin(0.5)*S*0.40);
-      g.rotate(-0.18+bow*0.5);
-      const w=S*0.46,h=S*0.24;
-      g.fillStyle="#fdf6e6"; g.strokeStyle=ink; g.lineWidth=Math.max(1.6,S*0.014);
+      g.translate(x,ground-hipH); g.rotate(bowA);
+      g.translate(0,-S*0.60+S*0.30-bowA*S*0.02);
+      g.rotate(-0.10+bowA*0.16);
+      const w=S*0.60,h=S*0.26;
+      g.globalAlpha=a*0.20;                                   // card shadow
+      if(g.roundRect){ g.beginPath(); g.roundRect(-w/2+S*0.012,-h/2+S*0.016,w,h,S*0.035); g.fillStyle="#000"; g.fill(); }
+      g.globalAlpha=a;
       g.beginPath();
-      if(g.roundRect) g.roundRect(-w/2,-h/2,w,h,S*0.03); else g.rect(-w/2,-h/2,w,h);
-      g.fill(); g.stroke();
-      g.fillStyle="#2b2b2b"; g.textAlign="center"; g.textBaseline="middle";
-      g.font="700 "+(S*0.115)+"px 'Space Mono',monospace";
-      g.fillText("SORRY",0,0);
-      g.restore(); g.restore();
+      if(g.roundRect) g.roundRect(-w/2,-h/2,w,h,S*0.035); else g.rect(-w/2,-h/2,w,h);
+      g.fillStyle="#fdf7ea"; g.fill();
+      g.lineWidth=Math.max(1.2,S*0.010); g.strokeStyle=ink; g.stroke();
+      g.fillStyle="#33302c"; g.textAlign="center"; g.textBaseline="middle";
+      g.font="700 "+(S*0.105)+"px 'Space Mono',monospace";
+      g.fillText("S O R R Y",0,0);
+      g.restore();
+
+      /* one bead of sweat, because he means it */
+      const sw=seg(t,0.40,0.62);
+      if(sw>0&&sw<1){
+        const hx=x+Math.sin(bowA)*S*0.52+S*0.26, hy2=ground-hipH-Math.cos(bowA)*S*0.86;
+        g.save(); g.globalAlpha=a*Math.sin(sw*Math.PI)*0.9;
+        g.translate(hx,hy2+sw*S*0.20);
+        g.beginPath();
+        g.moveTo(0,-S*0.05); g.quadraticCurveTo(S*0.035,0,0,S*0.035);
+        g.quadraticCurveTo(-S*0.035,0,0,-S*0.05); g.closePath();
+        g.fillStyle="#8fc7ee"; g.fill();
+        g.restore();
+      }
+      g.restore();
     }
   };
 
   /* ---------------------------------------------------------------
-     🤗 THE STICK HUG
-     Two walkers meet in the middle, squeeze, pop hearts, wave, leave.
+     🙏 THANK YOU
+     A thinner, lighter figure than the others - he walks on, a little
+     speech bubble pops up beside him, he bows his thanks with a hand
+     raised, then waves and carries on off the other side.
      --------------------------------------------------------------- */
+  SCENES.thanks={
+    screen:false,
+    init(s){ s.s=Math.min(H*0.32,178); },
+    draw(g,s,el,t){
+      const S=s.s, ground=H*0.78;
+      const walkIn=E.outCubic(seg(t,0,0.24));
+      const walkOff=E.inCubic(seg(t,0.82,1));
+      const x=-S*0.7+(W*0.44+S*0.7)*walkIn+(W*0.7)*walkOff;
+      const moving=walkIn<1||walkOff>0;
+      const step=moving?Math.sin(el*11)*0.5:0;
+      const bow=E.outCubic(seg(t,0.44,0.58))-E.outCubic(seg(t,0.66,0.78));
+      const wave=t>0.72&&t<0.86?Math.sin(el*13)*0.55:0;
+      const hand=E.outCubic(seg(t,0.42,0.56))-E.outCubic(seg(t,0.70,0.80));
+      const a=1-seg(t,0.94,1);
+
+      g.save(); g.globalAlpha=a;
+      stick(g,{x,y:ground,s:S,lw:0.048,             // noticeably finer linework
+        bow:bow*0.42,
+        armA:wave?-1.45+wave:(-0.35-hand*0.85),      // hand comes up to say it
+        armB:2.55,
+        legA:step,legB:-step,eye:0});
+
+      /* the bubble, tethered to his head */
+      const pop=E.outBack(seg(t,0.26,0.42))*(1-E.inCubic(seg(t,0.72,0.86)));
+      if(pop>0.01){
+        const hx=x+S*0.30, hy=ground-S*0.80-S*0.34;
+        g.save();
+        g.globalAlpha=a*Math.min(1,pop*1.2);
+        g.translate(hx,hy); g.scale(pop,pop);
+        const w=S*0.86,h=S*0.34,rr=S*0.09;
+        g.beginPath();
+        if(g.roundRect) g.roundRect(-w*0.18,-h/2,w,h,rr);
+        else g.rect(-w*0.18,-h/2,w,h);
+        g.fillStyle="#fdf8ec"; g.fill();
+        g.lineWidth=Math.max(1.2,S*0.011); g.strokeStyle=ink; g.stroke();
+        g.beginPath();                                // tail down toward him
+        g.moveTo(-w*0.10,h/2); g.lineTo(-w*0.20,h/2+S*0.11); g.lineTo(w*0.02,h/2);
+        g.closePath(); g.fillStyle="#fdf8ec"; g.fill();
+        g.strokeStyle=ink; g.stroke();
+        g.fillStyle="#2b2b2b"; g.textAlign="center"; g.textBaseline="middle";
+        g.font="700 "+(S*0.108)+"px 'Space Mono',monospace";
+        g.fillText("THANK YOU",-w*0.18+w/2,0);
+        g.restore();
+      }
+      g.restore();
+    }
+  };
+
+  /* ---------------------------------------------------------------
+     🤗 THE HUG
+     Two walkers, a beat of hesitation, then a real embrace: his arm
+     passes BEHIND her and hers in front of him, so the two bodies
+     actually occupy space instead of overlapping flat. They squash on
+     contact, breathe together, part with a bounce, wave, and go.
+     --------------------------------------------------------------- */
+  function wrapArm(g,x0,y0,x1,y1,curve,lw,col){
+    g.save(); g.strokeStyle=col; g.lineWidth=lw; g.lineCap="round";
+    g.beginPath(); g.moveTo(x0,y0);
+    g.quadraticCurveTo((x0+x1)/2,(y0+y1)/2+curve,x1,y1);
+    g.stroke();
+    g.beginPath(); g.arc(x1,y1,lw*0.42,0,6.2832); g.fillStyle=col; g.fill();   // hand
+    g.restore();
+  }
   SCENES.stickhug={
     screen:false,
-    init(s){ s.s=Math.min(H*0.30,168); s.h=[]; s.fired=0; },
+    init(s){ s.s=Math.min(H*0.28,164); s.h=[]; s.last=0; },
     draw(g,s,el,t,dt){
-      const S=s.s, ground=H*0.78, cx=W/2;
-      const walkIn=E.outCubic(seg(t,0,0.30));
-      const close=E.outCubic(seg(t,0.30,0.42));
-      const part=E.outCubic(seg(t,0.62,0.72));
-      const leave=E.inCubic(seg(t,0.80,1));
-      const apart=S*0.62-close*S*0.30+part*S*0.34;
-      const lx=-S+(cx-apart+S)*walkIn-(cx+S*1.4)*leave;
-      const rx= W+S-(W+S-(cx+apart))*walkIn+(cx+S*1.4)*leave;
-      const hugging=t>0.36&&t<0.66;
-      const moving=walkIn<1||leave>0;
-      const step=moving?Math.sin(el*11)*0.55:0;
-      const bob=hugging?Math.abs(Math.sin(el*7))*S*0.03:(moving?Math.abs(Math.sin(el*11))*S*0.012:0);
-      const wave=t>0.68&&t<0.82?Math.sin(el*13)*0.6:0;
-      const a=1-seg(t,0.93,1);
+      const S=s.s, ground=Math.min(H*0.80,H-S*0.22), cx=W/2;
+      const walkIn=E.outCubic(seg(t,0,0.26));
+      const hesitate=Math.sin(seg(t,0.26,0.36)*Math.PI)*S*0.06;   // a beat before touching
+      const close=E.outCubic(seg(t,0.34,0.44));
+      const part=E.outBack(seg(t,0.62,0.72));
+      const leave=E.inCubic(seg(t,0.84,1));
+      const hugging=t>0.40&&t<0.66;
+      const waving=t>0.72&&t<0.86;
+
+      const gap=S*0.72-close*S*0.30+part*S*0.42+hesitate;
+      const lx=-S+(cx-gap+S)*walkIn-(cx+S*1.5)*leave;
+      const rx= W+S-(W+S-(cx+gap))*walkIn+(cx+S*1.5)*leave;
+      const walking=walkIn<1||leave>0;
+      const gait=el*10.5;
+      const squash=hugging?Math.sin(seg(t,0.40,0.50)*Math.PI)*0.05:0;
+      const breath=hugging?Math.sin(el*3.4)*0.014:0;
+      const hipH=S*0.86*(1-squash-breath)-(walking?Math.abs(Math.sin(gait))*S*0.02:0);
+      const a=1-seg(t,0.94,1);
+      const wv=waving?Math.sin(el*13)*0.5:0;
+
       g.save(); g.globalAlpha=a;
-      /* arms go round the other one during the squeeze */
-      stick(g,{x:lx,y:ground-bob,s:S,bow:hugging?0.06:0,
-        armA:hugging?-0.30:(wave?-1.5+wave:0.7),armB:hugging?0.24:2.5,
-        legA:step,legB:-step,eye:0});
-      stick(g,{x:rx,y:ground-bob,s:S,bow:hugging?-0.06:0,hair:true,skirt:true,
-        armA:hugging?Math.PI+0.30:(wave?Math.PI+1.5-wave:Math.PI-0.7),
-        armB:hugging?Math.PI-0.24:Math.PI-2.5,
-        legA:-step,legB:step,eye:0});
-      if(hugging&&el-s.fired>0.22){                       // hearts over their heads
-        s.fired=el;
-        s.h.push({x:cx+rnd(-S*0.4,S*0.4),y:ground-S*1.0,vy:rnd(-64,-38),
-          vx:rnd(-16,16),r:rnd(6,13),born:el,life:rnd(1.0,1.7),ph:Math.random()*6.28});
+      floorPool(g,(lx+rx)/2,ground,S*1.9,hugging?0.34:0.20,true);
+
+      const step=walking?Math.sin(gait)*S*0.22:0;
+      const torso=S*0.60, shoulderY=ground-hipH-torso;
+
+      /* ---- him ---- */
+      figure(g,{x:lx,y:ground,s:S,hip:hipH,
+        bow:hugging?0.05:0, tilt:hugging?0.10:(waving?-0.05:0),
+        footL:-step,footR:step,
+        noArms:hugging,
+        handL:waving?{x:-S*0.30,y:S*0.20-torso*0.2,b:1}
+                    :{x:-S*0.26+step*0.5,y:-torso*0.60+S*0.34,b:1},
+        handR:waving?{x:S*0.34,y:-torso*0.34-S*0.30+wv*S*0.12,b:-1}
+                    :{x:S*0.26-step*0.5,y:-torso*0.60+S*0.34,b:-1},
+        spine:hugging?0.5:0,
+        face:{eyes:hugging?"happy":"open",mouth:hugging?"smile":"neutral",
+              look:hugging?0:(rx>lx?1:-1)*0.5}});
+
+      /* his arm goes round her - drawn now, so she covers it ---- */
+      if(hugging) wrapArm(g,lx+S*0.05,shoulderY+S*0.04,rx+S*0.20,shoulderY+S*0.16,
+                          S*0.26,S*0.050,ink);
+
+      /* ---- her ---- */
+      figure(g,{x:rx,y:ground,s:S,hip:hipH,
+        bow:hugging?-0.05:0, tilt:hugging?-0.10:(waving?0.05:0),
+        footL:step,footR:-step,
+        hair:true,skirt:true,sway:walking?Math.sin(gait)*0.8:(hugging?Math.sin(el*3)*0.4:0),
+        noArms:hugging,
+        handL:waving?{x:-S*0.34,y:-torso*0.34-S*0.30+wv*S*0.12,b:1}
+                    :{x:-S*0.26+step*0.5,y:-torso*0.60+S*0.34,b:1},
+        handR:waving?{x:S*0.30,y:S*0.20-torso*0.2,b:-1}
+                    :{x:S*0.26-step*0.5,y:-torso*0.60+S*0.34,b:-1},
+        spine:hugging?-0.5:0,
+        face:{eyes:hugging?"happy":"open",mouth:hugging?"smile":"neutral",
+              look:hugging?0:-0.5}});
+
+      /* hers passes in front of him ---- */
+      if(hugging) wrapArm(g,rx-S*0.05,shoulderY-S*0.02,lx-S*0.20,shoulderY+S*0.10,
+                          S*0.20,S*0.048,ink);
+
+      /* hearts, only while they are actually holding on */
+      if(hugging&&el-s.last>0.26){
+        s.last=el;
+        s.h.push({x:cx+rnd(-S*0.5,S*0.5),y:shoulderY-S*0.10,
+          vy:rnd(-56,-32),vx:rnd(-14,14),r:rnd(5,11),
+          born:el,life:rnd(1.1,1.8),ph:Math.random()*6.28});
       }
       for(const p of s.h){
         const u=(el-p.born)/p.life; if(u<0||u>=1) continue;
         p.y+=p.vy*dt; p.x+=p.vx*dt; p.vy*=0.99;
-        g.save(); g.globalAlpha=(1-u)*a;
-        heartPath(g,p.x+Math.sin(el*3+p.ph)*5,p.y,p.r*(0.7+u*0.5));
-        g.fillStyle="#ff4d7d"; g.fill(); g.restore();
+        g.save();
+        g.globalAlpha=a*Math.sin(Math.min(1,u*1.6)*Math.PI*0.9)*0.95;
+        g.shadowColor="rgba(255,110,150,.55)"; g.shadowBlur=10;
+        heartPath(g,p.x+Math.sin(el*3+p.ph)*5,p.y,p.r*(0.7+u*0.55));
+        const hg=g.createLinearGradient(0,p.y-p.r,0,p.y+p.r);
+        hg.addColorStop(0,"#ffd0dd"); hg.addColorStop(1,"#f0708f");
+        g.fillStyle=hg; g.fill();
+        g.restore();
       }
       g.restore();
     }
@@ -6073,6 +6491,9 @@ const ScreenFX=(function(){
               angelic:1,halo:1,heatwave:1,freeze:1,midas:1,glimmer:1,kiss:1,lick:1,
               cash:1,dizzy:1,punch:1,zip:1};
 
+  /* 😇 wash lives under a different class name than the angelic halo ring */
+  const WASH_CLASS={halo:"halowash"};
+
   function addDom(html){ const d=document.createElement("div"); d.innerHTML=html; while(d.firstChild) dom.appendChild(d.firstChild); }
 
   function play(key){
@@ -6081,7 +6502,7 @@ const ScreenFX=(function(){
     activeEffect=key; startedAt=performance.now(); lastT=0;
 
     wash.className="fxL-wash"; void wash.offsetWidth;
-    if(WASH[key]) wash.className="fxL-wash fx-"+key;
+    if(WASH[key]) wash.className="fxL-wash fx-"+(WASH_CLASS[key]||key);
 
     /* ---- a directed scene takes over completely ---- */
     const sc=SCENES[key];
@@ -6115,7 +6536,8 @@ const ScreenFX=(function(){
                          document.body.classList.add("fx-lit"); }
     if(key==="moonrise") addDom('<div class="fx-disc moon"></div>');
     if(key==="hearts")   addDom('<div class="fx-disc heart"></div>');
-    if(key==="angelic"||key==="halo") addDom('<div class="fx-beam"></div><div class="fx-ring"></div>');
+    if(key==="angelic") addDom('<div class="fx-halo"></div>');          // her halo, descending
+    if(key==="halo")    addDom('<div class="fx-beam"></div><div class="fx-ring"></div>');
     if(key==="freeze")   addDom('<div class="fx-frost"></div>');
     if(key==="heatwave") document.body.classList.add("fx-heat");
     if(key==="dizzy")    document.body.classList.add("fx-wobble");
