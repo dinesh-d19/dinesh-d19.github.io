@@ -1453,12 +1453,11 @@
   .gp-foot{display:flex;align-items:center;gap:10px;justify-content:space-between}
 
   /* ---------- carrier pigeon: compose ---------- */
-  .pg-to{display:flex;gap:7px;flex-wrap:wrap}
-  .pg-chip{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.05);color:#cfc4cc;
-    border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600;transition:.16s}
-  .pg-chip.on{border-color:rgba(var(--ember-rgb),.6);color:#fff;
-    background:linear-gradient(135deg,rgba(var(--ember-rgb),.30),rgba(var(--amber-rgb),.18));
-    box-shadow:0 0 14px -4px rgba(var(--ember-rgb),.75)}
+  /* who a pigeon is for is the room itself, so there is no picker to style */
+  .pg-dest{display:flex;align-items:center;gap:8px;font-size:12.5px;color:rgba(244,239,242,.62);
+    padding:2px 1px}
+  .pg-dest svg{width:15px;height:15px;color:var(--ember-2);flex:none}
+  .pg-dest b{color:#fff;font-weight:600}
   .pv-card textarea{background:rgba(0,0,0,.30);border:1px solid rgba(255,255,255,.10);color:#f4eff2;
     border-radius:13px;padding:11px 12px;font-size:14.5px;outline:none;resize:none;min-height:76px;
     line-height:1.4;font-family:inherit}
@@ -1891,7 +1890,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c4-1 6-4 7-7 1 3 2 5 5 5 3 0 5 2 5 5 0 3-3 6-7 6-5 0-10-4-10-9z"/><path d="M10 5.5h.01"/></svg>
           <span>Release a pigeon</span>
         </div>
-        <div class="pg-to" id="pgTo"></div>
+        <div class="pg-dest">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20a6.5 6.5 0 0 1 13 0"/><circle cx="10.5" cy="8" r="3.4"/><path d="M17.5 6.6a3 3 0 0 1 0 5.6"/><path d="M20 20a5.6 5.6 0 0 0-2-4.3"/></svg>
+          <span>Flies to <b id="pgDest">whoever is in this room</b></span>
+        </div>
         <textarea id="pgText" rows="3" placeholder="A note for the pigeon to carry" maxlength="900"></textarea>
         <div class="pg-dist">
           <div class="pg-rowl"><span>Distance</span><b id="pgDistTxt">138 km · 1:30</b></div>
@@ -2682,7 +2684,7 @@ async function loadHistory(){
   const cts=[];
   for(const row of rows){
     if(row.k===topic+"|__lastseen"){          // presence, not a message
-      try{ for(const id in row.ls){ const v=row.ls[id]; if(v&&v.at) lastSeenMap.set(id,{name:v.name||"Peer",at:v.at}); } }catch(e){}
+      try{ for(const id in row.ls){ const v=row.ls[id]; if(v&&v.at) lastSeenMap.set(id,{name:v.name||"Peer",at:v.at}); } pruneLastSeen(); }catch(e){}
       continue;
     }
     if(row.ct) cts.push(row.ct);
@@ -3721,6 +3723,25 @@ function lastSeenSave(){
   }catch(e){}
 }
 let lastSeenDirty=false;
+/* Every fresh browser profile, private window or reinstall arrives with a new
+   device id, so this map grew one entry per login for the life of the room -
+   fifty rows of "Nandini", "nandini", "Nandinj", "Wife of dinesh". It is a
+   "who has been here lately" list, not a guest book: fold entries that are the
+   same person under a different spelling, and keep only the recent few. */
+const LAST_SEEN_KEEP=4;
+function pruneLastSeen(){
+  const byName=new Map();
+  for(const[id,v]of lastSeenMap){
+    const k=String(v.name||"peer").trim().toLowerCase().replace(/\s+/g,"");
+    const cur=byName.get(k);
+    if(!cur||(v.at||0)>(cur.v.at||0)) byName.set(k,{id,v});
+  }
+  const keep=[...byName.values()].sort((a,b)=>(b.v.at||0)-(a.v.at||0)).slice(0,LAST_SEEN_KEEP);
+  const ids=new Set(keep.map(e=>e.id));
+  let changed=false;
+  for(const id of [...lastSeenMap.keys()]) if(!ids.has(id)){ lastSeenMap.delete(id); changed=true; }
+  if(changed) lastSeenDirty=true;
+}
 function noteLastSeen(id,name,at,isVisit){
   if(!id) return;
   const prev=lastSeenMap.get(id)||{};
@@ -3732,6 +3753,7 @@ function noteLastSeen(id,name,at,isVisit){
   const at2=isVisit?when:Math.max(when,prev.at||0);
   lastSeenMap.set(id,{name:name||prev.name||"Peer",at:at2});
   lastSeenDirty=true;
+  if(lastSeenMap.size>LAST_SEEN_KEEP) pruneLastSeen();
 }
 /* batched write: this fires on every packet, so it must not hammer storage */
 setInterval(()=>{ if(lastSeenDirty){ lastSeenDirty=false; lastSeenSave(); } },4000);
@@ -3791,7 +3813,8 @@ function refreshHeader(){
   paintPeerAvatar();
 }
 function refreshPresence(){
-  paintLobby();                          // the lobby list is presence, drawn differently
+  paintLobby();
+  try{ paintPigeonDest(); }catch(e){}      // "flies to ..." follows who is actually here                          // the lobby list is presence, drawn differently
   const n=peers.size;
   const el=$("barState");
   refreshHeader();
@@ -8359,7 +8382,7 @@ function showTab(name){
     if(on) b.setAttribute("aria-current","true"); else b.removeAttribute("aria-current");
   });
   if(name==="chat"){ tabSeen("chat"); scrollDown(); }
-  if(name==="pigeon"){ tabSeen("pigeon"); paintPigeonTargets(); paintPigeonDist(); paintTracker(); startSky(); }
+  if(name==="pigeon"){ tabSeen("pigeon"); paintPigeonDest(); paintPigeonDist(); paintTracker(); startSky(); }
   else stopSky();
   /* the sky loop and every video in the feed stop the moment you look away */
   if(name==="moments"){ tabSeen("moments"); Moments.mount(); } else Moments.unmount();
@@ -8428,7 +8451,7 @@ function pigeonFlightNode(rec){
   const w=document.createElement("div"); w.className="pgflight";
   w.innerHTML='<span class="pgf-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c4-1 6-4 7-7 1 3 2 5 5 5 3 0 5 2 5 5 0 3-3 6-7 6-5 0-10-4-10-9z"/><path d="M10 5.5h.01"/></svg></span>'+
     '<span class="pgf-txt"><b></b><small></small></span>';
-  w.querySelector("b").textContent="Pigeon in flight"+(rec.toName?" to "+rec.toName:"");
+  w.querySelector("b").textContent="Pigeon in flight"+(rec.mine?" to "+pigeonPeerName():"");
   w._tick=()=>{
     const sm=w.querySelector("small"); if(!sm) return;
     const left=Math.max(0,(rec.eta||0)-Date.now());
@@ -8517,32 +8540,23 @@ function recvPigeon(m){
   }
 }
 
-/* ---- sending ---- */
-let pgTargetId="";                 // "" = whoever is in the room
-function pigeonTargets(){
-  const out=[{id:"",name:"Anyone in the room"}];
-  for(const[id,p]of peers) out.push({id,name:p.name||"Peer"});
-  for(const[id,v]of lastSeenMap) if(!peers.has(id)) out.push({id,name:(v.name||"Peer")+" (away)"});
-  return out;
+/* ---- sending ----
+   A pigeon is addressed to the ROOM, not to a person. The room is the shared
+   secret: everyone holding it decrypts the same topic, so delivery never
+   depended on a name in the first place - and the old list of name chips was
+   worse than useless. It grew a button for every spelling anyone had ever
+   logged in with ("Nandini", "nandini", "Nandinj", "Wife of dinesh"...), because
+   it was built from every device id the room had ever seen. Picking the wrong
+   one of those could only ever mislabel the flight; it could never route it. */
+function pigeonPeerName(){
+  if(peers.size===1) return [...peers.values()][0].name||"them";
+  if(peers.size>1) return "the room";
+  const ls=lastSeenLine();
+  return (ls&&ls.name)||"the room";
 }
-function paintPigeonTargets(){
-  const box=$("pgTo"); if(!box) return;
-  const list=pigeonTargets();
-  /* if there is exactly one person in the room, that is who you meant. Whoever
-     you sat down with in the waiting room wins over that. */
-  if(!pgTargetId||!list.some(t=>t.id===pgTargetId)){
-    if(focusPeer&&list.some(t=>t.id===focusPeer)) pgTargetId=focusPeer;
-    else if(peers.size===1) pgTargetId=[...peers.keys()][0];
-    else pgTargetId=(list[1]&&list[1].id)||"";
-  }
-  box.innerHTML="";
-  list.forEach(t=>{
-    const b=document.createElement("button");
-    b.className="pg-chip"+(t.id===pgTargetId?" on":"");
-    b.textContent=t.name;
-    b.addEventListener("click",()=>{ pgTargetId=t.id; paintPigeonTargets(); });
-    box.appendChild(b);
-  });
+function paintPigeonDest(){
+  const el=$("pgDest"); if(!el) return;
+  el.textContent=peers.size?pigeonPeerName():"whoever is in this room";
 }
 function paintPigeonDist(){
   const km=+$("pgDist").value||92;
@@ -8568,10 +8582,8 @@ async function sendPigeon(){
   const ts=Date.now();
   const eta=ts+pigeonMs(km);
   const id=uid();
-  const tgt=pigeonTargets().find(t=>t.id===pgTargetId);
-  const toName=(pgTargetId&&tgt)?tgt.name.replace(/ \(away\)$/,""):"";
   const rec={id,from:me.id,name:me.name,mine:true,kind:"text",text,ts,status:"sent",
-             pigeon:1,eta,dist:km,to:pgTargetId||undefined,toName:toName||undefined};
+             pigeon:1,eta,dist:km};
   saveRec(rec);
   msgInfo.set(id,{name:me.name,kind:"text",deleted:false,preview:"🕊️ "+text.slice(0,70)});
   addBubble({id,name:me.name,mine:true,ts,kind:"text",bodyNode:pigeonFlightNode(rec)});
@@ -8582,8 +8594,7 @@ async function sendPigeon(){
   toast("Pigeon dispatched · "+fmtClock(pigeonMs(km))+" to go");
   paintPigeonCount(); paintTracker();
 
-  await publish({t:"msg",id,from:me.id,name:me.name,text,ts,pigeon:1,eta,dist:km,
-                 to:pgTargetId||undefined,toName:toName||undefined});
+  await publish({t:"msg",id,from:me.id,name:me.name,text,ts,pigeon:1,eta,dist:km});
   ensureMailbox(id);
 }
 /* calling it back before it arrives - the note is never revealed */
@@ -8621,7 +8632,7 @@ function paintTracker(){
     const l1=document.createElement("div"); l1.className="pt-line1";
     l1.innerHTML='<span></span><span class="pt-arrow">→</span><span></span><span class="pt-state '+st+'"></span>';
     l1.children[0].textContent=r.mine?"You":(r.name||"Peer");
-    l1.children[2].textContent=r.mine?(r.toName||"the room"):"You";
+    l1.children[2].textContent=r.mine?pigeonPeerName():"You";
     l1.children[3].textContent=st==="enroute"?"En route":st==="delivering"?"Delivering":"Delivered";
     row.appendChild(l1);
     const prev=document.createElement("div"); prev.className="pt-prev";
@@ -8873,8 +8884,19 @@ function skyFrame(now){
     }
   }
 }
-/* one clock drives every countdown on screen */
-setInterval(()=>{ if(hist.size) paintTracker(); },1000);
+/* One clock drives every countdown on screen - and, more importantly, does the
+   landing itself. Each bird also has its own setTimeout, but a timer is a weak
+   promise: a backgrounded tab throttles it to a crawl and a reload loses it
+   outright. The arrival time is an absolute stamp, so the honest test is simply
+   "is it due yet", asked once a second against the clock. */
+setInterval(()=>{
+  if(!hist.size) return;
+  const now=Date.now();
+  for(const r of hist.values()){
+    if(r.pigeon&&!r.pgLanded&&!r.deleted&&(r.eta||0)<=now) landPigeon(r.id);
+  }
+  paintTracker();
+},1000);
 
 /* ---------------------------------------------------------------------------
    WAITING ROOM
@@ -8962,7 +8984,7 @@ function paintLobby(){
       onpick:()=>joinWith(id,p.name)}));
   });
 
-  /* people the room knows but who are not here right now */
+  /* the handful of people the room has seen lately, not everyone who ever was */
   for(const[id,v]of lastSeenMap){
     if(peers.has(id)) continue;
     list.appendChild(lobbyRow({id,name:v.name||"Peer",here:false,
