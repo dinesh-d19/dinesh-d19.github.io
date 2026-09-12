@@ -981,6 +981,20 @@
     72%{opacity:1;transform:scale(1)}
     100%{opacity:0;transform:scale(1.12)}
   }
+  .mo-mute{position:absolute;right:10px;bottom:10px;z-index:3;width:36px;height:36px;
+    border-radius:50%;border:1px solid rgba(255,255,255,.20);background:rgba(8,8,12,.58);
+    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#fff;
+    display:grid;place-items:center;transition:transform .14s,background .16s}
+  .mo-mute svg{width:17px;height:17px}
+  .mo-mute:active{transform:scale(.88)}
+  .mo-replay{position:absolute;inset:0;z-index:2;display:none;align-items:center;justify-content:center;
+    background:rgba(6,6,10,.34);pointer-events:none}
+  .mo-replay.on{display:flex;pointer-events:auto;cursor:pointer}
+  .mo-replay span{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;
+    background:rgba(10,10,14,.6);border:1px solid rgba(255,255,255,.22);color:#fff;
+    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+  .mo-replay svg{width:26px;height:26px}
+
   .mo-badge{position:absolute;top:9px;right:9px;display:flex;align-items:center;gap:5px;
     font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
     padding:4px 8px;border-radius:999px;color:#fff;background:rgba(8,8,12,.62);
@@ -1876,8 +1890,7 @@
     <div class="lb-list" id="lbList"></div>
 
     <div class="lb-foot">
-      <button class="lb-open" id="lbOpen">Open the room<b id="lbUnread" hidden></b></button>
-      <label class="lb-skip"><input type="checkbox" id="lbSkip"><span>Skip the waiting room next time</span></label>
+      <button class="lb-open" id="lbOpen">Back to the chat<b id="lbUnread" hidden></b></button>
       <button class="lb-back" id="lbLeave">Leave this line</button>
     </div>
   </section>
@@ -2083,8 +2096,9 @@
   <div class="tp-head">Room info<button class="tp-x" id="riX" title="Close">&times;</button></div>
   <div class="ri-row"><span>Room</span><b id="riRoom">-</b></div>
   <div class="ri-row"><span>Relays live</span><b id="riLinks">-</b></div>
+  <div class="ri-row"><span>Room code</span><b id="riFP">-</b></div>
   <div class="ri-row"><span>Encryption</span><b>AES-256-GCM</b></div>
-  <div class="tp-note">Anyone with this room name and the secret key can join, so keep both private.</div>
+  <div class="tp-note">Both phones must show the same room code. If they differ, the room name or the secret is not identical and nothing will cross between you. Anyone with this room name and the secret key can join, so keep both private.</div>
 </div>
 <div class="themeback" id="profBack"></div>
 <div class="themepanel" id="profPanel" role="dialog" aria-label="My profile">
@@ -2300,7 +2314,7 @@ const enc = new TextEncoder();
 const dec = new TextDecoder();
 const sleep = ms => new Promise(r=>setTimeout(r,ms));
 
-let key=null, topic=null, mbTopic=null, prTopic=null;
+let key=null, topic=null, mbTopic=null, prTopic=null, roomFP=null;
 let me={id:rid(), name:"You"};
 const peers=new Map();               // id -> {name, lastSeen}
 let typingTimer=null, lastTypingSent=0, peerTypingTimer=null;
@@ -3243,6 +3257,54 @@ function flushOutbox(){
   toast("Sent "+q.length+" queued message"+(q.length>1?"s":""));
 }
 
+/* ---------------------------------------------------------------------------
+   DELIVERY RETRY
+   ---------------------------------------------------------------------------
+   Publishing is not delivering. There are three public relays and each phone
+   connects to whichever ones it can reach, so on a bad mobile network the two
+   of you can each be "connected" and yet share NO relay at all - every send
+   succeeds locally, the dot says secure, and nothing crosses. That is what a
+   screenful of single ticks means.
+
+   Rather than trust any single send, anything of ours still unacknowledged is
+   quietly put back on the wire every RESEND_EVERY: re-parked in the relay
+   mailbox (which now includes any relay that has come up since), and
+   re-published live. A duplicate costs nothing - the other side already knows
+   the id, so it just re-acknowledges, and the tick finally moves. Retries stop
+   as soon as a receipt lands, and give up after RESEND_MAX attempts. */
+const RESEND_EVERY=45000;     // how often to look
+const RESEND_AFTER=20000;     // how long a message may sit on one tick first
+const RESEND_MAX=10;
+function undeliveredMine(){
+  const now=Date.now();
+  return [...hist.values()].filter(r=>
+    r.mine && !r.delLocal && !r.deleted &&
+    (RANK[r.status||"sent"]||1)<RANK.delivered &&
+    now-(r.ts||0)>RESEND_AFTER && now-(r.ts||0)<MB_TTL
+  ).sort((a,b)=>(a.ts||0)-(b.ts||0));
+}
+function retryUndelivered(){
+  if(!anyLink()) return;
+  const pend=undeliveredMine();
+  if(!pend.length) return;
+  syncMailbox();                       // re-park, including on any newly-up relay
+  pend.slice(-6).forEach((r,i)=>{
+    if((r.rtry||0)>=RESEND_MAX) return;
+    r.rtry=(r.rtry||0)+1;
+    setTimeout(()=>{
+      if(!anyLink()) return;
+      const q=hist.get(r.id);
+      if(!q||(RANK[q.status||"sent"]||1)>=RANK.delivered) return;   // it landed meanwhile
+      if(q.kind==="text"){
+        const m={t:"msg",id:q.id,from:me.id,name:q.name,text:q.text,ts:q.ts,reply:q.reply};
+        if(q.pigeon){ m.pigeon=1; m.eta=q.eta; m.dist=q.dist; }
+        publish(m);
+      }
+    },i*260);
+  });
+}
+setInterval(retryUndelivered,RESEND_EVERY);
+
 /* ---------- transport ---------- */
 
 /* Every packet carries a short random id. The same packet arriving over two
@@ -3258,11 +3320,17 @@ function pkFresh(id){
 
 async function publish(obj){
   if(!anyLink()){
+    /* Receipts are queued too. They used to be dropped on the floor when the
+       link was down, so a message the other side really had received left a
+       single tick on this one for ever - and, worse, this device kept re-parking
+       an already-delivered message on every reconnect. */
+    if(obj.t==="recv"||obj.t==="seen"){ outbox.push(obj); saveOutbox(); return; }
     if(obj.t==="msg"||obj.t==="react"||obj.t==="del"||obj.t==="edit"){ outbox.push(obj); saveOutbox(); toast("Offline \u00b7 queued, sends on reconnect"); }
     return;
   }
   const qos=(obj.t==="msg"||obj.t==="media"||obj.t==="chunk"||obj.t==="react"||obj.t==="hist"||obj.t==="histp"||obj.t==="seen"||obj.t==="recv"||obj.t==="del"||obj.t==="edit"||obj.t==="call"||obj.t==="need")?1:0;
   if(!obj.pk) obj.pk=rid()+rid();
+  if(roomFP) obj.rm=roomFP;                    // room + passkey fingerprint
   let body; try{ body=await encryptObj(obj); }catch(e){ return; }
   /* one ciphertext, sent down every live relay */
   readyLinks().forEach(l=>{ try{ l.client.publish(topic,body,{qos}); }catch(e){} });
@@ -3280,6 +3348,7 @@ async function publish(obj){
    any single reachable relay keeps the room joined. */
 function publishAck(obj){
   if(!obj.pk) obj.pk=rid()+rid();
+  if(roomFP) obj.rm=roomFP;
   return encryptObj(obj).then(body=>new Promise(resolve=>{
     const ls=readyLinks();
     if(!ls.length){ resolve(false); return; }
@@ -3449,6 +3518,9 @@ function onLinkUp(){
       setTimeout(flushPendingMedia,1000);
       setTimeout(requestSync,1800);
       setTimeout(syncMailbox,3000);
+      /* and again shortly after: a relay that joined late is only useful once
+         the backlog has been parked on IT too */
+      setTimeout(retryUndelivered,7000);
     });
   },400);
 }
@@ -3461,6 +3533,9 @@ async function onPacket(t,payload,url){
   if(!payload||!payload.length) return;                                   // an emptied mailbox slot
   let m; try{ m=await decryptObj(payload.toString()); }catch(e){ return; } // wrong key or noise
   if(!m) return;
+  /* belt and braces on top of the decryption: a packet whose room fingerprint
+     is not ours is not for us */
+  if(m.rm&&roomFP&&m.rm!==roomFP) return;
   if(pr){ onPresence(t.slice(prTopic.length),m,url); return; }
   if(mb){ onMailbox(t.slice(mbTopic.length),m); return; }
   if(m.from===me.id) return;                                              // ignore own echo
@@ -8104,6 +8179,74 @@ const Moments=(function(){
     render();
   }
 
+  /* ---------------------------------------------------------------------------
+     SMART AUTOPLAY
+     Exactly one clip is ever running. An IntersectionObserver watches the feed
+     and hands play to whichever video is at least half on screen; everything
+     else is paused AND rewound, so scrolling back to a clip starts it again
+     from the top rather than resuming a stale frame. Sound is off to begin
+     with - no browser will autoplay audio - and one button toggles it for the
+     whole feed, the way Instagram does it.
+     --------------------------------------------------------------------------- */
+  const MUTE_KEY="sl.mofeedmute";
+  let feedMuted=true;
+  try{ feedMuted=localStorage.getItem(MUTE_KEY)!=="0"; }catch(e){}
+  let vidObserver=null, activeVid=null;
+
+  function muteIcon(m){
+    return m
+      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.5 9H3v6h3.5L11 19z"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>'
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.5 9H3v6h3.5L11 19z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path d="M18.4 6.4a8 8 0 0 1 0 11.2"/></svg>';
+  }
+  function setFeedMuted(m){
+    feedMuted=!!m;
+    try{ localStorage.setItem(MUTE_KEY,feedMuted?"1":"0"); }catch(e){}
+    document.querySelectorAll("#moFeed video").forEach(v=>{ v.muted=feedMuted; });
+    document.querySelectorAll("#moFeed .mo-mute").forEach(b=>{
+      b.innerHTML=muteIcon(feedMuted); b.title=feedMuted?"Unmute":"Mute";
+    });
+  }
+  /* whoever just started playing is the only one allowed to */
+  function soloPlay(v){
+    activeVid=v;
+    document.querySelectorAll("#moFeed video").forEach(o=>{
+      if(o===v) return;
+      try{ o.pause(); o.currentTime=0; }catch(e){}
+      const veil=o.parentElement&&o.parentElement.querySelector(".mo-replay");
+      if(veil) veil.classList.remove("on");
+    });
+  }
+  function pauseAllVideos(){
+    activeVid=null;
+    document.querySelectorAll("#moFeed video").forEach(v=>{ try{ v.pause(); }catch(e){} });
+  }
+  function wireVideos(){
+    if(!("IntersectionObserver" in window)) return;
+    if(!vidObserver){
+      vidObserver=new IntersectionObserver(entries=>{
+        if(!mounted) return;
+        entries.forEach(en=>{
+          const v=en.target;
+          if(en.isIntersecting&&en.intersectionRatio>=0.5){
+            if(activeVid===v&&!v.paused) return;         // already the one running
+            v.muted=feedMuted;
+            v.currentTime=0;                              // scrolled back in: start over
+            const veil=v.parentElement&&v.parentElement.querySelector(".mo-replay");
+            if(veil) veil.classList.remove("on");
+            v.play().then(()=>soloPlay(v)).catch(()=>{});
+          }else{
+            /* out of view: stop and rewind so the next visit is a fresh start */
+            try{ v.pause(); v.currentTime=0; }catch(e){}
+            const veil=v.parentElement&&v.parentElement.querySelector(".mo-replay");
+            if(veil) veil.classList.remove("on");
+            if(activeVid===v) activeVid=null;
+          }
+        });
+      },{root:$$("moFeed"),threshold:[0,0.5,0.9]});
+    }
+    document.querySelectorAll("#moFeed video").forEach(v=>{ try{ vidObserver.observe(v); }catch(e){} });
+  }
+
   /* ---------- the feed ---------- */
   function urlFor(p){
     if(!p.blob) return null;
@@ -8148,9 +8291,38 @@ const Moments=(function(){
     if(u&&p.kind==="video"){
       const v=document.createElement("video");
       v.src=u; v.controls=true; v.playsInline=true; v.preload="metadata";
+      v.muted=feedMuted; v.loop=false; v.dataset.mo=p.id;
       v.setAttribute("playsinline","");
       if(p.poster) v.poster=p.poster;
       med.appendChild(v);
+
+      /* a video that has run its course stays on its last frame and offers a
+         replay, rather than looping at you */
+      const veil=document.createElement("div"); veil.className="mo-replay";
+      veil.innerHTML='<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 6.4"/><path d="M3 5v6h6"/></svg></span>';
+      med.appendChild(veil);
+      v.addEventListener("ended",()=>{ veil.classList.add("on"); if(activeVid===v) activeVid=null; });
+      v.addEventListener("play",()=>{ veil.classList.remove("on"); soloPlay(v); });
+      /* The replay tap lives on the VEIL, not on the video. A <video> with
+         native controls treats a tap on its surface as play/pause, so a handler
+         on the element itself starts the clip and the browser immediately
+         pauses it again. The overlay only exists once the clip has ended, and
+         it swallows that tap cleanly. */
+      const replay=e=>{
+        if(e){ e.preventDefault(); e.stopPropagation(); }
+        veil.classList.remove("on");
+        try{ v.currentTime=0; }catch(err){}
+        v.play().then(()=>soloPlay(v)).catch(()=>{});
+      };
+      veil.addEventListener("click",replay);
+      v.addEventListener("click",e=>{ if(v.ended) replay(e); });
+
+      /* sound, off by default so the browser lets it start at all */
+      const mb=document.createElement("button"); mb.className="mo-mute";
+      mb.type="button"; mb.title=feedMuted?"Unmute":"Mute";
+      mb.innerHTML=muteIcon(feedMuted);
+      mb.addEventListener("click",e=>{ e.stopPropagation(); setFeedMuted(!feedMuted); });
+      med.appendChild(mb);
     }else if(u){
       const im=document.createElement("img");
       im.src=u; im.alt=p.caption||"moment"; im.loading="lazy"; im.decoding="async";
@@ -8269,8 +8441,17 @@ const Moments=(function(){
         feed.appendChild(e);
         return;
       }
+      /* a like or a comment arriving must not kill the clip you are watching */
+      const wasPlaying=activeVid&&!activeVid.paused
+        ? {id:activeVid.dataset.mo,t:activeVid.currentTime} : null;
+      activeVid=null;
       list.forEach(p=>feed.appendChild(card(p)));
       feed.scrollTop=keep;
+      if(wasPlaying){
+        const v=feed.querySelector('video[data-mo="'+wasPlaying.id+'"]');
+        if(v){ try{ v.currentTime=wasPlaying.t; }catch(e){} v.play().then(()=>soloPlay(v)).catch(()=>{}); }
+      }
+      wireVideos();
     },0);
   }
 
@@ -8327,13 +8508,16 @@ const Moments=(function(){
     mounted=true;
     render();
     chase();
+    setTimeout(wireVideos,80);
   }
   /* they just walked in: ask for anything we are still missing */
   function peerHere(){ chase(); }
   function unmount(){
     mounted=false;
-    /* a video left playing behind a tab is pure battery drain */
-    try{ document.querySelectorAll("#moFeed video").forEach(v=>{ try{ v.pause(); }catch(e){} }); }catch(e){}
+    /* a video left playing behind a tab is pure battery drain, and the observer
+       has nothing to watch while the view is out of the layout */
+    try{ pauseAllVideos(); }catch(e){}
+    try{ if(vidObserver){ vidObserver.disconnect(); vidObserver=null; } }catch(e){}
   }
   document.addEventListener("visibilitychange",()=>{ if(document.hidden) unmount(); });
 
@@ -8910,14 +9094,11 @@ setInterval(()=>{
 
    Whoever arrives first has nobody to tap, so "Open the room" is always there.
    --------------------------------------------------------------------------- */
-const SKIP_LOBBY_KEY="sl.skiplobby";
 let inLobby=false, lobbyUnread=0;
-function skipLobby(){ try{ return localStorage.getItem(SKIP_LOBBY_KEY)==="1"; }catch(e){ return false; } }
 
 function openLobby(){
   inLobby=true;
   $("lbRoom").textContent=roomLabel||"this line";
-  try{ $("lbSkip").checked=skipLobby(); }catch(e){}
   showTab("chat");
   paintLobby();
 }
@@ -9037,11 +9218,23 @@ async function start(){
   roomOpen=true;
   $("tabbar").hidden=false;
   $("tabbar").classList.add("on");
-  if(skipLobby()) openChatView(); else openLobby();
+  /* Straight into the conversation. The waiting room used to be the landing
+     screen, and it hid the very thing it was reporting on: the room is live
+     from the moment the key is derived, so messages were arriving and piling up
+     behind an "Open the room" button while it looked like nothing was syncing.
+     It still exists, on demand, from the menu - it is just not in the way. */
+  openChatView();
   setState("unlocking\u2026",false,"warn");
 
   const derived=await deriveBoth(secret,room);
   key=derived.key; topic=derived.topic; mbTopic=topic+"/mb/"; prTopic=topic+"/pr/";
+  /* The topic is already PBKDF2(room + secret), so its tail is a fingerprint of
+     BOTH. Every payload carries it (inside the encryption, so the relay still
+     sees only ciphertext) and anything that does not match ours is dropped.
+     The same code is shown in Room info: if two phones display different codes
+     the room name or the secret differs somewhere, which is the one failure the
+     app otherwise cannot tell apart from "they are just not here yet". */
+  roomFP=topic.slice(-12);
 
   /* Reaching the relays and unwrapping local history are independent, and they
      used to run one after the other - nothing touched the network until every
@@ -9103,10 +9296,6 @@ function hydrate(){
 $("enter").addEventListener("click",start);
 $("lbOpen").addEventListener("click",()=>openChatView());
 $("lbLeave").addEventListener("click",leave);
-$("lbSkip").addEventListener("change",e=>{
-  try{ localStorage.setItem(SKIP_LOBBY_KEY,e.target.checked?"1":""); }catch(err){}
-  toast(e.target.checked?"The waiting room is in the menu when you want it":"You will land in the waiting room");
-});
 $("lobbyBtn").addEventListener("click",()=>{ closeMenu(); openLobby(); });
 
 /* ---- carrier pigeon ---- */
@@ -9298,6 +9487,7 @@ function openRoomInfo(){
   $("riRoom").textContent=roomLabel||"-";
   const n=(typeof readyLinks==="function")?readyLinks().length:0;
   $("riLinks").textContent=n+" of "+(links?links.length:0);
+  $("riFP").textContent=roomFP?roomFP.replace(/(.{4})(.{4})(.{4})/,"$1-$2-$3"):"-";
   $("roomBack").classList.add("show"); $("roomPanel").classList.add("show");
   closeMenu&&closeMenu();
 }
