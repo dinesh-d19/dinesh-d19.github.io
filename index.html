@@ -864,14 +864,15 @@
   .tabbar{display:none;flex:none;align-items:stretch;gap:2px;height:54px;
     margin:0 -14px;padding:0 8px env(safe-area-inset-bottom,0px);
     background:linear-gradient(180deg,rgba(128,120,130,.10),rgba(128,120,130,.17));
-    -webkit-backdrop-filter:blur(22px) saturate(1.5);backdrop-filter:blur(22px) saturate(1.5);
+    -webkit-backdrop-filter:blur(12px) saturate(1.5);backdrop-filter:blur(12px) saturate(1.5);
     border-top:1px solid var(--hair-soft)}
   .tabbar.on{display:flex}
   body.kb .tabbar{display:none}          /* the keyboard needs the room more */
   .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
     border:0;background:none;color:var(--dim);position:relative;transition:color .18s;padding:0}
   .tab svg{width:20px;height:20px;transition:transform .2s}
-  .tab span{font-size:9.5px;font-weight:600;letter-spacing:.02em;line-height:1}
+  .tab span{font-size:9.5px;font-weight:600;letter-spacing:.02em;line-height:1;
+    max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .tab.on{color:var(--ember)}
   .tab.on svg{transform:translateY(-1px)}
   /* a soft ember bloom behind the icon, and a short bar above it */
@@ -3331,7 +3332,10 @@ async function publish(obj){
     if(obj.t==="msg"||obj.t==="react"||obj.t==="del"||obj.t==="edit"){ outbox.push(obj); saveOutbox(); toast("Offline \u00b7 queued, sends on reconnect"); }
     return;
   }
-  const qos=(obj.t==="msg"||obj.t==="media"||obj.t==="chunk"||obj.t==="react"||obj.t==="hist"||obj.t==="histp"||obj.t==="seen"||obj.t==="recv"||obj.t==="del"||obj.t==="edit"||obj.t==="call"||obj.t==="need")?1:0;
+  /* At-least-once for anything a person would notice going missing. Likes,
+     comments and post requests used to ride QoS 0, which the public relays are
+     free to drop - and did. */
+  const qos=(obj.t==="msg"||obj.t==="media"||obj.t==="chunk"||obj.t==="react"||obj.t==="hist"||obj.t==="histp"||obj.t==="seen"||obj.t==="recv"||obj.t==="del"||obj.t==="edit"||obj.t==="call"||obj.t==="need"||obj.t==="mlike"||obj.t==="mcom"||obj.t==="mdel"||obj.t==="mwant")?1:0;
   if(!obj.pk) obj.pk=rid()+rid();
   if(roomFP) obj.rm=roomFP;                    // room + passkey fingerprint
   let body; try{ body=await encryptObj(obj); }catch(e){ return; }
@@ -8097,7 +8101,7 @@ const Moments=(function(){
     const all=new Uint8Array(total); let o=0; rec.parts.forEach(x=>{all.set(x,o);o+=x.length;});
     const p=rec.post;
     p.blob=new Blob([all],{type:rec.mime||p.mime}); p.size=total; p.xfer="have";
-    urls.delete(p.id);
+    releaseUrl(p.id);          // the poster's URL is dead now - hand it back
     vaultPut(p); render();
     mailboxClear("mo."+p.id);
   }
@@ -8164,6 +8168,7 @@ const Moments=(function(){
   function removePost(id,forBoth){
     const p=posts.get(id); if(!p) return;
     posts.delete(id); vaultDel(id);
+    dropMedia(id);
     dropped.add(id); dropSave();
     const u=urls.get(id); if(u){ try{URL.revokeObjectURL(u);}catch(e){} urls.delete(id); }
     if(p.mine&&forBoth!==false){
@@ -8177,7 +8182,7 @@ const Moments=(function(){
   function onDel(m){
     const p=posts.get(m.id);
     if(!p||p.mine) return;
-    posts.delete(m.id); vaultDel(m.id);
+    posts.delete(m.id); vaultDel(m.id); dropMedia(m.id);
     const u=urls.get(m.id); if(u){ try{URL.revokeObjectURL(u);}catch(e){} urls.delete(m.id); }
     render();
   }
@@ -8226,6 +8231,53 @@ const Moments=(function(){
     activeVid=null;
     document.querySelectorAll("#moFeed video").forEach(v=>{ try{ v.pause(); }catch(e){} });
   }
+  /* Event-driven autoplay is not enough on its own. A single rejected play() -
+     the browser was busy, another clip paused it mid-promise, the observer
+     coalesced a callback away - and that video sits there dead with nothing to
+     restart it. That is the clip that "just would not play".
+
+     So the rule is enforced continuously rather than announced once: twice a
+     second, work out which video actually owns the viewport, make sure that one
+     is running and every other one is stopped and rewound. Any stuck state
+     fixes itself within a tick, whatever caused it. */
+  const PLAY_AT=0.5;                       // half on screen is enough, as specified
+  function visibleRatio(v,fr){
+    const r=v.getBoundingClientRect();
+    if(!r.height||!fr.height) return 0;
+    const vis=Math.max(0,Math.min(r.bottom,fr.bottom)-Math.max(r.top,fr.top));
+    /* A clip taller than the feed can never show 60% - or even 100% - of itself,
+       so measuring against its own height alone left tall portrait videos frozen
+       for ever. Measure against whichever is smaller. */
+    return vis/Math.min(r.height,fr.height);
+  }
+  function feedRect(){
+    const f=$$("moFeed");
+    return f?f.getBoundingClientRect():{top:0,bottom:innerHeight,height:innerHeight};
+  }
+  function reconcileVideos(){
+    if(!mounted||document.hidden) return;
+    const feed=$$("moFeed"); if(!feed) return;
+    const vids=feed.querySelectorAll("video");
+    if(!vids.length) return;
+    const fr=feed.getBoundingClientRect();
+    let best=null,bestRatio=PLAY_AT;
+    vids.forEach(v=>{
+      const r=visibleRatio(v,fr);
+      if(r>=bestRatio){ bestRatio=r; best=v; }
+    });
+    vids.forEach(v=>{
+      if(v===best) return;
+      if(!v.paused||v.currentTime>0){ try{ v.pause(); v.currentTime=0; }catch(e){} }
+    });
+    if(!best){ activeVid=null; return; }
+    best.muted=feedMuted;
+    activeVid=best;
+    if(best.paused&&!best.dataset.dead){
+      const tryPlay=best.play();
+      if(tryPlay&&tryPlay.catch) tryPlay.catch(()=>{});   // next tick will try again
+    }
+  }
+
   function wireVideos(){
     if(!("IntersectionObserver" in window)) return;
     if(!vidObserver){
@@ -8233,7 +8285,10 @@ const Moments=(function(){
         if(!mounted) return;
         entries.forEach(en=>{
           const v=en.target;
-          if(en.isIntersecting&&en.intersectionRatio>=0.6){
+          /* intersectionRatio is also a fraction of the TARGET, so a tall clip
+             tops out below the bar; fall back to measuring it ourselves. */
+          const ratio=Math.max(en.intersectionRatio,visibleRatio(v,en.rootBounds||feedRect()));
+          if(en.isIntersecting&&ratio>=PLAY_AT){
             if(activeVid===v&&!v.paused) return;         // already the one running
             v.muted=feedMuted;
             v.currentTime=0;                              // scrolled back in: start over
@@ -8244,12 +8299,51 @@ const Moments=(function(){
             if(activeVid===v) activeVid=null;
           }
         });
-      },{root:$$("moFeed"),threshold:[0,0.6,0.9]});
+      },{root:$$("moFeed"),threshold:[0,0.25,PLAY_AT,0.75,0.95]});
     }
     document.querySelectorAll("#moFeed video").forEach(v=>{ try{ vidObserver.observe(v); }catch(e){} });
   }
 
   /* ---------- the feed ---------- */
+  /* A like or a comment used to rebuild every card, which threw away the
+     <video> element mid-playback and made the feed stutter. The media node is
+     kept and re-parented instead: same element, same decoded frames, same
+     IntersectionObserver registration, nothing interrupted. */
+  const mediaCache=new Map();
+  function mediaSig(p){ return (p.kind||"")+"|"+(p.blob?"b":p.poster?"p":"n")+"|"+(p.w||0)+"x"+(p.h||0); }
+  function releaseUrl(id){
+    const u=urls.get(id);
+    if(u){ try{ URL.revokeObjectURL(u); }catch(e){} urls.delete(id); }
+  }
+  function dropMedia(id){
+    const e=mediaCache.get(id);
+    if(e){
+      try{
+        const v=e.querySelector("video");
+        if(v){
+          v.pause();
+          /* the observer keeps a strong reference to anything it watches, so a
+             node dropped from the cache would otherwise never be collected */
+          if(vidObserver) try{ vidObserver.unobserve(v); }catch(err){}
+          v.removeAttribute("src"); v.load();
+        }
+      }catch(err){}
+    }
+    mediaCache.delete(id);
+  }
+  /* Posts are kept for ever, so without a ceiling the cache ends up holding a
+     decoded <video> for every moment ever posted. Only a handful are ever on
+     screen; the rest rebuild in a millisecond from the blob we already hold. */
+  const MEDIA_CACHE_MAX=10;
+  function trimMediaCache(keepIds){
+    if(mediaCache.size<=MEDIA_CACHE_MAX) return;
+    for(const id of [...mediaCache.keys()]){
+      if(mediaCache.size<=MEDIA_CACHE_MAX) break;
+      if(keepIds&&keepIds.has(id)) continue;
+      dropMedia(id);
+    }
+  }
+
   function urlFor(p){
     if(!p.blob) return null;
     let u=urls.get(p.id);
@@ -8287,7 +8381,27 @@ const Moments=(function(){
     d.appendChild(head);
 
     /* media */
+    const cached=mediaCache.get(p.id);
+    if(cached&&cached._sig===mediaSig(p)){
+      /* reuse it wholesale - only the transfer badge can have changed */
+      const old=cached.querySelector(".mo-badge:not(.done)");
+      if(old) old.remove();
+      const st0=p.xfer;
+      if(st0&&st0!=="local"&&st0!=="sent"&&st0!=="have"){
+        const b=document.createElement("div"); b.className="mo-badge";
+        const bi=document.createElement("i"); const bs=document.createElement("span");
+        bs.textContent=p.xferText||(st0==="incoming"?"Receiving":st0==="receiving"?"Receiving":
+          st0==="encoding"?"Preparing":st0==="queued"?"Waiting for a relay":
+          st0==="localonly"?"Only on this phone":st0==="stalled"?"Paused":"Sending");
+        b.appendChild(bi); b.appendChild(bs); cached.appendChild(b);
+      }
+      d.appendChild(cached);
+      return finishCard(d,p,cached);
+    }
+    dropMedia(p.id);
     const med=document.createElement("div"); med.className="mo-media";
+    med._sig=mediaSig(p);
+    mediaCache.set(p.id,med);
     if(p.w&&p.h) med.style.aspectRatio=p.w+" / "+p.h;      // hold the shape while it loads
     const u=urlFor(p);
     if(u&&p.kind==="video"){
@@ -8305,6 +8419,14 @@ const Moments=(function(){
       v.muted=feedMuted; v.preload="metadata"; v.dataset.mo=p.id;
       if(p.poster) v.poster=p.poster;
       v.addEventListener("play",()=>soloPlay(v));
+      /* a codec this browser cannot decode must say so, not sit there black */
+      v.addEventListener("error",()=>{
+        v.dataset.dead="1";
+        if(med.querySelector(".mo-badge")) return;
+        const b=document.createElement("div"); b.className="mo-badge done";
+        b.innerHTML='<i></i><span>format not supported here</span>';
+        med.appendChild(b);
+      });
       med.appendChild(v);
 
       /* the whole sound story: one small dot, and a tap anywhere on the clip */
@@ -8349,7 +8471,10 @@ const Moments=(function(){
       const now=Date.now();
       if(now-lastTap<320){
         clearTimeout(tapWait); tapWait=null; lastTap=0;
-        if(!p.likes[myNorm()]) toggleLike(p.id);
+        /* read the CURRENT record: this closure outlives re-renders, and a
+           stale copy made a double tap on a liked post remove the like */
+        const live=posts.get(p.id);
+        if(live&&!live.likes[myNorm()]) toggleLike(p.id);
         heart.classList.remove("pop"); void heart.offsetWidth; heart.classList.add("pop");
         return;
       }
@@ -8361,7 +8486,12 @@ const Moments=(function(){
       },320);
     });
     d.appendChild(med);
+    return finishCard(d,p,med);
+  }
 
+  /* Everything below the picture. Split out so a card whose media element is
+     being reused can rebuild only the parts that actually change. */
+  function finishCard(d,p,med){
     /* action bar */
     const bar=document.createElement("div"); bar.className="mo-bar";
     const likes=Object.keys(p.likes||{}).length;
@@ -8430,6 +8560,7 @@ const Moments=(function(){
        elsewhere would queue a render that never ran. */
     setTimeout(()=>{
       renderQueued=false;
+      if(!mounted) return;              // we left the tab between queue and flush
       const feed=$$("moFeed"); if(!feed) return;
       const keep=feed.scrollTop;
       const list=[...posts.values()].sort((a,b)=>b.ts-a.ts);
@@ -8452,6 +8583,7 @@ const Moments=(function(){
         if(v){ try{ v.currentTime=wasPlaying.t; }catch(e){} v.play().then(()=>soloPlay(v)).catch(()=>{}); }
       }
       wireVideos();
+      trimMediaCache(new Set(list.slice(0,MEDIA_CACHE_MAX).map(x=>x.id)));
     },0);
   }
 
@@ -8497,6 +8629,8 @@ const Moments=(function(){
     dropLoad();
     const rows=await vaultAll();
     rows.forEach(p=>{
+      if(posts.has(p.id)) return;      // a live one landed mid-load; it is newer
+      if(dropped.has(p.id)) return;    // and one the user removed stays removed
       p.likes=p.likes||{}; p.coms=p.coms||[];
       p.mine=(normName(p.norm)===myNorm())||p.from===me.id;
       if(p.blob&&p.xfer!=="localonly") p.xfer=p.mine?"sent":"have";
@@ -8509,11 +8643,14 @@ const Moments=(function(){
     render();
     chase();
     setTimeout(wireVideos,80);
+    /* the observer is the fast path; this is the guarantee */
+    if(!mount._recon) mount._recon=setInterval(reconcileVideos,500);
   }
   /* they just walked in: ask for anything we are still missing */
   function peerHere(){ chase(); }
   function unmount(){
     mounted=false;
+    if(mount._recon){ clearInterval(mount._recon); mount._recon=null; }
     /* a video left playing behind a tab is pure battery drain, and the observer
        has nothing to watch while the view is out of the layout */
     try{ pauseAllVideos(); }catch(e){}
@@ -8543,6 +8680,7 @@ const Moments=(function(){
           onPacketIn,onMailboxIn,count:()=>posts.size,vaultRoom,ensurePersistent};
 })();
 
+
 /* ---------------------------------------------------------------------------
    TABS
    ---------------------------------------------------------------------------
@@ -8566,7 +8704,12 @@ function showTab(name){
     if(on) b.setAttribute("aria-current","true"); else b.removeAttribute("aria-current");
   });
   if(name==="chat"){ tabSeen("chat"); scrollDown(); }
-  if(name==="pigeon"){ tabSeen("pigeon"); paintPigeonDest(); paintPigeonDist(); paintTracker(); startSky(); }
+  /* startSky() first: it is what sets ptOpen, and paintTracker() bails out
+     unless the panel is open. Painting before it meant every visit to the tab
+     opened on the LAST visit's snapshot - a bird that had already landed still
+     read "En route", still counted down, and still offered a Recall button that
+     would have deleted a note the other person had already read. */
+  if(name==="pigeon"){ tabSeen("pigeon"); paintPigeonDest(); paintPigeonDist(); startSky(); paintTracker(); }
   else stopSky();
   /* the sky loop and every video in the feed stop the moment you look away */
   if(name==="moments"){ tabSeen("moments"); Moments.mount(); } else Moments.unmount();
@@ -8708,8 +8851,18 @@ function resumePigeons(){
 
 /* ---- receiving ---- */
 function recvPigeon(m){
+  const ts=m.ts||Date.now();
+  let eta=m.eta||0;
+  /* Both stamps were taken by the SENDER's clock, so their difference - the
+     flight time - is sound, while the arrival stamp measured against OUR clock
+     is only as good as the gap between the two devices. A phone a few minutes
+     fast would strand the bird in the air; one a few minutes slow would land it
+     the instant it arrived. Never let it have further to fly than the whole
+     journey was ever meant to take. */
+  const dur=Math.max(0,eta-ts);
+  if(eta-Date.now()>dur) eta=Date.now()+dur;
   const rec={id:m.id,from:m.from,name:m.name,mine:false,kind:"text",text:m.text||"",
-             ts:m.ts||Date.now(),reply:m.reply,pigeon:1,eta:m.eta||0,dist:m.dist||0,
+             ts,reply:m.reply,pigeon:1,eta,dist:m.dist||0,
              to:m.to,toName:m.toName};
   saveRec(rec);                        // kept, encrypted, but deliberately not drawn
   if(inFlight(rec)){
@@ -9593,6 +9746,19 @@ document.addEventListener("keydown",e=>{
   if((e.ctrlKey||e.metaKey)&&!e.shiftKey&&!e.altKey&&(e.key==="e"||e.key==="E")){
     if($("emojiBtn").disabled) return;
     e.preventDefault(); toggleEmoji();
+  }
+});
+
+/* The relay library rejects a promise every time a public broker drops us -
+   "Connection refused", "Keepalive timeout", a socket closing mid-write. Those
+   are expected weather, not faults: the mesh reconnects and the retry sweep
+   covers anything in flight. Swallow exactly those so the console stays useful
+   for real errors, and never swallow anything else. */
+window.addEventListener("unhandledrejection",e=>{
+  const r=e&&e.reason;
+  const msg=String((r&&(r.message||r.reason))||r||"");
+  if(/keepalive|connection refused|not connected|closed|socket|server unavailable|econnreset/i.test(msg)){
+    e.preventDefault();
   }
 });
 
