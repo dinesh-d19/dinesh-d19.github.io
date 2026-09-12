@@ -981,19 +981,22 @@
     72%{opacity:1;transform:scale(1)}
     100%{opacity:0;transform:scale(1.12)}
   }
-  .mo-mute{position:absolute;right:10px;bottom:10px;z-index:3;width:36px;height:36px;
-    border-radius:50%;border:1px solid rgba(255,255,255,.20);background:rgba(8,8,12,.58);
-    -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);color:#fff;
-    display:grid;place-items:center;transition:transform .14s,background .16s}
-  .mo-mute svg{width:17px;height:17px}
-  .mo-mute:active{transform:scale(.88)}
-  .mo-replay{position:absolute;inset:0;z-index:2;display:none;align-items:center;justify-content:center;
-    background:rgba(6,6,10,.34);pointer-events:none}
-  .mo-replay.on{display:flex;pointer-events:auto;cursor:pointer}
-  .mo-replay span{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;
-    background:rgba(10,10,14,.6);border:1px solid rgba(255,255,255,.22);color:#fff;
-    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-  .mo-replay svg{width:26px;height:26px}
+  /* No player chrome. A feed video is a moving photograph: no scrubber, no
+     time, no fullscreen, no play button. WebKit needs telling twice, because
+     it will draw its own controls on iOS even with the attribute removed. */
+  .mo-media video::-webkit-media-controls,
+  .mo-media video::-webkit-media-controls-enclosure,
+  .mo-media video::-webkit-media-controls-panel,
+  .mo-media video::-webkit-media-controls-start-playback-button{display:none!important;
+    -webkit-appearance:none!important}
+  .mo-media video{outline:none}
+
+  .mo-mute{position:absolute;right:12px;bottom:12px;z-index:3;width:31px;height:31px;
+    border-radius:50%;border:0;background:rgba(0,0,0,.42);color:#fff;
+    -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
+    display:grid;place-items:center;opacity:.92;transition:transform .14s,opacity .16s}
+  .mo-mute svg{width:15px;height:15px}
+  .mo-mute:active{transform:scale(.85);opacity:1}
 
   .mo-badge{position:absolute;top:9px;right:9px;display:flex;align-items:center;gap:5px;
     font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
@@ -8201,7 +8204,12 @@ const Moments=(function(){
   function setFeedMuted(m){
     feedMuted=!!m;
     try{ localStorage.setItem(MUTE_KEY,feedMuted?"1":"0"); }catch(e){}
-    document.querySelectorAll("#moFeed video").forEach(v=>{ v.muted=feedMuted; });
+    document.querySelectorAll("#moFeed video").forEach(v=>{
+      v.muted=feedMuted;
+      /* the attribute matters as much as the property: it is what a mobile
+         browser consults when deciding whether it may start playing */
+      if(feedMuted) v.setAttribute("muted",""); else v.removeAttribute("muted");
+    });
     document.querySelectorAll("#moFeed .mo-mute").forEach(b=>{
       b.innerHTML=muteIcon(feedMuted); b.title=feedMuted?"Unmute":"Mute";
     });
@@ -8212,8 +8220,6 @@ const Moments=(function(){
     document.querySelectorAll("#moFeed video").forEach(o=>{
       if(o===v) return;
       try{ o.pause(); o.currentTime=0; }catch(e){}
-      const veil=o.parentElement&&o.parentElement.querySelector(".mo-replay");
-      if(veil) veil.classList.remove("on");
     });
   }
   function pauseAllVideos(){
@@ -8227,22 +8233,18 @@ const Moments=(function(){
         if(!mounted) return;
         entries.forEach(en=>{
           const v=en.target;
-          if(en.isIntersecting&&en.intersectionRatio>=0.5){
+          if(en.isIntersecting&&en.intersectionRatio>=0.6){
             if(activeVid===v&&!v.paused) return;         // already the one running
             v.muted=feedMuted;
             v.currentTime=0;                              // scrolled back in: start over
-            const veil=v.parentElement&&v.parentElement.querySelector(".mo-replay");
-            if(veil) veil.classList.remove("on");
             v.play().then(()=>soloPlay(v)).catch(()=>{});
           }else{
             /* out of view: stop and rewind so the next visit is a fresh start */
             try{ v.pause(); v.currentTime=0; }catch(e){}
-            const veil=v.parentElement&&v.parentElement.querySelector(".mo-replay");
-            if(veil) veil.classList.remove("on");
             if(activeVid===v) activeVid=null;
           }
         });
-      },{root:$$("moFeed"),threshold:[0,0.5,0.9]});
+      },{root:$$("moFeed"),threshold:[0,0.6,0.9]});
     }
     document.querySelectorAll("#moFeed video").forEach(v=>{ try{ vidObserver.observe(v); }catch(e){} });
   }
@@ -8290,38 +8292,27 @@ const Moments=(function(){
     const u=urlFor(p);
     if(u&&p.kind==="video"){
       const v=document.createElement("video");
-      v.src=u; v.controls=true; v.playsInline=true; v.preload="metadata";
-      v.muted=feedMuted; v.loop=false; v.dataset.mo=p.id;
+      v.src=u;
+      /* Every attribute a mobile browser looks for before it will start a video
+         on its own. They have to be real ATTRIBUTES, not just properties -
+         iOS checks the markup. */
+      v.setAttribute("autoplay","");
+      v.setAttribute("muted","");
       v.setAttribute("playsinline","");
+      v.setAttribute("webkit-playsinline","");
+      v.setAttribute("loop","");
+      v.autoplay=true; v.loop=true; v.playsInline=true; v.controls=false;
+      v.muted=feedMuted; v.preload="metadata"; v.dataset.mo=p.id;
       if(p.poster) v.poster=p.poster;
+      v.addEventListener("play",()=>soloPlay(v));
       med.appendChild(v);
 
-      /* a video that has run its course stays on its last frame and offers a
-         replay, rather than looping at you */
-      const veil=document.createElement("div"); veil.className="mo-replay";
-      veil.innerHTML='<span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11a9 9 0 1 1 2.6 6.4"/><path d="M3 5v6h6"/></svg></span>';
-      med.appendChild(veil);
-      v.addEventListener("ended",()=>{ veil.classList.add("on"); if(activeVid===v) activeVid=null; });
-      v.addEventListener("play",()=>{ veil.classList.remove("on"); soloPlay(v); });
-      /* The replay tap lives on the VEIL, not on the video. A <video> with
-         native controls treats a tap on its surface as play/pause, so a handler
-         on the element itself starts the clip and the browser immediately
-         pauses it again. The overlay only exists once the clip has ended, and
-         it swallows that tap cleanly. */
-      const replay=e=>{
-        if(e){ e.preventDefault(); e.stopPropagation(); }
-        veil.classList.remove("on");
-        try{ v.currentTime=0; }catch(err){}
-        v.play().then(()=>soloPlay(v)).catch(()=>{});
-      };
-      veil.addEventListener("click",replay);
-      v.addEventListener("click",e=>{ if(v.ended) replay(e); });
-
-      /* sound, off by default so the browser lets it start at all */
-      const mb=document.createElement("button"); mb.className="mo-mute";
-      mb.type="button"; mb.title=feedMuted?"Unmute":"Mute";
+      /* the whole sound story: one small dot, and a tap anywhere on the clip */
+      const mb=document.createElement("button");
+      mb.className="mo-mute"; mb.type="button";
+      mb.title=feedMuted?"Unmute":"Mute";
       mb.innerHTML=muteIcon(feedMuted);
-      mb.addEventListener("click",e=>{ e.stopPropagation(); setFeedMuted(!feedMuted); });
+      mb.addEventListener("click",e=>{ e.preventDefault(); e.stopPropagation(); setFeedMuted(!feedMuted); });
       med.appendChild(mb);
     }else if(u){
       const im=document.createElement("img");
@@ -8350,15 +8341,24 @@ const Moments=(function(){
     const heart=document.createElement("div"); heart.className="mo-heart";
     heart.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-8.4-5.3-8.4-11A4.9 4.9 0 0 1 12 7.3 4.9 4.9 0 0 1 20.4 10c0 5.7-8.4 11-8.4 11z"/></svg>';
     med.appendChild(heart);
-    let lastTap=0;
+    /* One tap on a clip turns the sound on or off; two taps love it. The single
+       tap waits out the double-tap window so the two never fight. */
+    let lastTap=0, tapWait=null;
     med.addEventListener("click",e=>{
-      if(e.target.tagName==="VIDEO") return;               // let the player have its taps
+      if(e.target.closest(".mo-mute")) return;             // the dot speaks for itself
       const now=Date.now();
-      if(now-lastTap<340){
-        lastTap=0;
+      if(now-lastTap<320){
+        clearTimeout(tapWait); tapWait=null; lastTap=0;
         if(!p.likes[myNorm()]) toggleLike(p.id);
         heart.classList.remove("pop"); void heart.offsetWidth; heart.classList.add("pop");
-      }else lastTap=now;
+        return;
+      }
+      lastTap=now;
+      clearTimeout(tapWait);
+      tapWait=setTimeout(()=>{
+        tapWait=null;
+        if(p.kind==="video") setFeedMuted(!feedMuted);
+      },320);
     });
     d.appendChild(med);
 
