@@ -1,5 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- Dark from the very first paint. The theme engine runs in JavaScript, and
+     leaving this to it meant one white frame before it did - so the markup
+     states the default and applyMode() only ever has to remove it. -->
+<html lang="en" data-mode="dark">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
@@ -857,294 +860,6 @@
   #chat{flex:1;display:none;flex-direction:column;min-height:0}
   #chat.on{display:flex}
 
-  /* ---------- bottom tabs ----------
-     Slim, glass and docked. Docked rather than floating on purpose: the views
-     above are flex children, so a bar in the flow can never sit on top of the
-     thing you are reading. 54px including the phone's home indicator. */
-  .tabbar{display:none;flex:none;align-items:stretch;gap:2px;height:54px;
-    margin:0 -14px;padding:0 8px env(safe-area-inset-bottom,0px);
-    background:linear-gradient(180deg,rgba(128,120,130,.10),rgba(128,120,130,.17));
-    -webkit-backdrop-filter:blur(12px) saturate(1.5);backdrop-filter:blur(12px) saturate(1.5);
-    border-top:1px solid var(--hair-soft)}
-  .tabbar.on{display:flex}
-  body.kb .tabbar{display:none}          /* the keyboard needs the room more */
-  .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
-    border:0;background:none;color:var(--dim);position:relative;transition:color .18s;padding:0}
-  .tab svg{width:20px;height:20px;transition:transform .2s}
-  .tab span{font-size:9.5px;font-weight:600;letter-spacing:.02em;line-height:1;
-    max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .tab.on{color:var(--ember)}
-  .tab.on svg{transform:translateY(-1px)}
-  /* a soft ember bloom behind the icon, and a short bar above it */
-  .tab.on::after{content:"";position:absolute;top:6px;left:50%;transform:translateX(-50%);
-    width:34px;height:26px;border-radius:50%;pointer-events:none;
-    background:radial-gradient(closest-side,rgba(var(--ember-rgb),.30),transparent)}
-  .tab.on::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);
-    width:22px;height:2.5px;border-radius:0 0 3px 3px;
-    background:linear-gradient(90deg,var(--ember),var(--ember-2));
-    box-shadow:0 0 10px rgba(var(--ember-rgb),.7)}
-  .tab:active svg{transform:scale(.88)}
-  .tab-dot{position:absolute;top:7px;right:calc(50% - 16px);width:7px;height:7px;border-radius:50%;
-    background:var(--ember-2);box-shadow:0 0 7px rgba(var(--amber-rgb),.9)}
-  .tab-dot[hidden]{display:none}
-
-  /* ---------- shared dark glass, used by the pigeon sky and the moments feed ---------- */
-  .glasspanel{background:linear-gradient(165deg,var(--glass-a),var(--glass-b));
-    border:1px solid rgba(255,255,255,.09);border-radius:20px;color:#f4eff2;
-    box-shadow:0 18px 42px -30px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.07)}
-  .glasspanel .gp-title{display:flex;align-items:center;gap:9px;font-family:var(--display);
-    font-size:15.5px;font-weight:600;color:#fff}
-  .glasspanel .gp-title svg{width:18px;height:18px;color:var(--ember-2)}
-  .emberbtn{border:0;border-radius:14px;padding:13px;font-size:15px;font-weight:700;letter-spacing:.01em;
-    color:#fff;background:linear-gradient(135deg,var(--ember-deep),var(--ember) 52%,var(--ember-2));
-    box-shadow:0 14px 30px -16px rgba(var(--ember-rgb),.95), inset 0 1px 0 rgba(255,255,255,.25);
-    transition:transform .12s, box-shadow .2s}
-  .emberbtn:active{transform:translateY(1.5px) scale(.995);
-    box-shadow:0 8px 18px -14px rgba(var(--ember-rgb),.9), inset 0 1px 0 rgba(255,255,255,.2)}
-  .emberbtn:disabled{opacity:.45;box-shadow:none}
-
-  /* ---------- carrier pigeon page ----------
-     A night-flight console: dark whatever the app's palette is, so the sky
-     canvas and the dispatch card read as one instrument. */
-  #pigeonview{flex:1;display:none;flex-direction:column;min-height:0}
-  #pigeonview.on{display:flex}
-  .pv-scroll{flex:1;min-height:0;overflow-y:auto;padding:12px 0 8px;display:flex;flex-direction:column;gap:11px}
-  .pv-card{background:linear-gradient(165deg,var(--glass-a),var(--glass-b));
-    border:1px solid rgba(255,255,255,.09);border-radius:20px;padding:13px;color:#f4eff2;
-    display:flex;flex-direction:column;gap:11px;
-    box-shadow:0 18px 42px -30px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.07)}
-  .pv-h{display:flex;align-items:center;gap:9px;font-family:var(--display);font-size:15.5px;
-    font-weight:600;color:#fff}
-  .pv-h svg{width:19px;height:19px;color:var(--ember-2)}
-  .pv-h .pv-live{margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.08em;
-    text-transform:uppercase;color:#ffb98e;display:flex;align-items:center;gap:5px}
-  .pv-h .pv-live i{width:6px;height:6px;border-radius:50%;background:var(--ember-2);
-    box-shadow:0 0 8px rgba(var(--amber-rgb),.9);animation:pvPulse 1.6s ease-in-out infinite}
-  @keyframes pvPulse{0%,100%{opacity:.35}50%{opacity:1}}
-
-  /* the sky the birds actually cross */
-  .pv-sky{width:100%;aspect-ratio:16/11;border-radius:16px;display:block;
-    background:linear-gradient(180deg,#0a0d1c 0%,#131228 55%,#241428 100%);
-    border:1px solid rgba(255,255,255,.07)}
-
-  /* ---------- moments: a private feed ----------
-     Dark cards whatever the app's palette is, so photographs sit on a neutral
-     ground and keep their own colour. */
-  /* the feed gets its own dark ground edge to edge, so photographs are judged
-     against neutral black rather than whatever palette the app is wearing */
-  #momentsview{flex:1;display:none;flex-direction:column;min-height:0;position:relative;
-    margin:0 -14px;background:linear-gradient(180deg,#0c0b0f,#08080b)}
-  #momentsview.on{display:flex}
-  .mo-scroll{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;
-    padding:12px 12px 92px;display:flex;flex-direction:column;gap:13px;
-    scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.14) transparent}
-
-  /* flex:none is load-bearing. These cards are items in a column flex container,
-     so without it the browser SHRINKS each one to make the feed fit - and since
-     the card clips its overflow, the squeeze silently ate the caption, the heart
-     bar and the comments, and cropped the photo on the way. */
-  .mo-post{flex:none;background:linear-gradient(180deg,#17151b,#111015);
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:20px;overflow:hidden;color:#f3eff4;
-    box-shadow:0 16px 38px -28px rgba(0,0,0,.95), inset 0 1px 0 rgba(255,255,255,.05)}
-  .mo-head{display:flex;align-items:center;gap:10px;padding:11px 12px 10px}
-  .mo-ava{width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;
-    font-weight:700;font-size:14px;color:#fff;background-size:cover;background-position:center;
-    background-image:linear-gradient(140deg,#6f5bd6,#c0468a);
-    box-shadow:0 0 0 2px rgba(255,255,255,.10)}
-  .mo-ava.haspic span{display:none}
-  .mo-who{flex:1;min-width:0}
-  .mo-who b{display:block;font-size:13.5px;font-weight:650;letter-spacing:-.01em;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mo-who small{display:block;font-size:11px;color:rgba(243,239,244,.5);margin-top:1px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .mo-who small .mo-place{color:rgba(243,239,244,.72)}
-  .mo-x{background:none;border:0;color:rgba(243,239,244,.45);padding:4px 2px;flex:none}
-  .mo-x svg{width:18px;height:18px}
-
-  /* The media keeps the shape it was taken in. No fixed height, no crop box and
-     no letterboxing: the element is 100% wide, its height follows from the file's
-     own ratio, so 16:9, 4:5, 1:1 and a full-height vertical clip each render as
-     themselves. aspect-ratio is set inline from the stored dimensions so the feed
-     does not jump about while a picture decodes. */
-  .mo-media{position:relative;background:#07070a;width:100%;overflow:hidden;
-    user-select:none;-webkit-user-select:none}
-  .mo-media img,.mo-media video{display:block;width:100%;height:auto;object-fit:contain;
-    background:#07070a}
-  .mo-media .mo-heart{position:absolute;left:50%;top:50%;width:104px;height:104px;margin:-52px 0 0 -52px;
-    pointer-events:none;opacity:0;transform:scale(.4);color:#fff;
-    filter:drop-shadow(0 6px 18px rgba(0,0,0,.6))}
-  .mo-media .mo-heart.pop{animation:moHeart .95s cubic-bezier(.2,.9,.25,1)}
-  @keyframes moHeart{
-    0%{opacity:0;transform:scale(.35) rotate(-8deg)}
-    18%{opacity:1;transform:scale(1.18) rotate(2deg)}
-    42%{opacity:1;transform:scale(.96) rotate(0)}
-    72%{opacity:1;transform:scale(1)}
-    100%{opacity:0;transform:scale(1.12)}
-  }
-  /* No player chrome. A feed video is a moving photograph: no scrubber, no
-     time, no fullscreen, no play button. WebKit needs telling twice, because
-     it will draw its own controls on iOS even with the attribute removed. */
-  .mo-media video::-webkit-media-controls,
-  .mo-media video::-webkit-media-controls-enclosure,
-  .mo-media video::-webkit-media-controls-panel,
-  .mo-media video::-webkit-media-controls-start-playback-button{display:none!important;
-    -webkit-appearance:none!important}
-  .mo-media video{outline:none}
-
-  .mo-mute{position:absolute;right:12px;bottom:12px;z-index:3;width:31px;height:31px;
-    border-radius:50%;border:0;background:rgba(0,0,0,.42);color:#fff;
-    -webkit-backdrop-filter:blur(7px);backdrop-filter:blur(7px);
-    display:grid;place-items:center;opacity:.92;transition:transform .14s,opacity .16s}
-  .mo-mute svg{width:15px;height:15px}
-  .mo-mute:active{transform:scale(.85);opacity:1}
-
-  .mo-badge{position:absolute;top:9px;right:9px;display:flex;align-items:center;gap:5px;
-    font-family:var(--mono);font-size:9px;letter-spacing:.07em;text-transform:uppercase;
-    padding:4px 8px;border-radius:999px;color:#fff;background:rgba(8,8,12,.62);
-    -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.14)}
-  .mo-badge i{width:5px;height:5px;border-radius:50%;background:#ffb32e;
-    animation:pvPulse 1.5s ease-in-out infinite}
-  .mo-badge.done i{background:#7ee0b0;animation:none}
-
-  .mo-bar{display:flex;align-items:center;gap:4px;padding:9px 8px 4px}
-  .mo-act{background:none;border:0;padding:6px;color:#f3eff4;display:flex;align-items:center;gap:6px;
-    border-radius:10px;transition:transform .14s,color .16s}
-  .mo-act svg{width:23px;height:23px}
-  .mo-act:active{transform:scale(.86)}
-  .mo-act.liked{color:#ff3b5c}
-  .mo-act.liked svg{fill:#ff3b5c;stroke:#ff3b5c}
-  .mo-act b{font-size:12.5px;font-weight:600}
-  .mo-bar .mo-when{margin-left:auto;padding-right:6px;font-family:var(--mono);font-size:9.5px;
-    color:rgba(243,239,244,.35);letter-spacing:.04em;text-transform:uppercase}
-
-  .mo-cap{padding:1px 13px 10px;font-size:13.5px;line-height:1.45;color:rgba(243,239,244,.9);
-    white-space:pre-wrap;overflow-wrap:anywhere}
-  .mo-cap b{font-weight:650;color:#fff;margin-right:6px}
-  .mo-cap.clip{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
-    overflow:hidden;padding-bottom:0}
-  .mo-more{background:none;border:0;color:rgba(243,239,244,.45);font-size:12.5px;
-    padding:3px 13px 10px;text-align:left}
-
-  .mo-coms{padding:0 13px 10px;display:flex;flex-direction:column;gap:6px}
-  .mo-com{font-size:12.5px;line-height:1.4;color:rgba(243,239,244,.78);overflow-wrap:anywhere}
-  .mo-com b{font-weight:650;color:#fff;margin-right:6px}
-  .mo-com i{font-style:normal;font-family:var(--mono);font-size:9.5px;color:rgba(243,239,244,.3);margin-left:6px}
-  .mo-add{display:flex;gap:8px;align-items:center;padding:0 11px 11px}
-  .mo-add input{flex:1;min-width:0;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.09);
-    color:#f3eff4;border-radius:999px;padding:9px 13px;font-size:13px;outline:none;font-family:inherit}
-  .mo-add input::placeholder{color:rgba(243,239,244,.32)}
-  .mo-add input:focus{border-color:rgba(var(--ember-rgb),.5)}
-  .mo-add button{background:none;border:0;color:var(--ember-2);font-size:13px;font-weight:650;
-    padding:6px 4px;flex:none}
-  .mo-add button:disabled{opacity:.35}
-
-  /* the compose button, floating clear of the tab bar */
-  .mo-fab{position:absolute;right:16px;bottom:16px;z-index:4;width:54px;height:54px;border-radius:50%;
-    border:0;display:grid;place-items:center;color:#fff;
-    background:linear-gradient(135deg,var(--ember-deep),var(--ember) 55%,var(--ember-2));
-    box-shadow:0 16px 34px -14px rgba(var(--ember-rgb),.95), inset 0 1px 0 rgba(255,255,255,.3);
-    transition:transform .14s}
-  .mo-fab svg{width:25px;height:25px}
-  .mo-fab:active{transform:scale(.92)}
-
-  .mo-empty{flex:none;margin:24px 4px;padding:34px 22px;border-radius:22px;text-align:center;
-    border:1px dashed rgba(255,255,255,.12);background:rgba(255,255,255,.02);color:rgba(243,239,244,.55);
-    font-size:13.5px;line-height:1.6}
-  .mo-empty b{display:block;color:#fff;font-size:16px;font-weight:650;margin-bottom:6px;
-    font-family:var(--display)}
-  .mo-empty svg{width:34px;height:34px;color:rgba(var(--ember-rgb),.75);margin-bottom:10px}
-
-  /* the composer sheet */
-  .mo-sheet{position:fixed;inset:0;z-index:70;display:none;align-items:flex-end;justify-content:center;
-    background:rgba(0,0,0,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-  .mo-sheet.on{display:flex}
-  .mo-sheet-in{width:min(560px,100%);max-height:92dvh;overflow-y:auto;
-    background:linear-gradient(180deg,#1a171e,#121116);border:1px solid rgba(255,255,255,.1);
-    border-radius:24px 24px 0 0;padding:14px 14px calc(16px + env(safe-area-inset-bottom,0px));
-    color:#f3eff4;display:flex;flex-direction:column;gap:11px;
-    animation:moUp .26s cubic-bezier(.2,.9,.25,1)}
-  @keyframes moUp{from{transform:translateY(30px);opacity:.4}to{transform:none;opacity:1}}
-  .mo-sheet-h{display:flex;align-items:center;font-family:var(--display);font-size:16.5px;font-weight:600}
-  .mo-sheet-h button{margin-left:auto;background:none;border:0;color:rgba(243,239,244,.5);
-    font-size:22px;line-height:1;padding:0 4px}
-  .mo-prev{border-radius:16px;overflow:hidden;background:#07070a;display:flex;align-items:center;
-    justify-content:center;min-height:150px;max-height:42dvh;position:relative}
-  .mo-prev img,.mo-prev video{max-width:100%;max-height:42dvh;display:block;object-fit:contain}
-  .mo-prev .mo-pick{color:rgba(243,239,244,.5);font-size:13.5px;display:flex;flex-direction:column;
-    align-items:center;gap:9px;padding:30px}
-  .mo-prev .mo-pick svg{width:30px;height:30px;opacity:.7}
-  .mo-sheet textarea,.mo-sheet input[type=text]{background:rgba(255,255,255,.05);
-    border:1px solid rgba(255,255,255,.1);color:#f3eff4;border-radius:13px;padding:11px 12px;
-    font-size:14px;outline:none;font-family:inherit;resize:none}
-  .mo-sheet textarea{min-height:74px;line-height:1.45}
-  .mo-sheet textarea::placeholder,.mo-sheet input::placeholder{color:rgba(243,239,244,.32)}
-  .mo-sheet textarea:focus,.mo-sheet input:focus{border-color:rgba(var(--ember-rgb),.5)}
-  .mo-note{font-size:11.5px;color:rgba(243,239,244,.42);line-height:1.5}
-  .mo-prog{height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
-  .mo-prog i{display:block;height:100%;width:0%;border-radius:999px;
-    background:linear-gradient(90deg,var(--ember),var(--ember-2));transition:width .3s}
-
-  /* ---------- waiting room ---------- */
-  #lobby{flex:1;display:none;flex-direction:column;min-height:0;padding:0 0 18px}
-  #lobby.on{display:flex}
-  .lb-top{display:flex;align-items:center;gap:12px;padding:16px 18px 12px}
-  .lb-crest{width:44px;height:44px;border-radius:14px;flex:none;display:grid;place-items:center;
-    background:linear-gradient(150deg,var(--btn-a),var(--btn-b));color:var(--on-accent);position:relative}
-  .lb-crest svg{width:22px;height:22px}
-  .lb-ttl{min-width:0;flex:1}
-  .lb-ttl h2{margin:0;font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:-.2px}
-  .lb-ttl p{margin:2px 0 0;font-size:12.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .lb-relay{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--dim);
-    display:flex;align-items:center;gap:6px;flex:none}
-  .lb-relay i{width:7px;height:7px;border-radius:50%;background:var(--caboose);display:block}
-  .lb-relay.live i{background:#37c98b;box-shadow:0 0 0 3px rgba(55,201,139,.18)}
-
-  .lb-sect{padding:6px 18px 0;font-family:var(--mono);font-size:10.5px;letter-spacing:.09em;
-    text-transform:uppercase;color:var(--dim);display:flex;align-items:center;gap:8px}
-  .lb-sect span{flex:1;height:1px;background:var(--hair-soft)}
-  .lb-list{flex:1;min-height:0;overflow-y:auto;padding:10px 14px 4px;display:flex;flex-direction:column;gap:8px}
-
-  .lb-person{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:11px 12px;
-    border-radius:16px;border:1px solid var(--hair);background:var(--surface);transition:.15s;
-    box-shadow:0 2px 10px -6px rgba(var(--shade-rgb),.3)}
-  .lb-person:hover{border-color:var(--teal);transform:translateY(-1px)}
-  .lb-person:active{transform:translateY(0)}
-  .lb-ava{width:42px;height:42px;border-radius:50%;flex:none;position:relative;display:grid;place-items:center;
-    background:linear-gradient(150deg,var(--teal),var(--teal-deep));color:#fff;font-weight:600;font-size:16px;
-    background-size:cover;background-position:center}
-  .lb-ava.haspic span{display:none}
-  .lb-ava i{position:absolute;right:-1px;bottom:-1px;width:12px;height:12px;border-radius:50%;
-    border:2px solid var(--surface);background:var(--caboose)}
-  .lb-person.here .lb-ava i{background:#37c98b}
-  .lb-who{flex:1;min-width:0}
-  .lb-who b{display:block;font-size:15px;font-weight:600;letter-spacing:-.1px;
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .lb-who small{display:block;font-size:12px;color:var(--muted);margin-top:1px}
-  .lb-go{flex:none;font-size:12px;font-weight:600;color:var(--teal-deep);display:flex;align-items:center;gap:4px}
-  .lb-go svg{width:15px;height:15px}
-
-  .lb-empty{margin:14px 14px 0;padding:22px 18px;border-radius:18px;border:1px dashed var(--hair);
-    background:var(--surface-2);text-align:center;color:var(--muted);font-size:13.5px;line-height:1.5}
-  .lb-empty b{display:block;color:var(--text);font-size:14.5px;font-weight:600;margin-bottom:5px}
-  .lb-pulse{width:34px;height:34px;border-radius:50%;margin:0 auto 12px;position:relative;
-    background:rgba(var(--accent-rgb),.16)}
-  .lb-pulse::after{content:"";position:absolute;inset:0;border-radius:50%;
-    border:2px solid rgba(var(--accent-rgb),.5);animation:lbPing 1.9s ease-out infinite}
-  @keyframes lbPing{0%{transform:scale(.7);opacity:1}100%{transform:scale(1.9);opacity:0}}
-
-  .lb-foot{padding:12px 18px 0;display:flex;flex-direction:column;gap:10px}
-  .lb-open{width:100%;border:0;border-radius:16px;padding:14px;font-size:15px;font-weight:600;
-    background:linear-gradient(150deg,var(--btn-a),var(--btn-b));color:var(--on-accent);
-    box-shadow:0 12px 26px -16px rgba(var(--accent-rgb),.9);position:relative}
-  .lb-open b{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 6px;margin-left:8px;
-    border-radius:10px;background:rgba(255,255,255,.24);font-size:11.5px;font-family:var(--mono)}
-  .lb-open b[hidden]{display:none}
-  .lb-skip{display:flex;align-items:center;gap:9px;font-size:12.5px;color:var(--muted);cursor:pointer;
-    justify-content:center}
-  .lb-skip input{accent-color:var(--teal);width:15px;height:15px}
-  .lb-back{background:none;border:0;color:var(--dim);font-size:12.5px;text-decoration:underline;
-    text-underline-offset:2px;padding:2px}
   .bar{display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top)) 2px 10px;position:relative;flex:none}
   .ava{
     width:42px;height:42px;border-radius:15px;flex:none;position:relative;display:grid;place-items:center;
@@ -1470,86 +1185,6 @@
   .gp-msg a{color:var(--teal)}
   .gp-foot{display:flex;align-items:center;gap:10px;justify-content:space-between}
 
-  /* ---------- carrier pigeon: compose ---------- */
-  /* who a pigeon is for is the room itself, so there is no picker to style */
-  .pg-dest{display:flex;align-items:center;gap:8px;font-size:12.5px;color:rgba(244,239,242,.62);
-    padding:2px 1px}
-  .pg-dest svg{width:15px;height:15px;color:var(--ember-2);flex:none}
-  .pg-dest b{color:#fff;font-weight:600}
-  .pv-card textarea{background:rgba(0,0,0,.30);border:1px solid rgba(255,255,255,.10);color:#f4eff2;
-    border-radius:13px;padding:11px 12px;font-size:14.5px;outline:none;resize:none;min-height:76px;
-    line-height:1.4;font-family:inherit}
-  .pv-card textarea::placeholder{color:rgba(244,239,242,.35)}
-  .pv-card textarea:focus{border-color:rgba(var(--ember-rgb),.55);
-    box-shadow:0 0 0 3px rgba(var(--ember-rgb),.13)}
-  .pg-dist{display:flex;flex-direction:column;gap:6px}
-  .pg-dist .pg-rowl{display:flex;justify-content:space-between;align-items:baseline;
-    font-family:var(--mono);font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;
-    color:rgba(244,239,242,.45)}
-  .pg-dist b{font-family:var(--mono);font-size:13px;color:var(--ember-2);letter-spacing:0;text-transform:none}
-  .pg-dist input[type=range]{width:100%;accent-color:var(--ember);height:24px;background:transparent}
-  .pg-send{border:0;border-radius:14px;padding:13px;font-size:15px;font-weight:700;color:#fff;
-    background:linear-gradient(135deg,var(--ember-deep),var(--ember) 52%,var(--ember-2));
-    box-shadow:0 14px 30px -16px rgba(var(--ember-rgb),.95), inset 0 1px 0 rgba(255,255,255,.25);
-    transition:transform .12s}
-  .pg-send:active{transform:translateY(1.5px) scale(.995)}
-  .pg-send:disabled{opacity:.45;box-shadow:none}
-  .pg-note{font-size:11.5px;color:rgba(244,239,242,.42);line-height:1.5}
-
-  /* the composer button carries a count of birds in the air */
-  .cbtn.pg{position:relative}
-  .cbtn.pg b{position:absolute;top:-1px;right:-2px;min-width:15px;height:15px;padding:0 3px;border-radius:8px;
-    background:var(--teal-deep);color:#fff;font-family:var(--mono);font-size:9.5px;line-height:15px;text-align:center}
-  .cbtn.pg b[hidden]{display:none}
-
-  /* ---------- carrier pigeon: tracker ---------- */
-  .pt-list{display:flex;flex-direction:column;gap:9px}
-  .pt-row{border:1px solid rgba(255,255,255,.09);border-radius:15px;padding:11px 12px;
-    background:rgba(255,255,255,.035)}
-  .pt-row.done{opacity:.6}
-  .pt-line1{display:flex;align-items:center;gap:8px;font-size:13.5px;font-weight:600;margin-bottom:3px;color:#fff}
-  .pt-line1 .pt-arrow{color:rgba(244,239,242,.4);font-weight:400}
-  .pt-state{margin-left:auto;font-family:var(--mono);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase;
-    padding:3px 8px;border-radius:999px;border:1px solid rgba(255,255,255,.14);
-    color:rgba(244,239,242,.55);white-space:nowrap}
-  .pt-state.enroute{color:#8fd6ff;border-color:rgba(143,214,255,.45);background:rgba(143,214,255,.10)}
-  .pt-state.delivering{color:#ffc76a;border-color:rgba(var(--amber-rgb),.55);background:rgba(var(--amber-rgb),.14)}
-  .pt-state.delivered{color:#7ee0b0;border-color:rgba(126,224,176,.45);background:rgba(126,224,176,.12)}
-  .pt-prev{font-size:12.5px;color:rgba(244,239,242,.55);margin-bottom:8px;overflow:hidden;
-    text-overflow:ellipsis;white-space:nowrap}
-  .pt-bar{height:6px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden}
-  .pt-bar i{display:block;height:100%;border-radius:999px;
-    background:linear-gradient(90deg,var(--ember),var(--ember-2));transition:width .5s linear;
-    box-shadow:0 0 10px -1px rgba(var(--ember-rgb),.8)}
-  .pt-stats{display:flex;gap:14px;margin-top:7px;font-family:var(--mono);font-size:11px;
-    color:rgba(244,239,242,.42);flex-wrap:wrap}
-  .pt-stats b{color:#f4eff2;font-weight:400}
-  .pt-recall{margin-left:auto;background:none;border:0;color:var(--red);font-size:11px;
-    font-family:var(--body);text-decoration:underline;text-underline-offset:2px;padding:0}
-  .pt-empty{text-align:center;color:rgba(244,239,242,.45);font-size:13px;padding:16px 8px;line-height:1.6}
-
-  /* ---------- an arriving pigeon in the transcript ---------- */
-  .pgbadge{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9.5px;
-    letter-spacing:.08em;text-transform:uppercase;color:var(--teal-deep);
-    background:rgba(var(--accent-rgb),.12);border:1px solid rgba(var(--accent-rgb),.32);
-    border-radius:999px;padding:2px 8px;margin-bottom:5px}
-  .msg.me .pgbadge{color:var(--me-text);background:rgba(255,255,255,.18);border-color:rgba(255,255,255,.3)}
-  .pgbadge svg{width:11px;height:11px}
-  .msg.pglanded{animation:pgLand .7s cubic-bezier(.2,.9,.25,1)}
-  @keyframes pgLand{
-    0%{transform:translateY(-26px) rotate(-3deg);opacity:0}
-    60%{transform:translateY(3px) rotate(.6deg);opacity:1}
-    100%{transform:none}
-  }
-  .pgflight{display:flex;align-items:center;gap:10px;min-width:190px}
-  .pgflight .pgf-ico{width:26px;height:26px;flex:none;display:grid;place-items:center;border-radius:9px;
-    background:rgba(var(--accent-rgb),.14);color:var(--teal-deep)}
-  .msg.me .pgflight .pgf-ico{background:rgba(255,255,255,.2);color:var(--me-text)}
-  .pgflight .pgf-ico svg{width:15px;height:15px;animation:pgFlap 1.5s ease-in-out infinite}
-  @keyframes pgFlap{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
-  .pgflight .pgf-txt{min-width:0;flex:1}
-  .pgflight .pgf-txt b{display:block;font-size:13px;font-weight:600}
-  .pgflight .pgf-txt small{display:block;font-family:var(--mono);font-size:10.5px;opacity:.75;margin-top:1px}
   .gp-cred{font-family:var(--mono);font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
   .gp-local{background:var(--surface-2);border:1px solid var(--hair);color:var(--muted);border-radius:10px;padding:7px 11px;font-size:12px;transition:.14s}
   .gp-local:hover{color:var(--teal);border-color:var(--teal-deep)}
@@ -1651,6 +1286,10 @@
 
   .tick{font-family:var(--mono);font-size:10.5px;color:var(--me-time);letter-spacing:-.14em;line-height:1;flex:none;
         opacity:.85;transition:color .18s,opacity .18s}
+  /* written while offline and still sitting in the outbox: an hourglass, not a
+     tick, breathing gently so it reads as "working on it" rather than "failed" */
+  .tick.queued{letter-spacing:0;opacity:.75;animation:tickwait 1.8s ease-in-out infinite}
+  @keyframes tickwait{0%,100%{opacity:.45}50%{opacity:.95}}
   /* read receipt: a deliberately different hue from the bubble so the second
      tick is unmistakable at a glance */
   .tick.seen{color:var(--tick-seen);opacity:1;font-weight:700;
@@ -1877,69 +1516,6 @@
     </div>
   </section>
 
-  <!-- WAITING ROOM -->
-  <section id="lobby">
-    <div class="lb-top">
-      <div class="lb-crest">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>
-      </div>
-      <div class="lb-ttl">
-        <h2>Waiting room</h2>
-        <p id="lbRoom">room</p>
-      </div>
-      <div class="lb-relay" id="lbRelay"><i></i><span id="lbRelayTxt">linking</span></div>
-    </div>
-
-    <div class="lb-sect">In this room <span></span></div>
-    <div class="lb-list" id="lbList"></div>
-
-    <div class="lb-foot">
-      <button class="lb-open" id="lbOpen">Back to the chat<b id="lbUnread" hidden></b></button>
-      <button class="lb-back" id="lbLeave">Leave this line</button>
-    </div>
-  </section>
-
-  <!-- CARRIER PIGEON -->
-  <section id="pigeonview">
-    <div class="pv-scroll">
-      <div class="pv-card">
-        <div class="pv-h">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c4-1 6-4 7-7 1 3 2 5 5 5 3 0 5 2 5 5 0 3-3 6-7 6-5 0-10-4-10-9z"/><path d="M10 5.5h.01"/></svg>
-          <span>Release a pigeon</span>
-        </div>
-        <div class="pg-dest">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20a6.5 6.5 0 0 1 13 0"/><circle cx="10.5" cy="8" r="3.4"/><path d="M17.5 6.6a3 3 0 0 1 0 5.6"/><path d="M20 20a5.6 5.6 0 0 0-2-4.3"/></svg>
-          <span>Flies to <b id="pgDest">whoever is in this room</b></span>
-        </div>
-        <textarea id="pgText" rows="3" placeholder="A note for the pigeon to carry" maxlength="900"></textarea>
-        <div class="pg-dist">
-          <div class="pg-rowl"><span>Distance</span><b id="pgDistTxt">138 km · 1:30</b></div>
-          <input type="range" id="pgDist" min="92" max="276" step="2" value="138">
-        </div>
-        <button class="pg-send" id="pgSend">Dispatch pigeon</button>
-        <div class="pg-note">It leaves now and flies for the time above. Your friend sees nothing until it lands — and it will still land if either of you closes the app.</div>
-      </div>
-
-      <div class="pv-card">
-        <div class="pv-h">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12.4c3.8-1 5.9-3.8 6.9-6.8 1 2.9 2 4.8 4.8 4.8 2.9 0 4.8 2 4.8 4.8 0 2.9-2.9 5.8-6.8 5.8-4.8 0-9.7-3.9-9.7-8.6z"/><path d="M10.2 5.6h.01"/></svg>
-          <span>In the air</span>
-          <span class="pv-live"><i></i><span id="pvLive">0 flying</span></span>
-        </div>
-        <canvas class="pv-sky" id="pgSky"></canvas>
-        <div class="pt-list" id="ptList"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- MOMENTS -->
-  <section id="momentsview">
-    <div class="mo-scroll" id="moFeed"></div>
-    <button class="mo-fab" id="moFab" title="New moment">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5.5v13M5.5 12h13"/></svg>
-    </button>
-  </section>
-
   <!-- CHAT -->
   <section id="chat">
     <div class="bar">
@@ -1953,8 +1529,6 @@
       <button class="iconbtn" id="menuBtn" title="More" aria-haspopup="true"><svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="12" cy="19" r="1.9"/></svg></button>
       <div class="menu" id="menu">
         <button id="invite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg><span>Copy invite link</span></button>
-        <button id="lobbyBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 20a6 6 0 0 1 12 0"/><path d="M16 6.5a3 3 0 0 1 0 5.6"/><path d="M18 20a5.6 5.6 0 0 0-2-4.3"/></svg><span>Waiting room</span></button>
-        <button id="trackBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c4-1 6-4 7-7 1 3 2 5 5 5 3 0 5 2 5 5 0 3-3 6-7 6-5 0-10-4-10-9z"/><path d="M10 5.5h.01"/></svg><span>Pigeon tracker</span></button>
         <button id="roomBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg><span>Room info</span></button>
         <button id="profBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg><span>My profile</span></button>
         <button id="wipeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/></svg><span>Clear chat</span></button>
@@ -1994,11 +1568,6 @@
         <textarea id="input" rows="1" placeholder="Write a message" disabled></textarea>
 
         <button class="cbtn gif" id="gifBtn" title="Send a GIF" disabled>GIF</button>
-
-        <button class="cbtn pg" id="pigeonBtn" title="Send by carrier pigeon" disabled>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c4-1 6-4 7-7 1 3 2 5 5 5 3 0 5 2 5 5 0 3-3 6-7 6-5 0-10-4-10-9z"/><path d="M10 5.5h.01"/></svg>
-          <b id="pgCount" hidden></b>
-        </button>
 
         <button class="cbtn" id="attachBtn" title="Attach image or file" disabled>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.5 12.5 21a5 5 0 0 1-7-7l9-9a3.5 3.5 0 0 1 5 5l-9 9a2 2 0 0 1-3-3l8.5-8.5"/></svg>
@@ -2043,39 +1612,6 @@
       </div>
     </div>
   </section>
-
-  <nav class="tabbar" id="tabbar" hidden>
-    <button class="tab" data-tab="chat" aria-current="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.8a8 8 0 0 1-8.6 8 9 9 0 0 1-2.8-.4L4.2 20.8l1.3-3.8a7.9 7.9 0 0 1-1.5-4.7A8 8 0 0 1 12.2 4a8 8 0 0 1 8.3 7.8z"/></svg>
-      <span>Chat</span><i class="tab-dot" id="tabDotChat" hidden></i>
-    </button>
-    <button class="tab" data-tab="pigeon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 12.4c3.8-1 5.9-3.8 6.9-6.8 1 2.9 2 4.8 4.8 4.8 2.9 0 4.8 2 4.8 4.8 0 2.9-2.9 5.8-6.8 5.8-4.8 0-9.7-3.9-9.7-8.6z"/><path d="M10.2 5.6h.01"/><path d="M14 19.5 12 22"/></svg>
-      <span>Pigeon</span><i class="tab-dot" id="tabDotPigeon" hidden></i>
-    </button>
-    <button class="tab" data-tab="moments">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="6.3" width="18.8" height="14" rx="3.4"/><path d="M8.4 6.3l1.3-2.4h4.6l1.3 2.4"/><circle cx="12" cy="13.2" r="3.9"/></svg>
-      <span>Moments</span><i class="tab-dot" id="tabDotMoments" hidden></i>
-    </button>
-  </nav>
-</div>
-
-<div class="mo-sheet" id="moSheet">
-  <div class="mo-sheet-in">
-    <div class="mo-sheet-h"><span>New moment</span><button id="moClose" title="Close">&times;</button></div>
-    <input type="file" id="moFile" accept="image/*,video/*" hidden>
-    <div class="mo-prev" id="moPrev">
-      <div class="mo-pick" id="moPick">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="6.3" width="18.8" height="14" rx="3.4"/><path d="M8.4 6.3l1.3-2.4h4.6l1.3 2.4"/><circle cx="12" cy="13.2" r="3.9"/></svg>
-        <span>Choose a photo or video</span>
-      </div>
-    </div>
-    <textarea id="moCap" rows="3" placeholder="Write a caption, or today's thought…" maxlength="1200"></textarea>
-    <input type="text" id="moPlace" placeholder="Add a place (optional)" maxlength="60" autocomplete="off">
-    <div class="mo-prog" id="moProgWrap" hidden><i id="moProg"></i></div>
-    <div class="mo-note" id="moNote">Your copy keeps the original, untouched. A lighter copy is prepared for them.</div>
-    <button class="emberbtn" id="moShare" disabled>Share this moment</button>
-  </div>
 </div>
 
 <div class="sheet-back" id="sheetBack"></div>
@@ -2236,6 +1772,42 @@ safe-buffer/index.js:
 <script>
 "use strict";
 
+/* ---------------------------------------------------------------------------
+   FRESH START
+   ---------------------------------------------------------------------------
+   This build dropped two whole features, and every phone that ran the old one
+   is still carrying their leftovers: the Moments vault (photographs and video
+   as real Blobs - by far the heaviest thing this app ever stored), parked
+   pigeons that will never land now that nothing knows how to land them, and
+   message rows in a shape this code no longer reads.
+
+   Rather than migrate any of it, the first launch of a new build clears the
+   slate: the whole database, and every key this app owns. It runs once, before
+   anything opens a connection or reads a row, and it is keyed to the build
+   stamp so an ordinary reload never triggers it.
+
+   Bump BUILD to wipe every installed copy again. */
+const BUILD="2026-09-15-lean";
+(function freshStart(){
+  let last=null;
+  try{ last=localStorage.getItem("sl.build"); }catch(e){ return; }
+  if(last===BUILD) return;                    // already running this build
+  try{
+    /* every key this app owns - and nothing that belongs to anyone else */
+    const mine=[];
+    for(let i=0;i<localStorage.length;i++){
+      const k=localStorage.key(i);
+      if(k&&k.indexOf("sl.")===0) mine.push(k);
+    }
+    mine.forEach(k=>{ try{ localStorage.removeItem(k); }catch(e){} });
+  }catch(e){}
+  try{ sessionStorage.clear(); }catch(e){}
+  /* Nothing has opened the database yet at this point in the script, so the
+     delete cannot be blocked by a live connection. */
+  try{ if(window.indexedDB) indexedDB.deleteDatabase("secureline"); }catch(e){}
+  try{ localStorage.setItem("sl.build",BUILD); }catch(e){}
+})();
+
 /* =========================================================================
    EMAIL NOTIFY  (optional)
    -------------------------------------------------------------------------
@@ -2322,7 +1894,6 @@ let key=null, topic=null, mbTopic=null, prTopic=null, roomFP=null;
 let me={id:rid(), name:"You"};
 const peers=new Map();               // id -> {name, lastSeen}
 let typingTimer=null, lastTypingSent=0, peerTypingTimer=null;
-let focusPeer=null;            // whoever you picked in the waiting room
 let roomOpen=false;            // past the gate: the tab bar is live
 
 /* feature state */
@@ -2583,28 +2154,26 @@ async function decryptObj(b64){
 
 /* ---------- encrypted local history (IndexedDB, per room) ---------- */
 /* ---------------------------------------------------------------------------
-   TWO STORES, TWO LIFETIMES
+   ONE STORE, ONE LIFETIME
    ---------------------------------------------------------------------------
-   CHAT_STORE is disposable: rolling 48-hour retention, trimmed, purged, and
-   wiped by "Clear chat". VAULT_STORE is permanent: nothing in this file ever
-   deletes from it except a delete the user asked for by name. Every routine
-   that removes anything names its store through one of these two constants, so
-   the distinction is impossible to blur by accident. */
+   Messages, and nothing else. Rolling 48-hour retention, trimmed, purged and
+   wiped by "Clear chat". Every routine that removes anything names its store
+   through this constant. */
 const CHAT_STORE="msgs";        // messages - swept on a 48 hour cycle
-const VAULT_STORE="moments";    // the feed - kept until the user says otherwise
 
 function idbOpen(){
   return new Promise(res=>{
     if(!window.indexedDB){ res(null); return; }
     let r;
-    try{ r=indexedDB.open("secureline",2); }catch(e){ res(null); return; }
+    try{ r=indexedDB.open("secureline",3); }catch(e){ res(null); return; }
     r.onupgradeneeded=()=>{
       const db=r.result;
-      /* v1 held only the chat. v2 adds the Moments vault, which stores real
-         Blobs rather than base64 - that is the whole reason the feed lives here
-         and not in localStorage. */
       try{ if(!db.objectStoreNames.contains(CHAT_STORE)) db.createObjectStore(CHAT_STORE,{keyPath:"k"}); }catch(e){}
-      try{ if(!db.objectStoreNames.contains(VAULT_STORE)) db.createObjectStore(VAULT_STORE,{keyPath:"k"}); }catch(e){}
+      /* v2 carried a second store holding the Moments feed as real Blobs -
+         photographs and video, the heaviest thing this app ever kept. That
+         feature is gone, so v3 drops the store outright and hands the disk
+         back rather than leaving megabytes stranded where nothing reads them. */
+      try{ if(db.objectStoreNames.contains("moments")) db.deleteObjectStore("moments"); }catch(e){}
     };
     r.onsuccess=()=>res(r.result);
     r.onerror=()=>res(null);
@@ -2625,7 +2194,7 @@ function idbPut(row){
     }catch(e){ res(false); }
   });
 }
-/* deletes a CHAT row only - the vault is unreachable from here by construction */
+/* deletes one message row */
 function idbDel(k){ if(!db)return; try{ db.transaction(CHAT_STORE,"readwrite").objectStore(CHAT_STORE).delete(k); }catch(e){} }
 /* Keys are "<topic>|<id>", so one bounded range returns exactly this room's
    rows. The old cursor walked EVERY room ever opened on this device and threw
@@ -2717,7 +2286,7 @@ async function loadHistory(){
   recs.sort((a,b)=>(a.ts||0)-(b.ts||0));
   /* two limits, whichever bites first: 48 hours, then a hard cap on count */
   const cut=Date.now()-KEEP_MS;
-  const fresh=recs.filter(r=>(r.ts||0)>=cut||(r.pigeon&&!r.pgLanded));
+  const fresh=recs.filter(r=>(r.ts||0)>=cut);
   recs.filter(r=>fresh.indexOf(r)<0).forEach(r=>idbDel(topic+"|"+r.id));
   const drop=fresh.slice(0,Math.max(0,fresh.length-HIST_KEEP));
   drop.forEach(r=>idbDel(topic+"|"+r.id));
@@ -2729,7 +2298,6 @@ async function loadHistory(){
   paintOlderBtn();
   if(keep.length){ flash("Restored "+keep.length+" earlier message"+(keep.length>1?"s":"")); scrollDown(); }
   restorePendingMedia();          // anything that never reached them, ready to retry
-  resumePigeons();                // birds that were still crossing when we closed
 }
 
 /* One render pass with the per-bubble scroll, grouping and measurement work
@@ -2778,12 +2346,8 @@ function bodyFromRec(rec){
 }
 function renderRecord(rec){
   if(msgEls.has(rec.id)) return;
-  /* a pigeon still in the air: ours shows as a flight, theirs shows as nothing */
-  if(rec.pigeon&&!rec.pgLanded&&!rec.deleted&&inFlight(rec)&&!rec.mine) return;
-  const pgFlying=rec.pigeon&&!rec.pgLanded&&!rec.deleted&&inFlight(rec)&&rec.mine;
   addBubble({id:rec.id,name:rec.name,mine:!!rec.mine,ts:rec.ts,reply:rec.reply,kind:rec.kind,
-    edited:!!rec.edited,bodyNode:rec.deleted?tombstoneNode():
-      (pgFlying?pigeonFlightNode(rec):(rec.pigeon?pigeonBodyNode(rec):bodyFromRec(rec)))});
+    edited:!!rec.edited,bodyNode:rec.deleted?tombstoneNode():bodyFromRec(rec)});
   msgInfo.set(rec.id,{name:rec.name,kind:rec.kind,deleted:!!rec.deleted,
     preview:rec.deleted?"Message deleted":(rec.kind==="text"?(rec.text||"").slice(0,80):mediaLabel(rec.kind,rec.media&&rec.media.filename))});
   if(rec.deleted){ markDeletedDom(rec.id); return; }
@@ -2798,9 +2362,13 @@ function renderRecord(rec){
 function setTickDom(id,status){
   const el=msgEls.get(id); if(!el) return;
   const tk=el.querySelector(".tick"); if(!tk) return;
-  tk.textContent = status==="sent" ? "\u2713" : "\u2713\u2713";
-  tk.classList.toggle("seen",status==="seen");
-  tk.title = status==="seen" ? "Seen" : status==="delivered" ? "Delivered" : "Sent";
+  /* Still in the outbox: it has not reached a relay yet, and saying "sent" for
+     that is a lie the reader would act on. */
+  const waiting=pendingOut.has(id);
+  tk.textContent = waiting ? "\u29d6" : status==="sent" ? "\u2713" : "\u2713\u2713";
+  tk.classList.toggle("queued",waiting);
+  tk.classList.toggle("seen",!waiting&&status==="seen");
+  tk.title = waiting ? "Waiting for a relay" : status==="seen" ? "Seen" : status==="delivered" ? "Delivered" : "Sent";
   if(el.classList.contains("tight")) fitMeta(el);   // one tick vs two changes the width
 }
 function bumpStatus(id,status){
@@ -2842,9 +2410,7 @@ function flushSeen(){
    --------------------------------------------------------------------------- */
 function slimRec(r){
   return {id:r.id,from:r.from,name:r.name,kind:r.kind,text:r.text,media:r.media,ts:r.ts,reply:r.reply,reacts:r.reacts,
-          deleted:r.deleted||undefined,edited:r.edited||undefined,editedAt:r.editedAt||undefined,
-          pigeon:r.pigeon||undefined,eta:r.eta||undefined,dist:r.dist||undefined,
-          to:r.to||undefined,toName:r.toName||undefined};
+          deleted:r.deleted||undefined,edited:r.edited||undefined,editedAt:r.editedAt||undefined};
 }
 function mailboxReady(){ return !!(mbTopic&&anyLink()); }
 async function mailboxPutRaw(slot,obj){
@@ -3031,11 +2597,6 @@ async function onMailbox(slot,m){
     return;
   }
   if(m.from===me.id){
-    /* A moment we parked, echoing back to us. It is NOT a chat record, so the
-       reaping logic below cannot reason about it - and it used to fall through
-       to "I do not recognise this, bin it", which deleted our own post from the
-       relay seconds after we left it there. Only the recipient clears these. */
-    if(m.t==="mpost"||m.t==="mlike"||m.t==="mcom") return;
     /* our own parked message, or one of its byte slots, coming back on subscribe.
        Leave it in place until the recipient confirms; only reap it once it is
        delivered or has aged out. */
@@ -3075,10 +2636,6 @@ async function onMailbox(slot,m){
     await onHistRec(m.rec);                      // committed to disk before we confirm
     mbMarkGot(id);
     mailboxConfirm(id);                          // store-then-confirm, never confirm-then-hope
-  }else if(m.t==="mpost"||m.t==="mlike"||m.t==="mcom"){
-    /* a moment, a like or a thought left for us while we were away */
-    Moments.onMailboxIn(slot,m);
-    if(m.t!=="mpost") mailboxClear(slot);        // the post head stays until its bytes land
   }else if(m.t==="rxs"){
     applyReactSet(m);
     mailboxClear(slot);
@@ -3139,14 +2696,6 @@ async function onHistRec(rec){
      was still in flight to disk, and closing the tab in that window lost the
      message on both sides at once. */
   await saveRec(rec,{now:true});
-  if(rec.pigeon&&!rec.pgLanded){
-    /* Stored, but not shown and not acknowledged: a pigeon parked in the mailbox
-       is still a pigeon. If its arrival time has already passed while we were
-       away it lands right now, late, exactly as a real one would. */
-    if(inFlight(rec)){ schedulePigeon(rec); paintPigeonCount(); paintTracker(); }
-    else landPigeon(rec.id);
-    return;
-  }
   renderRecord(rec);
   ackDelivered(rec.id);
   maybeMarkSeen(rec.id);
@@ -3187,14 +2736,10 @@ function onHistPart(m){
    ---------------------------------------------------------------------------
    Message history is kept for 48 hours and no longer. The sweep runs at launch
    and then quietly in the background, and it touches ONLY message records - the
-   Love Tree's log, the last-seen marker and every setting are keyed separately
-   and left alone. Anything still in the air (a pigeon that has not landed) is
-   spared until it has.
+   last-seen marker and every setting are keyed separately and left alone.
    --------------------------------------------------------------------------- */
 const KEEP_MS=48*3600*1000;
 function purgeOld(){
-  /* CHAT_STORE and nothing else. The Moments vault is not opened, not walked
-     and not counted here - no cut-off, no cap, no rolling window applies to it. */
   const cut=Date.now()-KEEP_MS;
   let gone=0;
   /* the encrypted store */
@@ -3206,8 +2751,7 @@ function purgeOld(){
         const c=e.target.result; if(!c) return;
         const v=c.value;
         if(v&&v.topic===topic&&v.k!==topic+"|__lastseen"&&(v.ts||0)>0&&(v.ts||0)<cut){
-          const r=hist.get(String(v.k).slice(topic.length+1));
-          if(!(r&&r.pigeon&&!r.pgLanded)){ try{ c.delete(); gone++; }catch(err){} }
+          try{ c.delete(); gone++; }catch(err){}
         }
         c.continue();
       };
@@ -3216,7 +2760,6 @@ function purgeOld(){
   /* and the in-memory mirror, so a long session does not keep growing */
   for(const[id,r]of hist){
     if((r.ts||0)>=cut) continue;
-    if(r.pigeon&&!r.pgLanded) continue;
     hist.delete(id); msgInfo.delete(id); reactState.delete(id);
   }
   /* the small localStorage queues age out too */
@@ -3243,22 +2786,76 @@ function notifyMe(title,body){
   }catch(e){}
 }
 
-/* ---------- offline outbox (text + reactions survive network loss) ---------- */
+/* ---------------------------------------------------------------------------
+   THE OUTBOX
+   ---------------------------------------------------------------------------
+   Writing a message never waits for the network. The bubble is on screen before
+   publish() is even called, and if no relay is reachable the packet lands here -
+   in localStorage, so it survives the tab being closed, the phone running out
+   of battery, or a week offline.
+
+   Three things have to hold when the link comes back:
+
+     in order      - they leave exactly as they were written, one at a time,
+                     never as a burst that the relay may reorder;
+     never lost    - a packet only leaves the queue once a relay has ACKED it.
+                     The old version spliced the whole queue out up front and
+                     fired the lot, so a link that died halfway through silently
+                     dropped the rest;
+     never twice   - every packet carries a stable `pk`, minted when it was
+                     queued, so a re-send after an ambiguous timeout is dropped
+                     by the other side's duplicate guard rather than shown twice.
+   --------------------------------------------------------------------------- */
 const QKEY="sl.outbox";
 let outbox=[];
 try{ outbox=JSON.parse(localStorage.getItem(QKEY)||"[]"); }catch(e){}
-function saveOutbox(){ try{ localStorage.setItem(QKEY,JSON.stringify(outbox.slice(-60))); }catch(e){} }
-function flushOutbox(){
-  if(!outbox.length) return;
-  const q=outbox.splice(0); saveOutbox();
-  q.forEach(o=>{
-    publish(o);
-    /* A message written while offline was never parked in the mailbox, because
-       parking needs a live relay. Park it now that we have one, or it only ever
-       reaches someone who happens to be online at this exact second. */
-    if(o.t==="msg"&&o.id) ensureMailbox(o.id);
-  });
-  toast("Sent "+q.length+" queued message"+(q.length>1?"s":""));
+function saveOutbox(){ try{ localStorage.setItem(QKEY,JSON.stringify(outbox.slice(-200))); }catch(e){} }
+
+/* ids of our own messages still sitting in the queue, so the bubble can say so */
+const pendingOut=new Set();
+function rebuildPending(){
+  pendingOut.clear();
+  outbox.forEach(o=>{ if(o.t==="msg"&&o.id) pendingOut.add(o.id); });
+}
+rebuildPending();
+
+function queueOut(obj){
+  /* Mint the packet id HERE, not at send time. A packet that is retried after a
+     timeout must carry the same id both times or the other side cannot tell a
+     retry from a second message. */
+  if(!obj.pk) obj.pk=rid()+rid();
+  if(!obj.qts) obj.qts=Date.now();
+  outbox.push(obj);
+  if(obj.t==="msg"&&obj.id){ pendingOut.add(obj.id); setTickDom(obj.id,"queued"); }
+  saveOutbox();
+}
+
+let flushing=false;
+async function flushOutbox(){
+  if(flushing||!outbox.length||!anyLink()) return;
+  flushing=true;
+  let sent=0;
+  try{
+    while(outbox.length&&anyLink()){
+      const o=outbox[0];
+      /* publishAck resolves on a relay's QoS-1 PUBACK, so this only moves on
+         once the packet is genuinely somebody else's problem. */
+      let ok=false;
+      try{ ok=await publishAck(o); }catch(e){ ok=false; }
+      if(!ok) break;                       // still at the head; we try again next tick
+      outbox.shift(); saveOutbox(); sent++;
+      if(o.t==="msg"&&o.id){
+        pendingOut.delete(o.id);
+        setTickDom(o.id,(hist.get(o.id)||{}).status||"sent");
+        /* It was never parked in the mailbox - parking needs a live relay - so
+           park it now, or it only reaches someone who happens to be online at
+           this exact second. */
+        ensureMailbox(o.id);
+      }
+    }
+  }finally{ flushing=false; }
+  if(sent) toast("Sent "+sent+" queued message"+(sent>1?"s":""));
+  if(outbox.length&&anyLink()) setTimeout(flushOutbox,4000);   // partial flush: finish the rest
 }
 
 /* ---------------------------------------------------------------------------
@@ -3300,9 +2897,7 @@ function retryUndelivered(){
       const q=hist.get(r.id);
       if(!q||(RANK[q.status||"sent"]||1)>=RANK.delivered) return;   // it landed meanwhile
       if(q.kind==="text"){
-        const m={t:"msg",id:q.id,from:me.id,name:q.name,text:q.text,ts:q.ts,reply:q.reply};
-        if(q.pigeon){ m.pigeon=1; m.eta=q.eta; m.dist=q.dist; }
-        publish(m);
+        publish({t:"msg",id:q.id,from:me.id,name:q.name,text:q.text,ts:q.ts,reply:q.reply});
       }
     },i*260);
   });
@@ -3328,19 +2923,23 @@ async function publish(obj){
        link was down, so a message the other side really had received left a
        single tick on this one for ever - and, worse, this device kept re-parking
        an already-delivered message on every reconnect. */
-    if(obj.t==="recv"||obj.t==="seen"){ outbox.push(obj); saveOutbox(); return; }
-    if(obj.t==="msg"||obj.t==="react"||obj.t==="del"||obj.t==="edit"){ outbox.push(obj); saveOutbox(); toast("Offline \u00b7 queued, sends on reconnect"); }
-    return;
+    if(obj.t==="recv"||obj.t==="seen"){ queueOut(obj); return false; }
+    if(obj.t==="msg"||obj.t==="react"||obj.t==="del"||obj.t==="edit"){
+      queueOut(obj);
+      toast("Offline \u00b7 queued, sends on reconnect");
+    }
+    return false;
   }
   /* At-least-once for anything a person would notice going missing. Likes,
      comments and post requests used to ride QoS 0, which the public relays are
      free to drop - and did. */
-  const qos=(obj.t==="msg"||obj.t==="media"||obj.t==="chunk"||obj.t==="react"||obj.t==="hist"||obj.t==="histp"||obj.t==="seen"||obj.t==="recv"||obj.t==="del"||obj.t==="edit"||obj.t==="call"||obj.t==="need"||obj.t==="mlike"||obj.t==="mcom"||obj.t==="mdel"||obj.t==="mwant")?1:0;
+  const qos=(obj.t==="msg"||obj.t==="media"||obj.t==="chunk"||obj.t==="react"||obj.t==="hist"||obj.t==="histp"||obj.t==="seen"||obj.t==="recv"||obj.t==="del"||obj.t==="edit"||obj.t==="call"||obj.t==="need")?1:0;
   if(!obj.pk) obj.pk=rid()+rid();
   if(roomFP) obj.rm=roomFP;                    // room + passkey fingerprint
   let body; try{ body=await encryptObj(obj); }catch(e){ return; }
   /* one ciphertext, sent down every live relay */
   readyLinks().forEach(l=>{ try{ l.client.publish(topic,body,{qos}); }catch(e){} });
+  return true;
 }
 
 /* publish() hands the packet to the MQTT library and returns straight away - the
@@ -3360,13 +2959,17 @@ function publishAck(obj){
     const ls=readyLinks();
     if(!ls.length){ resolve(false); return; }
     let settled=false, left=ls.length;
+    const t0=Date.now();
     function finish(ok){ if(settled) return; settled=true; clearTimeout(timer); resolve(ok); }
-    const timer=setTimeout(()=>finish(false),PUB_TIMEOUT);
+    /* A slow link is not a broken one. Giving it the same 20 seconds as a fast
+       one is how a 2G phone ends up retrying a packet the relay had already
+       taken - so once we know the link is slow, it gets three times as long. */
+    const timer=setTimeout(()=>finish(false),slowNet()?PUB_TIMEOUT*3:PUB_TIMEOUT);
     ls.forEach(l=>{
       try{
         l.client.publish(topic,body,{qos:1},err=>{
           left--;
-          if(!err) finish(true);
+          if(!err){ noteRtt(Date.now()-t0); finish(true); }
           else if(left<=0) finish(false);
         });
       }catch(e){ left--; if(left<=0) finish(false); }
@@ -3425,7 +3028,13 @@ function openLink(l){
   try{
     c=mqtt.connect(l.url,{
       clientId:"sl_"+rid()+rid(),
-      clean:true, reconnectPeriod:0, connectTimeout:9000, keepalive:24,
+      /* TCP, then TLS, then the websocket upgrade, then MQTT CONNECT - four
+         round trips before this counts as connected. Nine seconds was enough
+         for a desk, and not enough for a train: the socket was abandoned just
+         short of succeeding and retried for ever, so a slow phone never got a
+         relay at all. Thirty is patient enough to finish; the mesh means a
+         genuinely dead broker costs nothing while we wait for the other two. */
+      clean:true, reconnectPeriod:0, connectTimeout:30000, keepalive:24,
       /* the relay itself announces our departure the moment this socket dies -
          a closed tab, a flat battery, a tunnel. Nothing here has to notice. */
       will:willFor()
@@ -3494,7 +3103,6 @@ function netUp(){
   if(lostShown){ lostShown=false; flash("Back on the line"); }
 }
 function showLinks(){
-  paintLobby();
   const n=readyLinks().length;
   const dot=$("dot");
   if(dot) dot.title=n?(n+" of "+links.length+" relays live"):"reconnecting";
@@ -3552,7 +3160,6 @@ async function onPacket(t,payload,url){
   if(m.t==="msg"){
     hidePeerTyping();
     if(knownIds.has(m.id)){ ackDelivered(m.id); maybeMarkSeen(m.id); return; } // replay/dup guard
-    if(m.pigeon){ recvPigeon(m); return; }      // sealed until the bird lands
     recvText(m);
     notifyMe(m.name||"Peer",(m.text||"New message").slice(0,90));
   }
@@ -3570,19 +3177,7 @@ async function onPacket(t,payload,url){
     if(!have) notifyMe(m.name||"Peer","Sent you a file");
   }
   else if(m.t==="chunk"){ onChunk(m); }
-  else if(m.t==="pgrecall"){
-    /* called back before it arrived - the note is never revealed */
-    const r=hist.get(m.id);
-    if(r&&!r.mine&&r.pigeon&&!r.pgLanded){
-      clearTimeout(pgTimers.get(m.id)); pgTimers.delete(m.id);
-      r.deleted=1; r.pgLanded=1; saveRec(r);
-      paintTracker(); paintPigeonCount();
-    }
-  }
   else if(m.t==="need"){ resendChunks(m); }
-  else if(m.t==="mpost"||m.t==="mchunk"||m.t==="mneed"||m.t==="mwant"||m.t==="mlike"||m.t==="mcom"||m.t==="mdel"){
-    Moments.onPacketIn(m);
-  }
   else if(m.t==="prof"){
     if(m.avatar) peerAvatars.set(m.from,m.avatar); else peerAvatars.delete(m.from);
     paintPeerAvatar();
@@ -3725,9 +3320,12 @@ function pingNow(){ if(anyLink()) publish({t:"ping",from:me.id,name:me.name}); }
 function startPresence(){
   if(presenceStarted) return;
   presenceStarted=true;
-  setInterval(pingNow,slowNet()?7000:5000);
+  /* One heartbeat, not two. A 5s ping AND a separate 12s "here" was double the
+     traffic for nothing - both are handled identically on arrival, as a touch
+     on lastSeen. 12s sits inside the 10-15s band and well under PEER_TTL, so
+     four heartbeats have to be missed before anyone is called away. */
+  setInterval(pingNow,slowNet()?15000:12000);
   setInterval(sweep,2000);
-  setInterval(()=>{ if(anyLink()) publish({t:"here",from:me.id,name:me.name}); },12000);
   /* re-stamp the retained record: a relay that restarted lost its retained store
      and would otherwise show us as absent until we next happened to speak */
   setInterval(()=>{ if(anyLink()) publishPresence(true); },60000);
@@ -3760,7 +3358,6 @@ function seen(id,name,viaPresence){
        because they were away, and now they are not. */
     setTimeout(broadcastAvatar,400);
     setTimeout(()=>{ pendingMedia.forEach(j=>{ j.tries=0; j.sentAt=0; }); flushPendingMedia(); },900);
-    setTimeout(()=>{ try{ Moments.peerHere(); }catch(e){} },1400);
     setTimeout(syncMailbox,1700);
   }
   refreshPresence();
@@ -3876,12 +3473,6 @@ function lastSeenLine(){
    placeholder. It is a real variable now - and the room name no longer belongs
    in the header at all, it lives in the Room info popup. */
 function headerName(){
-  /* whoever you sat down with in the waiting room owns the header, even if a
-     third person is also in the room */
-  if(focusPeer){
-    const p=peers.get(focusPeer)||lastSeenMap.get(focusPeer);
-    if(p&&p.name) return p.name;
-  }
   if(peers.size===1) return [...peers.values()][0].name||"Peer";
   if(peers.size>1) return peers.size+" people";
   const ls=lastSeenLine();
@@ -3895,8 +3486,6 @@ function refreshHeader(){
   paintPeerAvatar();
 }
 function refreshPresence(){
-  paintLobby();
-  try{ paintPigeonDest(); }catch(e){}      // "flies to ..." follows who is actually here                          // the lobby list is presence, drawn differently
   const n=peers.size;
   const el=$("barState");
   refreshHeader();
@@ -3963,13 +3552,49 @@ function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":
 function linkify(s){return s.replace(/https?:\/\/[^\s]+/g,u=>`<a href="${u}" target="_blank" rel="noopener">${u}</a>`);}
 function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");setTimeout(()=>t.classList.remove("show"),1800);}
 
-/* Network Information API where available: lets us send smaller photos and pace
-   file chunks so a 2G/3G link is not flooded (which is what stalls transfers). */
+/* ---------------------------------------------------------------------------
+   HOW SLOW IS THIS LINK, REALLY
+   ---------------------------------------------------------------------------
+   Smaller photos and a tighter chunk window are what keep a 2G link from being
+   flooded - flooding it is what stalls transfers outright. The trouble was that
+   this question used to be put ONLY to the Network Information API, which
+   Safari and Firefox do not implement at all. So on an iPhone on a train, the
+   answer came back "fast" and the app cheerfully opened twelve parallel chunks
+   into a link that could not carry one.
+
+   So we also measure. Every acknowledged packet times its own round trip to the
+   relay, and the median of the recent ones is a fact about this link on this
+   phone right now - no API required. Either signal saying "slow" is enough. */
+const rtts=[];
+function noteRtt(ms){
+  if(!(ms>0)||ms>60000) return;
+  rtts.push(ms);
+  if(rtts.length>12) rtts.shift();
+}
+/* Five, not three. The first packets after a cold connect are always slow - the
+   TLS session is still warming - and three samples meant that opening burst
+   decided the answer for the whole first minute. Five lets the window roll past
+   the handshake before it is allowed an opinion, and a median (never a mean)
+   means one stalled packet cannot swing it either. */
+const RTT_MIN_SAMPLES=5;
+function medianRtt(){
+  if(rtts.length<RTT_MIN_SAMPLES) return 0;   // not enough evidence to judge
+  const a=[...rtts].sort((x,y)=>x-y);
+  return a[a.length>>1];
+}
+const SLOW_RTT=1400;                          // a relay this far away is a slow link
 function slowNet(){
+  /* Measurement is the better witness in BOTH directions. It catches the iPhone
+     on 2G that has no API at all, and it also overrules a handset that reports
+     "3g" while comfortably turning packets around in 200ms - believing that
+     label would have every such phone crawling along on 12 KB chunks for no
+     reason. The API only gets the casting vote before we have measured. */
+  const m=medianRtt();
+  if(m) return m>SLOW_RTT;
   try{
     const c=navigator.connection||navigator.mozConnection||navigator.webkitConnection;
     if(!c) return false;
-    if(c.saveData) return true;
+    if(c.saveData) return true;               // an explicit request, not a guess
     const t=c.effectiveType||"";
     return t==="slow-2g"||t==="2g"||t==="3g";
   }catch(e){ return false; }
@@ -4084,8 +3709,6 @@ function addBubble({id,name,mine,ts,reply,bodyNode,kind,edited}){
   if(bulkMode) return {el:div,bodyEl:body};
   regroup();
   if(div.dataset.txt==="1") fitMeta(div);
-  if(!mine&&inLobby) lobbyBump();       // arrived while you were still choosing
-  if(!mine) tabPing("chat");
   if(mine||stick) scrollDown();
   else { unread++; updateFab(); }
   return {el:div,bodyEl:body};
@@ -7709,1632 +7332,6 @@ const ScreenFX=(function(){
 /* ---------- boot ---------- */
 
 
-/* ---------------------------------------------------------------------------
-   MOMENTS  -  a feed for two
-   ---------------------------------------------------------------------------
-   A private Instagram. Photos and clips, captions, likes and comments, kept in
-   IndexedDB as real Blobs rather than base64 in localStorage - which is the
-   only way a forty-megabyte video survives a refresh without taking the tab
-   down with it.
-
-   Two copies of every post exist on purpose:
-
-     THE ORIGINAL stays on the phone that made it, byte for byte, whatever its
-     size. Nothing is re-encoded for your own vault - IndexedDB does not care
-     how big it is, so degrading it would buy nothing.
-
-     THE SHARED COPY is what crosses the relay. Public brokers move roughly a
-     quarter of a megabyte a second, so a photo is re-encoded through a canvas
-     and an oversized video is re-encoded through MediaRecorder before it flies.
-     Under the size ceiling nothing is touched and the original itself travels.
-
-   Offline delivery works the way the chat's does: a small head record with a
-   poster thumbnail is parked in the relay mailbox, so a post shows up the
-   moment they next open the app even if you closed yours hours ago, and the
-   full-quality bytes follow the next time you are both online.
-   --------------------------------------------------------------------------- */
-const Moments=(function(){
-  "use strict";
-
-  const KEEP_ORIGINAL=20*1024*1024;   // at or under this, the shared copy IS the original
-  const SHARE_IMG_MAX=2.6*1024*1024;  // what a re-encoded photo should come in under
-  const SHARE_VID_MAX=12*1024*1024;   // a video bigger than this is re-encoded to travel
-  const POSTER_W=420;                 // the thumbnail parked in the mailbox
-  const MO_CHUNK=32*1024;             // same slice size the chat media uses
-
-  let posts=new Map();                // id -> post
-  /* Ids the user has deliberately removed. Without this a post deleted on this
-     device is handed straight back by the relay mailbox on the next connect -
-     "explicitly deleted by the user" has to outlive a reconnect. */
-  let dropped=new Set();
-  const DROP_KEY="sl.modrop";
-  function dropLoad(){
-    try{ dropped=new Set(JSON.parse(localStorage.getItem(DROP_KEY+"."+(topic||"x").slice(-14))||"[]")); }
-    catch(e){ dropped=new Set(); }
-  }
-  function dropSave(){
-    try{ localStorage.setItem(DROP_KEY+"."+(topic||"x").slice(-14),JSON.stringify([...dropped].slice(-400))); }catch(e){}
-  }
-  let mounted=false, started=false;
-  let urls=new Map();                 // id -> object URL
-  let pick=null;                      // the file being composed
-  let expanded=new Set();
-  const incoming=new Map();           // fid -> {post, parts, got, chunks, timer}
-  const outgoing=new Map();           // fid -> {id, bytes, csize}
-
-  const $$=id=>document.getElementById(id);
-  function normName(n){ return String(n||"").trim().toLowerCase().replace(/\s+/g," "); }
-  function myNorm(){ return normName(me.name); }
-  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
-  function fmtWhen(ts){
-    const d=Date.now()-ts;
-    if(d<60000) return "just now";
-    if(d<86400000) return agoText(ts);
-    const dt=new Date(ts);
-    return dt.toLocaleDateString([], {day:"numeric",month:"short"})+
-           (dt.getFullYear()!==new Date().getFullYear()?" "+dt.getFullYear():"");
-  }
-
-  /* Nothing in this file deletes a moment on its own - but the BROWSER will.
-     IndexedDB is "best-effort" by default: under storage pressure, or after a
-     stretch of not opening the app, the engine is free to throw the whole
-     origin away. That is automatic deletion by any other name, so we ask for
-     persistent storage, which takes the vault out of the eviction pool.
-
-     The request is granted silently on an installed or well-used site and can
-     be declined; either way it is asked once, never nags, and never blocks. */
-  let persisted=null;
-  async function ensurePersistent(){
-    try{
-      if(!navigator.storage||!navigator.storage.persist) return null;
-      if(navigator.storage.persisted){
-        persisted=await navigator.storage.persisted();
-        if(persisted) return true;
-      }
-      persisted=await navigator.storage.persist();
-      return persisted;
-    }catch(e){ return null; }
-  }
-  async function vaultRoom(){
-    try{
-      if(!navigator.storage||!navigator.storage.estimate) return null;
-      const e=await navigator.storage.estimate();
-      return {usedMB:+( (e.usage||0)/1048576 ).toFixed(1),
-              quotaMB:+( (e.quota||0)/1048576 ).toFixed(0), persisted:persisted};
-    }catch(e){ return null; }
-  }
-
-  /* ---------- the vault ---------- */
-  function vaultPut(post){
-    if(!db||!topic) return;
-    try{
-      const row={k:topic+"|"+post.id,topic,ts:post.ts,
-        post:Object.assign({},post,{el:undefined})};
-      db.transaction(VAULT_STORE,"readwrite").objectStore(VAULT_STORE).put(row);
-    }catch(e){}
-  }
-  function vaultDel(id){
-    if(!db||!topic) return;
-    try{ db.transaction(VAULT_STORE,"readwrite").objectStore(VAULT_STORE).delete(topic+"|"+id); }catch(e){}
-  }
-  function vaultAll(){
-    return new Promise(res=>{
-      if(!db||!topic){ res([]); return; }
-      const out=[];
-      try{
-        const cur=db.transaction(VAULT_STORE).objectStore(VAULT_STORE).openCursor();
-        cur.onsuccess=e=>{ const c=e.target.result;
-          if(c){ if(c.value&&c.value.topic===topic&&c.value.post) out.push(c.value.post); c.continue(); }
-          else res(out); };
-        cur.onerror=()=>res(out);
-      }catch(e){ res(out); }
-    });
-  }
-
-  /* ---------- media helpers ---------- */
-  function readMeta(file){
-    return new Promise(res=>{
-      const isVid=(file.type||"").startsWith("video/");
-      const u=URL.createObjectURL(file);
-      let done=false;
-      const finish=d=>{ if(done) return; done=true; try{URL.revokeObjectURL(u);}catch(e){} res(d); };
-      if(isVid){
-        const v=document.createElement("video");
-        v.preload="metadata"; v.muted=true;
-        v.onloadedmetadata=()=>finish({w:v.videoWidth||0,h:v.videoHeight||0,dur:Math.round(v.duration||0)||0});
-        v.onerror=()=>finish({w:0,h:0,dur:0});
-        v.src=u;
-      }else{
-        const i=new Image();
-        i.onload=()=>finish({w:i.naturalWidth,h:i.naturalHeight,dur:0});
-        i.onerror=()=>finish({w:0,h:0,dur:0});
-        i.src=u;
-      }
-      setTimeout(()=>finish({w:0,h:0,dur:0}),6000);
-    });
-  }
-  /* a small still for the feed list and for the mailbox head */
-  function makePoster(file,kind){
-    return new Promise(res=>{
-      const u=URL.createObjectURL(file);
-      let done=false;
-      const finish=d=>{ if(done) return; done=true; try{URL.revokeObjectURL(u);}catch(e){} res(d); };
-      const shoot=(src,w,h)=>{
-        try{
-          const sc=Math.min(1,POSTER_W/Math.max(1,w));
-          const c=document.createElement("canvas");
-          c.width=Math.max(1,Math.round(w*sc)); c.height=Math.max(1,Math.round(h*sc));
-          c.getContext("2d").drawImage(src,0,0,c.width,c.height);
-          finish(c.toDataURL("image/webp",0.72));
-        }catch(e){ finish(null); }
-      };
-      if(kind==="video"){
-        /* Shoot the first decoded frame and nothing else. Seeking first raced
-           the loadeddata handler and, on a stream without seek cues, sometimes
-           never fired at all - which is how a clip ended up with no still and
-           the card rendered as a black box. */
-        const v=document.createElement("video");
-        v.preload="auto"; v.muted=true; v.playsInline=true;
-        v.setAttribute("playsinline","");
-        v.onloadeddata=()=>shoot(v,v.videoWidth,v.videoHeight);
-        v.onerror=()=>finish(null);
-        v.src=u;
-      }else{
-        const i=new Image();
-        i.onload=()=>shoot(i,i.naturalWidth,i.naturalHeight);
-        i.onerror=()=>finish(null);
-        i.src=u;
-      }
-      setTimeout(()=>finish(null),7000);
-    });
-  }
-  /* a photo re-encoded for the wire: big enough to still look like the photo */
-  async function shrinkImage(file){
-    try{
-      const u=URL.createObjectURL(file);
-      const img=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=u; });
-      const w=img.naturalWidth, h=img.naturalHeight;
-      const maxDim=1920;
-      const sc=Math.min(1,maxDim/Math.max(w,h));
-      const c=document.createElement("canvas");
-      c.width=Math.max(1,Math.round(w*sc)); c.height=Math.max(1,Math.round(h*sc));
-      c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-      URL.revokeObjectURL(u);
-      let type="image/webp";
-      try{ if(!c.toDataURL("image/webp",0.8).startsWith("data:image/webp")) type="image/jpeg"; }catch(e){ type="image/jpeg"; }
-      let blob=await new Promise(r=>c.toBlob(r,type,0.86));
-      if(blob&&blob.size>SHARE_IMG_MAX){
-        const b2=await new Promise(r=>c.toBlob(r,type,0.72));
-        if(b2&&b2.size<blob.size) blob=b2;
-      }
-      return blob&&blob.size<file.size?blob:file;
-    }catch(e){ return file; }
-  }
-  /* An oversized clip, re-encoded through the only transcoder a browser gives
-     you without a library. It runs in real time - there is no way around that -
-     so it reports progress and the post is already live locally while it works. */
-  function shrinkVideo(file,onProg){
-    return new Promise(resolve=>{
-      if(typeof MediaRecorder==="undefined"){ resolve(null); return; }
-      let settled=false;
-      const done=v=>{ if(settled) return; settled=true; resolve(v); };
-      try{
-        const u=URL.createObjectURL(file);
-        const v=document.createElement("video");
-        v.src=u; v.muted=true; v.playsInline=true;
-        v.onerror=()=>done(null);
-        v.onloadedmetadata=()=>{
-          const sc=Math.min(1,720/Math.max(1,Math.min(v.videoWidth,v.videoHeight)));
-          const cw=Math.max(2,Math.round(v.videoWidth*sc/2)*2);
-          const ch=Math.max(2,Math.round(v.videoHeight*sc/2)*2);
-          const c=document.createElement("canvas"); c.width=cw; c.height=ch;
-          const cx=c.getContext("2d");
-          let stream;
-          try{ stream=c.captureStream(28); }catch(e){ done(null); return; }
-          let mime="video/webm;codecs=vp9";
-          if(!MediaRecorder.isTypeSupported(mime)) mime="video/webm;codecs=vp8";
-          if(!MediaRecorder.isTypeSupported(mime)) mime="video/webm";
-          if(!MediaRecorder.isTypeSupported(mime)){ done(null); return; }
-          const dur=Math.max(1,v.duration||1);
-          const bps=clamp(Math.round(SHARE_VID_MAX*8/dur*0.82),400000,4500000);
-          let rec;
-          try{ rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:bps}); }
-          catch(e){ done(null); return; }
-          const parts=[];
-          rec.ondataavailable=e=>{ if(e.data&&e.data.size) parts.push(e.data); };
-          rec.onstop=()=>{
-            try{ URL.revokeObjectURL(u); }catch(e){}
-            const out=new Blob(parts,{type:"video/webm"});
-            done(out.size?out:null);
-          };
-          let raf=null;
-          const pump=()=>{
-            if(v.ended||v.paused){ return; }
-            try{ cx.drawImage(v,0,0,cw,ch); }catch(e){}
-            if(onProg) onProg(clamp(v.currentTime/dur,0,1));
-            raf=requestAnimationFrame(pump);
-          };
-          v.onended=()=>{ if(raf) cancelAnimationFrame(raf); try{ rec.stop(); }catch(e){} };
-          rec.start(1200);
-          v.play().then(pump).catch(()=>done(null));
-          /* never let a broken decode hang the composer forever */
-          setTimeout(()=>{ if(!settled){ try{ rec.stop(); }catch(e){} } },Math.min(600000,dur*1000+20000));
-        };
-      }catch(e){ done(null); }
-    });
-  }
-
-  /* ---------- posting ---------- */
-  async function share(){
-    if(!pick) return;
-    const file=pick.file;
-    const caption=($$("moCap").value||"").trim();
-    const place=($$("moPlace").value||"").trim();
-    const id=uid();
-    const kind=(file.type||"").startsWith("video/")?"video":"image";
-    const prog=$$("moProg"), wrap=$$("moProgWrap"), btn=$$("moShare");
-    btn.disabled=true; wrap.hidden=false; prog.style.width="6%";
-    $$("moNote").textContent="Saving the original to your vault…";
-
-    const post={id,from:me.id,norm:myNorm(),name:me.name,ts:Date.now(),
-      kind,mime:file.type||(kind==="video"?"video/mp4":"image/jpeg"),
-      w:pick.w,h:pick.h,dur:pick.dur,place:place||undefined,caption,
-      size:file.size,blob:file,poster:pick.poster||null,mine:true,
-      likes:{},coms:[],xfer:"local"};
-    posts.set(id,post); vaultPut(post);
-    closeSheet(); render();
-    prog.style.width="20%";
-
-    /* now prepare the copy that travels */
-    let out=file, note="";
-    try{
-      if(kind==="image"){
-        if(file.size>KEEP_ORIGINAL||file.size>SHARE_IMG_MAX){
-          out=await shrinkImage(file);
-          note=out!==file?"re-encoded for sending":"";
-        }
-      }else if(file.size>SHARE_VID_MAX){
-        post.xfer="encoding"; render();
-        const enc=await shrinkVideo(file,f=>{ setXfer(id,"Preparing "+Math.round(f*100)+"%"); });
-        if(enc&&enc.size<file.size){ out=enc; note="re-encoded for sending"; }
-        else note="too large to send · kept here";
-      }
-    }catch(e){}
-
-    if(out.size>SHARE_VID_MAX*2.2){
-      post.xfer="localonly"; vaultPut(post); render();
-      toast("Kept in your vault · too big for the relay");
-      return;
-    }
-    post.shareBlob=out;             // kept in memory so a re-send is free
-    post.xfer="sending"; vaultPut(post); render();
-    await sendPost(post,out);
-  }
-
-  function setXfer(id,text){
-    const p=posts.get(id); if(!p) return;
-    p.xferText=text;
-    const el=document.querySelector('[data-mo="'+id+'"] .mo-badge span');
-    if(el) el.textContent=text;
-  }
-
-  /* ---------- transport ---------- */
-  function meta(p){
-    return {id:p.id,from:p.from,norm:p.norm,name:p.name,ts:p.ts,kind:p.kind,mime:p.mime,
-            w:p.w,h:p.h,dur:p.dur,place:p.place,caption:p.caption,poster:p.poster||null};
-  }
-  async function sendPost(p,blob){
-    const buf=new Uint8Array(await blob.arrayBuffer());
-    const fid=uid();
-    const csize=MO_CHUNK;
-    const chunks=Math.max(1,Math.ceil(buf.length/csize));
-    outgoing.set(fid,{id:p.id,bytes:buf,csize});
-    /* the head is parked too, so an absent partner still gets the post */
-    mailboxPutRaw("mo."+p.id,{t:"mpost",from:me.id,post:meta(p),bytes:buf.length,parked:1});
-    if(!await publishAck({t:"mpost",from:me.id,post:meta(p),fid,chunks,csize,bytes:buf.length,mime:blob.type||p.mime})){
-      p.xfer="queued"; vaultPut(p); render(); return;
-    }
-    let done=0, failed=0;
-    for(let base=0;base<chunks;base+=CHUNK_WINDOW){
-      if(!anyLink()){ p.xfer="queued"; vaultPut(p); render(); return; }
-      const batch=[];
-      for(let j=0;j<CHUNK_WINDOW&&base+j<chunks;j++){
-        const i=base+j;
-        batch.push(publishAck({t:"mchunk",fid,i,from:me.id,
-          data:bytesToB64(buf.subarray(i*csize,(i+1)*csize))}).then(ok=>{
-            if(ok) done++; else failed++;
-            setXfer(p.id,"Sending "+Math.round(done/chunks*100)+"%");
-          }));
-      }
-      await Promise.all(batch);
-      if(failed>Math.max(3,chunks*0.3)){ p.xfer="queued"; vaultPut(p); render(); return; }
-    }
-    p.xfer="sent"; vaultPut(p); render();
-  }
-  function resend(m){
-    const o=outgoing.get(m.fid); if(!o) return;
-    const want=(m.ids||[]).filter(i=>typeof i==="number"&&i>=0).slice(0,64);
-    (async()=>{ for(const i of want){
-      if(!anyLink()) return;
-      const sl=o.bytes.subarray(i*o.csize,(i+1)*o.csize);
-      if(!sl.length) continue;
-      await publishAck({t:"mchunk",fid:m.fid,i,from:me.id,data:bytesToB64(sl)});
-    } })();
-  }
-
-  function onPost(m){
-    if(!m||!m.post||!m.post.id) return;
-    const id=m.post.id;
-    if(dropped.has(id)) return;              // the user removed this one on purpose
-    const have=posts.get(id);
-    if(have&&have.blob) return;                       // already whole
-    const p=have||Object.assign({},m.post,{mine:false,likes:{},coms:[],blob:null,
-      size:m.bytes||0,xfer:"incoming"});
-    if(!have){ posts.set(id,p); vaultPut(p); render(); tabPing("moments"); notifyMe(p.name||"Peer","Shared a moment"); }
-    if(!m.fid||!m.chunks) return;                     // parked head only: bytes follow later
-    for(const [fid,r] of incoming) if(r.post.id===id){ clearInterval(r.timer); incoming.delete(fid); }
-    const rec={post:p,parts:new Array(m.chunks),got:0,chunks:m.chunks,mime:m.mime||p.mime,
-               last:Date.now(),timer:null};
-    rec.timer=setInterval(()=>{
-      if(incoming.get(m.fid)!==rec){ clearInterval(rec.timer); return; }
-      const quiet=Date.now()-rec.last;
-      if(quiet>RECV_IDLE){ clearInterval(rec.timer); incoming.delete(m.fid); p.xfer="stalled"; render(); return; }
-      if(quiet>NEED_EVERY&&anyLink()){
-        const miss=[]; for(let i=0;i<rec.chunks;i++) if(rec.parts[i]===undefined) miss.push(i);
-        if(miss.length) publish({t:"mneed",from:me.id,fid:m.fid,ids:miss.slice(0,64)});
-      }
-    },NEED_EVERY);
-    incoming.set(m.fid,rec);
-    p.xfer="receiving"; render();
-  }
-  function onChunkIn(m){
-    const rec=incoming.get(m.fid); if(!rec) return;
-    const i=m.i;
-    if(typeof i!=="number"||i<0||i>=rec.chunks) return;
-    if(rec.parts[i]!==undefined) return;
-    let b; try{ b=b64ToBytes(m.data); }catch(e){ return; }
-    rec.parts[i]=b; rec.got++; rec.last=Date.now();
-    setXfer(rec.post.id,"Receiving "+Math.round(rec.got/rec.chunks*100)+"%");
-    if(rec.got<rec.chunks) return;
-    clearInterval(rec.timer); incoming.delete(m.fid);
-    let total=0; rec.parts.forEach(x=>total+=x.length);
-    const all=new Uint8Array(total); let o=0; rec.parts.forEach(x=>{all.set(x,o);o+=x.length;});
-    const p=rec.post;
-    p.blob=new Blob([all],{type:rec.mime||p.mime}); p.size=total; p.xfer="have";
-    releaseUrl(p.id);          // the poster's URL is dead now - hand it back
-    vaultPut(p); render();
-    mailboxClear("mo."+p.id);
-  }
-
-  /* A post whose bytes never made it - because they were offline when it was
-     sent - is chased rather than pushed. The holder asks, the author answers.
-     That removes any need to track who has received what. */
-  const asked=new Map();
-  function chase(){
-    if(!anyLink()) return;
-    const now=Date.now();
-    posts.forEach(p=>{
-      if(p.mine||p.blob) return;
-      if(p.xfer==="receiving") return;
-      if((asked.get(p.id)||0)>now-20000) return;
-      asked.set(p.id,now);
-      publish({t:"mwant",from:me.id,id:p.id});
-    });
-  }
-  async function onWant(m){
-    const p=posts.get(m.id);
-    if(!p||!p.mine) return;
-    const blob=p.shareBlob||p.blob;
-    if(!blob) return;
-    if(p.xfer==="sending") return;                 // one at a time
-    p.xfer="sending"; render();
-    await sendPost(p,blob);
-  }
-
-  /* ---------- likes & comments ---------- */
-  function toggleLike(id){
-    const p=posts.get(id); if(!p) return;
-    const k=myNorm();
-    const on=!p.likes[k];
-    if(on) p.likes[k]=Date.now(); else delete p.likes[k];
-    vaultPut(p); render();
-    publish({t:"mlike",from:me.id,id,norm:k,name:me.name,on:on?1:0,ts:Date.now()});
-    mailboxPutRaw("ml."+id+"."+encodeURIComponent(k),{t:"mlike",from:me.id,id,norm:k,name:me.name,on:on?1:0,ts:Date.now()});
-  }
-  function onLike(m){
-    const p=posts.get(m.id); if(!p) return;
-    const k=normName(m.norm);
-    if(m.on) p.likes[k]=m.ts||Date.now(); else delete p.likes[k];
-    vaultPut(p); render();
-  }
-  function addComment(id,text){
-    text=(text||"").trim(); if(!text) return;
-    const p=posts.get(id); if(!p) return;
-    const c={id:uid(),norm:myNorm(),name:me.name,text:text.slice(0,400),ts:Date.now()};
-    p.coms.push(c); vaultPut(p); render();
-    publish({t:"mcom",from:me.id,id,c});
-    mailboxPutRaw("mc."+c.id,{t:"mcom",from:me.id,id,c});
-  }
-  function onComment(m){
-    const p=posts.get(m.id); if(!p||!m.c) return;
-    if(p.coms.some(c=>c.id===m.c.id)) return;
-    p.coms.push(m.c); p.coms.sort((a,b)=>a.ts-b.ts);
-    vaultPut(p); render();
-    if(activeTab!=="moments") tabPing("moments");
-  }
-  /* The only route by which a moment is ever destroyed, and it is always a tap.
-     Your own post can be withdrawn from both phones; one of theirs is removed
-     from yours alone - their copy is theirs to keep. */
-  function removePost(id,forBoth){
-    const p=posts.get(id); if(!p) return;
-    posts.delete(id); vaultDel(id);
-    dropMedia(id);
-    dropped.add(id); dropSave();
-    const u=urls.get(id); if(u){ try{URL.revokeObjectURL(u);}catch(e){} urls.delete(id); }
-    if(p.mine&&forBoth!==false){
-      publish({t:"mdel",from:me.id,id});
-      mailboxClear("mo."+id);
-    }else{
-      mailboxClear("mo."+id);              // stop the relay handing it back to us
-    }
-    render();
-  }
-  function onDel(m){
-    const p=posts.get(m.id);
-    if(!p||p.mine) return;
-    posts.delete(m.id); vaultDel(m.id); dropMedia(m.id);
-    const u=urls.get(m.id); if(u){ try{URL.revokeObjectURL(u);}catch(e){} urls.delete(m.id); }
-    render();
-  }
-
-  /* ---------------------------------------------------------------------------
-     SMART AUTOPLAY
-     Exactly one clip is ever running. An IntersectionObserver watches the feed
-     and hands play to whichever video is at least half on screen; everything
-     else is paused AND rewound, so scrolling back to a clip starts it again
-     from the top rather than resuming a stale frame. Sound is off to begin
-     with - no browser will autoplay audio - and one button toggles it for the
-     whole feed, the way Instagram does it.
-     --------------------------------------------------------------------------- */
-  const MUTE_KEY="sl.mofeedmute";
-  let feedMuted=true;
-  try{ feedMuted=localStorage.getItem(MUTE_KEY)!=="0"; }catch(e){}
-  let vidObserver=null, activeVid=null;
-
-  function muteIcon(m){
-    return m
-      ? '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.5 9H3v6h3.5L11 19z"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>'
-      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6.5 9H3v6h3.5L11 19z"/><path d="M15.5 9.2a4 4 0 0 1 0 5.6"/><path d="M18.4 6.4a8 8 0 0 1 0 11.2"/></svg>';
-  }
-  function setFeedMuted(m){
-    feedMuted=!!m;
-    try{ localStorage.setItem(MUTE_KEY,feedMuted?"1":"0"); }catch(e){}
-    document.querySelectorAll("#moFeed video").forEach(v=>{
-      v.muted=feedMuted;
-      /* the attribute matters as much as the property: it is what a mobile
-         browser consults when deciding whether it may start playing */
-      if(feedMuted) v.setAttribute("muted",""); else v.removeAttribute("muted");
-    });
-    document.querySelectorAll("#moFeed .mo-mute").forEach(b=>{
-      b.innerHTML=muteIcon(feedMuted); b.title=feedMuted?"Unmute":"Mute";
-    });
-  }
-  /* whoever just started playing is the only one allowed to */
-  function soloPlay(v){
-    activeVid=v;
-    document.querySelectorAll("#moFeed video").forEach(o=>{
-      if(o===v) return;
-      try{ o.pause(); o.currentTime=0; }catch(e){}
-    });
-  }
-  function pauseAllVideos(){
-    activeVid=null;
-    document.querySelectorAll("#moFeed video").forEach(v=>{ try{ v.pause(); }catch(e){} });
-  }
-  /* Event-driven autoplay is not enough on its own. A single rejected play() -
-     the browser was busy, another clip paused it mid-promise, the observer
-     coalesced a callback away - and that video sits there dead with nothing to
-     restart it. That is the clip that "just would not play".
-
-     So the rule is enforced continuously rather than announced once: twice a
-     second, work out which video actually owns the viewport, make sure that one
-     is running and every other one is stopped and rewound. Any stuck state
-     fixes itself within a tick, whatever caused it. */
-  const PLAY_AT=0.5;                       // half on screen is enough, as specified
-  function visibleRatio(v,fr){
-    const r=v.getBoundingClientRect();
-    if(!r.height||!fr.height) return 0;
-    const vis=Math.max(0,Math.min(r.bottom,fr.bottom)-Math.max(r.top,fr.top));
-    /* A clip taller than the feed can never show 60% - or even 100% - of itself,
-       so measuring against its own height alone left tall portrait videos frozen
-       for ever. Measure against whichever is smaller. */
-    return vis/Math.min(r.height,fr.height);
-  }
-  function feedRect(){
-    const f=$$("moFeed");
-    return f?f.getBoundingClientRect():{top:0,bottom:innerHeight,height:innerHeight};
-  }
-  function reconcileVideos(){
-    if(!mounted||document.hidden) return;
-    const feed=$$("moFeed"); if(!feed) return;
-    const vids=feed.querySelectorAll("video");
-    if(!vids.length) return;
-    const fr=feed.getBoundingClientRect();
-    let best=null,bestRatio=PLAY_AT;
-    vids.forEach(v=>{
-      const r=visibleRatio(v,fr);
-      if(r>=bestRatio){ bestRatio=r; best=v; }
-    });
-    vids.forEach(v=>{
-      if(v===best) return;
-      if(!v.paused||v.currentTime>0){ try{ v.pause(); v.currentTime=0; }catch(e){} }
-    });
-    if(!best){ activeVid=null; return; }
-    best.muted=feedMuted;
-    activeVid=best;
-    if(best.paused&&!best.dataset.dead){
-      const tryPlay=best.play();
-      if(tryPlay&&tryPlay.catch) tryPlay.catch(()=>{});   // next tick will try again
-    }
-  }
-
-  function wireVideos(){
-    if(!("IntersectionObserver" in window)) return;
-    if(!vidObserver){
-      vidObserver=new IntersectionObserver(entries=>{
-        if(!mounted) return;
-        entries.forEach(en=>{
-          const v=en.target;
-          /* intersectionRatio is also a fraction of the TARGET, so a tall clip
-             tops out below the bar; fall back to measuring it ourselves. */
-          const ratio=Math.max(en.intersectionRatio,visibleRatio(v,en.rootBounds||feedRect()));
-          if(en.isIntersecting&&ratio>=PLAY_AT){
-            if(activeVid===v&&!v.paused) return;         // already the one running
-            v.muted=feedMuted;
-            v.currentTime=0;                              // scrolled back in: start over
-            v.play().then(()=>soloPlay(v)).catch(()=>{});
-          }else{
-            /* out of view: stop and rewind so the next visit is a fresh start */
-            try{ v.pause(); v.currentTime=0; }catch(e){}
-            if(activeVid===v) activeVid=null;
-          }
-        });
-      },{root:$$("moFeed"),threshold:[0,0.25,PLAY_AT,0.75,0.95]});
-    }
-    document.querySelectorAll("#moFeed video").forEach(v=>{ try{ vidObserver.observe(v); }catch(e){} });
-  }
-
-  /* ---------- the feed ---------- */
-  /* A like or a comment used to rebuild every card, which threw away the
-     <video> element mid-playback and made the feed stutter. The media node is
-     kept and re-parented instead: same element, same decoded frames, same
-     IntersectionObserver registration, nothing interrupted. */
-  const mediaCache=new Map();
-  function mediaSig(p){ return (p.kind||"")+"|"+(p.blob?"b":p.poster?"p":"n")+"|"+(p.w||0)+"x"+(p.h||0); }
-  function releaseUrl(id){
-    const u=urls.get(id);
-    if(u){ try{ URL.revokeObjectURL(u); }catch(e){} urls.delete(id); }
-  }
-  function dropMedia(id){
-    const e=mediaCache.get(id);
-    if(e){
-      try{
-        const v=e.querySelector("video");
-        if(v){
-          v.pause();
-          /* the observer keeps a strong reference to anything it watches, so a
-             node dropped from the cache would otherwise never be collected */
-          if(vidObserver) try{ vidObserver.unobserve(v); }catch(err){}
-          v.removeAttribute("src"); v.load();
-        }
-      }catch(err){}
-    }
-    mediaCache.delete(id);
-  }
-  /* Posts are kept for ever, so without a ceiling the cache ends up holding a
-     decoded <video> for every moment ever posted. Only a handful are ever on
-     screen; the rest rebuild in a millisecond from the blob we already hold. */
-  const MEDIA_CACHE_MAX=10;
-  function trimMediaCache(keepIds){
-    if(mediaCache.size<=MEDIA_CACHE_MAX) return;
-    for(const id of [...mediaCache.keys()]){
-      if(mediaCache.size<=MEDIA_CACHE_MAX) break;
-      if(keepIds&&keepIds.has(id)) continue;
-      dropMedia(id);
-    }
-  }
-
-  function urlFor(p){
-    if(!p.blob) return null;
-    let u=urls.get(p.id);
-    if(!u){ u=URL.createObjectURL(p.blob); urls.set(p.id,u); }
-    return u;
-  }
-  function avatarFor(p,el){
-    const url=p.mine?myAvatar:(peerAvatars.get(p.from)||null);
-    if(url){ el.style.backgroundImage="url("+url+")"; el.classList.add("haspic"); }
-  }
-  function card(p){
-    const d=document.createElement("div");
-    d.className="mo-post"; d.dataset.mo=p.id;
-
-    /* header */
-    const head=document.createElement("div"); head.className="mo-head";
-    const av=document.createElement("div"); av.className="mo-ava";
-    const avs=document.createElement("span"); avs.textContent=(p.name||"?").trim().charAt(0).toUpperCase()||"?";
-    av.appendChild(avs); avatarFor(p,av);
-    const who=document.createElement("div"); who.className="mo-who";
-    const nb=document.createElement("b"); nb.textContent=p.name||"Peer";
-    const sm=document.createElement("small");
-    sm.innerHTML=(p.place?'<span class="mo-place">'+escapeHtml(p.place)+'</span> · ':"")+escapeHtml(fmtWhen(p.ts));
-    who.appendChild(nb); who.appendChild(sm);
-    head.appendChild(av); head.appendChild(who);
-    const x=document.createElement("button"); x.className="mo-x";
-    x.title=p.mine?"Remove for both":"Remove from my feed";
-    x.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>';
-    x.addEventListener("click",()=>{
-      const q=p.mine?"Remove this moment from both phones?"
-                    :"Remove this from your feed? Their copy stays with them.";
-      if(confirm(q)) removePost(p.id,p.mine);
-    });
-    head.appendChild(x);
-    d.appendChild(head);
-
-    /* media */
-    const cached=mediaCache.get(p.id);
-    if(cached&&cached._sig===mediaSig(p)){
-      /* reuse it wholesale - only the transfer badge can have changed */
-      const old=cached.querySelector(".mo-badge:not(.done)");
-      if(old) old.remove();
-      const st0=p.xfer;
-      if(st0&&st0!=="local"&&st0!=="sent"&&st0!=="have"){
-        const b=document.createElement("div"); b.className="mo-badge";
-        const bi=document.createElement("i"); const bs=document.createElement("span");
-        bs.textContent=p.xferText||(st0==="incoming"?"Receiving":st0==="receiving"?"Receiving":
-          st0==="encoding"?"Preparing":st0==="queued"?"Waiting for a relay":
-          st0==="localonly"?"Only on this phone":st0==="stalled"?"Paused":"Sending");
-        b.appendChild(bi); b.appendChild(bs); cached.appendChild(b);
-      }
-      d.appendChild(cached);
-      return finishCard(d,p,cached);
-    }
-    dropMedia(p.id);
-    const med=document.createElement("div"); med.className="mo-media";
-    med._sig=mediaSig(p);
-    mediaCache.set(p.id,med);
-    if(p.w&&p.h) med.style.aspectRatio=p.w+" / "+p.h;      // hold the shape while it loads
-    const u=urlFor(p);
-    if(u&&p.kind==="video"){
-      const v=document.createElement("video");
-      v.src=u;
-      /* Every attribute a mobile browser looks for before it will start a video
-         on its own. They have to be real ATTRIBUTES, not just properties -
-         iOS checks the markup. */
-      v.setAttribute("autoplay","");
-      v.setAttribute("muted","");
-      v.setAttribute("playsinline","");
-      v.setAttribute("webkit-playsinline","");
-      v.setAttribute("loop","");
-      v.autoplay=true; v.loop=true; v.playsInline=true; v.controls=false;
-      v.muted=feedMuted; v.preload="metadata"; v.dataset.mo=p.id;
-      if(p.poster) v.poster=p.poster;
-      v.addEventListener("play",()=>soloPlay(v));
-      /* a codec this browser cannot decode must say so, not sit there black */
-      v.addEventListener("error",()=>{
-        v.dataset.dead="1";
-        if(med.querySelector(".mo-badge")) return;
-        const b=document.createElement("div"); b.className="mo-badge done";
-        b.innerHTML='<i></i><span>format not supported here</span>';
-        med.appendChild(b);
-      });
-      med.appendChild(v);
-
-      /* the whole sound story: one small dot, and a tap anywhere on the clip */
-      const mb=document.createElement("button");
-      mb.className="mo-mute"; mb.type="button";
-      mb.title=feedMuted?"Unmute":"Mute";
-      mb.innerHTML=muteIcon(feedMuted);
-      mb.addEventListener("click",e=>{ e.preventDefault(); e.stopPropagation(); setFeedMuted(!feedMuted); });
-      med.appendChild(mb);
-    }else if(u){
-      const im=document.createElement("img");
-      im.src=u; im.alt=p.caption||"moment"; im.loading="lazy"; im.decoding="async";
-      med.appendChild(im);
-    }else if(p.poster){
-      const im=document.createElement("img");
-      im.src=p.poster; im.alt=p.caption||"moment"; im.loading="lazy";
-      med.appendChild(im);
-    }else{
-      const ph=document.createElement("div");
-      ph.className="mo-pick"; ph.style.padding="46px 20px"; ph.textContent="Media on the way…";
-      med.appendChild(ph);
-    }
-    /* the transfer badge */
-    const st=p.xfer;
-    if(st&&st!=="local"&&st!=="sent"&&st!=="have"){
-      const b=document.createElement("div"); b.className="mo-badge";
-      const bi=document.createElement("i"); const bs=document.createElement("span");
-      bs.textContent=p.xferText||(st==="incoming"?"Receiving":st==="encoding"?"Preparing":
-        st==="queued"?"Waiting for a relay":st==="localonly"?"Only on this phone":
-        st==="stalled"?"Paused":"Sending");
-      b.appendChild(bi); b.appendChild(bs); med.appendChild(b);
-    }
-    /* double tap to love it */
-    const heart=document.createElement("div"); heart.className="mo-heart";
-    heart.innerHTML='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-8.4-5.3-8.4-11A4.9 4.9 0 0 1 12 7.3 4.9 4.9 0 0 1 20.4 10c0 5.7-8.4 11-8.4 11z"/></svg>';
-    med.appendChild(heart);
-    /* One tap on a clip turns the sound on or off; two taps love it. The single
-       tap waits out the double-tap window so the two never fight. */
-    let lastTap=0, tapWait=null;
-    med.addEventListener("click",e=>{
-      if(e.target.closest(".mo-mute")) return;             // the dot speaks for itself
-      const now=Date.now();
-      if(now-lastTap<320){
-        clearTimeout(tapWait); tapWait=null; lastTap=0;
-        /* read the CURRENT record: this closure outlives re-renders, and a
-           stale copy made a double tap on a liked post remove the like */
-        const live=posts.get(p.id);
-        if(live&&!live.likes[myNorm()]) toggleLike(p.id);
-        heart.classList.remove("pop"); void heart.offsetWidth; heart.classList.add("pop");
-        return;
-      }
-      lastTap=now;
-      clearTimeout(tapWait);
-      tapWait=setTimeout(()=>{
-        tapWait=null;
-        if(p.kind==="video") setFeedMuted(!feedMuted);
-      },320);
-    });
-    d.appendChild(med);
-    return finishCard(d,p,med);
-  }
-
-  /* Everything below the picture. Split out so a card whose media element is
-     being reused can rebuild only the parts that actually change. */
-  function finishCard(d,p,med){
-    /* action bar */
-    const bar=document.createElement("div"); bar.className="mo-bar";
-    const likes=Object.keys(p.likes||{}).length;
-    const lk=document.createElement("button");
-    lk.className="mo-act"+(p.likes[myNorm()]?" liked":"");
-    lk.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.8-4.9-7.8-10.3A4.6 4.6 0 0 1 12 7a4.6 4.6 0 0 1 7.8 3.2c0 5.4-7.8 10.3-7.8 10.3z"/></svg>'+
-      (likes?"<b>"+likes+"</b>":"");
-    lk.addEventListener("click",()=>toggleLike(p.id));
-    const cm=document.createElement("button"); cm.className="mo-act";
-    cm.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 11.8a8 8 0 0 1-8.6 8 9 9 0 0 1-2.8-.4L4.2 20.8l1.3-3.8a7.9 7.9 0 0 1-1.5-4.7A8 8 0 0 1 12.2 4a8 8 0 0 1 8.3 7.8z"/></svg>'+
-      (p.coms.length?"<b>"+p.coms.length+"</b>":"");
-    cm.addEventListener("click",()=>{ const i=d.querySelector(".mo-add input"); if(i) i.focus(); });
-    const when=document.createElement("span"); when.className="mo-when"; when.textContent=fmtWhen(p.ts);
-    bar.appendChild(lk); bar.appendChild(cm); bar.appendChild(when);
-    d.appendChild(bar);
-
-    /* caption */
-    if(p.caption){
-      const cap=document.createElement("div");
-      cap.className="mo-cap"+(expanded.has(p.id)?"":" clip");
-      cap.innerHTML="<b>"+escapeHtml(p.name||"")+"</b>"+textHTML(p.caption);
-      d.appendChild(cap);
-      if(p.caption.length>90){
-        const mb=document.createElement("button"); mb.className="mo-more";
-        mb.textContent=expanded.has(p.id)?"show less":"… more";
-        mb.addEventListener("click",()=>{
-          if(expanded.has(p.id)) expanded.delete(p.id); else expanded.add(p.id);
-          cap.classList.toggle("clip",!expanded.has(p.id));
-          mb.textContent=expanded.has(p.id)?"show less":"… more";
-        });
-        d.appendChild(mb);
-      }
-    }
-
-    /* comments */
-    if(p.coms.length){
-      const cl=document.createElement("div"); cl.className="mo-coms";
-      p.coms.slice(-6).forEach(c=>{
-        const r=document.createElement("div"); r.className="mo-com";
-        r.innerHTML="<b>"+escapeHtml(c.name||"")+"</b>"+escapeHtml(c.text)+
-          '<i>'+escapeHtml(fmtWhen(c.ts))+"</i>";
-        cl.appendChild(r);
-      });
-      d.appendChild(cl);
-    }
-    const add=document.createElement("div"); add.className="mo-add";
-    const inp=document.createElement("input");
-    inp.type="text"; inp.placeholder="Add a thought…"; inp.maxLength=400;
-    const snd=document.createElement("button"); snd.textContent="Post"; snd.disabled=true;
-    inp.addEventListener("input",()=>{ snd.disabled=!inp.value.trim(); });
-    const fire=()=>{ if(!inp.value.trim()) return; addComment(p.id,inp.value); inp.value=""; snd.disabled=true; };
-    inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); fire(); } });
-    snd.addEventListener("click",fire);
-    add.appendChild(inp); add.appendChild(snd);
-    d.appendChild(add);
-    return d;
-  }
-
-  let renderQueued=false;
-  function render(){
-    if(!mounted){ return; }
-    if(renderQueued) return;
-    renderQueued=true;
-    /* a timeout, not requestAnimationFrame: this is DOM work, not animation,
-       and rAF never fires in a backgrounded tab - posts arriving while you are
-       elsewhere would queue a render that never ran. */
-    setTimeout(()=>{
-      renderQueued=false;
-      if(!mounted) return;              // we left the tab between queue and flush
-      const feed=$$("moFeed"); if(!feed) return;
-      const keep=feed.scrollTop;
-      const list=[...posts.values()].sort((a,b)=>b.ts-a.ts);
-      feed.innerHTML="";
-      if(!list.length){
-        const e=document.createElement("div"); e.className="mo-empty";
-        e.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="6.3" width="18.8" height="14" rx="3.4"/><path d="M8.4 6.3l1.3-2.4h4.6l1.3 2.4"/><circle cx="12" cy="13.2" r="3.9"/></svg>'+
-          "<b>No moments yet</b>Photos and clips you share here stay between the two of you, and live on both phones for good.";
-        feed.appendChild(e);
-        return;
-      }
-      /* a like or a comment arriving must not kill the clip you are watching */
-      const wasPlaying=activeVid&&!activeVid.paused
-        ? {id:activeVid.dataset.mo,t:activeVid.currentTime} : null;
-      activeVid=null;
-      list.forEach(p=>feed.appendChild(card(p)));
-      feed.scrollTop=keep;
-      if(wasPlaying){
-        const v=feed.querySelector('video[data-mo="'+wasPlaying.id+'"]');
-        if(v){ try{ v.currentTime=wasPlaying.t; }catch(e){} v.play().then(()=>soloPlay(v)).catch(()=>{}); }
-      }
-      wireVideos();
-      trimMediaCache(new Set(list.slice(0,MEDIA_CACHE_MAX).map(x=>x.id)));
-    },0);
-  }
-
-  /* ---------- composer ---------- */
-  function openSheet(){ $$("moSheet").classList.add("on"); }
-  function closeSheet(){
-    $$("moSheet").classList.remove("on");
-    const pv=$$("moPrev");
-    pv.innerHTML='<div class="mo-pick" id="moPick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.6" y="6.3" width="18.8" height="14" rx="3.4"/><path d="M8.4 6.3l1.3-2.4h4.6l1.3 2.4"/><circle cx="12" cy="13.2" r="3.9"/></svg><span>Choose a photo or video</span></div>';
-    pv.querySelector("#moPick").addEventListener("click",()=>$$("moFile").click());
-    if(pick&&pick.url){ try{URL.revokeObjectURL(pick.url);}catch(e){} }
-    pick=null;
-    $$("moCap").value=""; $$("moPlace").value="";
-    $$("moShare").disabled=true;
-    $$("moProgWrap").hidden=true; $$("moProg").style.width="0%";
-    $$("moNote").textContent="Your copy keeps the original, untouched. A lighter copy is prepared for them.";
-  }
-  async function chose(file){
-    if(!file) return;
-    const kind=(file.type||"").startsWith("video/")?"video":"image";
-    const url=URL.createObjectURL(file);
-    const pv=$$("moPrev"); pv.innerHTML="";
-    if(kind==="video"){
-      const v=document.createElement("video");
-      v.src=url; v.controls=true; v.playsInline=true; v.preload="metadata"; pv.appendChild(v);
-    }else{
-      const i=document.createElement("img"); i.src=url; pv.appendChild(i);
-    }
-    pick={file,url,kind,w:0,h:0,dur:0,poster:null};
-    $$("moShare").disabled=false;
-    const big=file.size>KEEP_ORIGINAL;
-    $$("moNote").textContent=fmtSize(file.size)+" · your vault keeps this untouched"+
-      (big?" · a lighter copy will be made to send":"");
-    const md=await readMeta(file);
-    pick.w=md.w; pick.h=md.h; pick.dur=md.dur;
-    pick.poster=await makePoster(file,kind);
-  }
-
-  /* ---------- lifecycle ---------- */
-  async function begin(){
-    if(started) return; started=true;
-    ensurePersistent();                 // fire and forget: never blocks the feed
-    dropLoad();
-    const rows=await vaultAll();
-    rows.forEach(p=>{
-      if(posts.has(p.id)) return;      // a live one landed mid-load; it is newer
-      if(dropped.has(p.id)) return;    // and one the user removed stays removed
-      p.likes=p.likes||{}; p.coms=p.coms||[];
-      p.mine=(normName(p.norm)===myNorm())||p.from===me.id;
-      if(p.blob&&p.xfer!=="localonly") p.xfer=p.mine?"sent":"have";
-      posts.set(p.id,p);
-    });
-    render();
-  }
-  function mount(){
-    mounted=true;
-    render();
-    chase();
-    setTimeout(wireVideos,80);
-    /* the observer is the fast path; this is the guarantee */
-    if(!mount._recon) mount._recon=setInterval(reconcileVideos,500);
-  }
-  /* they just walked in: ask for anything we are still missing */
-  function peerHere(){ chase(); }
-  function unmount(){
-    mounted=false;
-    if(mount._recon){ clearInterval(mount._recon); mount._recon=null; }
-    /* a video left playing behind a tab is pure battery drain, and the observer
-       has nothing to watch while the view is out of the layout */
-    try{ pauseAllVideos(); }catch(e){}
-    try{ if(vidObserver){ vidObserver.disconnect(); vidObserver=null; } }catch(e){}
-  }
-  document.addEventListener("visibilitychange",()=>{ if(document.hidden) unmount(); });
-
-  /* packets from the other side */
-  function onPacketIn(m){
-    if(m.t==="mpost") onPost(m);
-    else if(m.t==="mchunk") onChunkIn(m);
-    else if(m.t==="mneed") resend(m);
-    else if(m.t==="mwant") onWant(m);
-    else if(m.t==="mlike") onLike(m);
-    else if(m.t==="mcom") onComment(m);
-    else if(m.t==="mdel") onDel(m);
-  }
-  /* and the same things collected from the mailbox hours later */
-  function onMailboxIn(slot,m){
-    if(m.t==="mpost"){ onPost(m); return true; }
-    if(m.t==="mlike"){ onLike(m); return true; }
-    if(m.t==="mcom"){ onComment(m); return true; }
-    return false;
-  }
-
-  return {begin,mount,unmount,render,openSheet,closeSheet,chose,share,peerHere,
-          onPacketIn,onMailboxIn,count:()=>posts.size,vaultRoom,ensurePersistent};
-})();
-
-
-/* ---------------------------------------------------------------------------
-   TABS
-   ---------------------------------------------------------------------------
-   Three pages, one at a time. Only the mounted view is display:flex, so a view
-   that is not on screen is out of the layout entirely - nothing measures it,
-   nothing paints it. The Love Tree's animation loop is stopped on the way out
-   and restarted on the way in, so a tab you are not looking at costs nothing.
-   --------------------------------------------------------------------------- */
-let activeTab="chat";
-function showTab(name){
-  if(!roomOpen) return;
-  activeTab=name;
-  /* the chat tab shows the waiting room or the conversation, whichever you are in */
-  $("chat").classList.toggle("on",name==="chat"&&!inLobby);
-  $("lobby").classList.toggle("on",name==="chat"&&inLobby);
-  $("pigeonview").classList.toggle("on",name==="pigeon");
-  $("momentsview").classList.toggle("on",name==="moments");
-  document.querySelectorAll(".tabbar .tab").forEach(b=>{
-    const on=b.dataset.tab===name;
-    b.classList.toggle("on",on);
-    if(on) b.setAttribute("aria-current","true"); else b.removeAttribute("aria-current");
-  });
-  if(name==="chat"){ tabSeen("chat"); scrollDown(); }
-  /* startSky() first: it is what sets ptOpen, and paintTracker() bails out
-     unless the panel is open. Painting before it meant every visit to the tab
-     opened on the LAST visit's snapshot - a bird that had already landed still
-     read "En route", still counted down, and still offered a Recall button that
-     would have deleted a note the other person had already read. */
-  if(name==="pigeon"){ tabSeen("pigeon"); paintPigeonDest(); paintPigeonDist(); startSky(); paintTracker(); }
-  else stopSky();
-  /* the sky loop and every video in the feed stop the moment you look away */
-  if(name==="moments"){ tabSeen("moments"); Moments.mount(); } else Moments.unmount();
-}
-/* a quiet dot on a tab you are not looking at */
-const tabNews={chat:false,pigeon:false,moments:false};
-function tabPing(name){
-  if(activeTab===name||!roomOpen) return;
-  tabNews[name]=true;
-  const d=$("tabDot"+name.charAt(0).toUpperCase()+name.slice(1));
-  if(d) d.hidden=false;
-}
-function tabSeen(name){
-  tabNews[name]=false;
-  const d=$("tabDot"+name.charAt(0).toUpperCase()+name.slice(1));
-  if(d) d.hidden=true;
-}
-
-/* ---------------------------------------------------------------------------
-   CARRIER PIGEON
-   ---------------------------------------------------------------------------
-   A message that takes its time. You pick a recipient and a distance, and the
-   note leaves immediately but stays sealed until the bird lands.
-
-   The flight is NOT a local timer on the sender's machine - that would lose the
-   message the moment they closed the tab. The packet goes out at once, carrying
-   the arrival time with it, and BOTH sides hold it until then:
-
-     * the sender sees their own pigeon in the transcript as an in-flight bubble;
-     * the recipient stores it with everything else but does not render it, and
-       does not acknowledge it, until the clock runs out;
-     * so it survives a reload on either side (it is in the encrypted history
-       like any other message), and it survives the recipient being offline -
-       the relay mailbox parks it and it lands, late, the moment they reappear.
-
-   A racing pigeon really does average about 92 km/h. An hour of its flying takes
-   a minute here, so the slider's 92-276 km is a one-to-three-minute wait.
-   --------------------------------------------------------------------------- */
-const PIGEON_KMH=92;              // a racing pigeon's honest cruising speed
-const PIGEON_SCALE=60;            // an hour of pigeon flying passes in a minute
-const PIGEON_KEEP=6*3600*1000;    // landed flights stay in the tracker this long
-function pigeonMs(km){ return Math.max(5000,Math.round((km/PIGEON_KMH)*3600*1000/PIGEON_SCALE)); }
-function fmtClock(ms){
-  const s=Math.max(0,Math.round(ms/1000));
-  return Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
-}
-/* in the air: sent as a pigeon, not yet landed, arrival still ahead of us */
-function inFlight(r){ return !!(r&&r.pigeon&&!r.pgLanded&&(r.eta||0)>Date.now()); }
-function pigeonProgress(r){
-  const total=Math.max(1,(r.eta||0)-(r.ts||0));
-  return Math.min(1,Math.max(0,(Date.now()-(r.ts||0))/total));
-}
-function pigeonFlights(){
-  const cut=Date.now()-PIGEON_KEEP;
-  return [...hist.values()]
-    .filter(r=>r.pigeon&&!r.delLocal&&!r.deleted&&((r.eta||0)>Date.now()||(r.eta||0)>cut))
-    .sort((a,b)=>(a.eta||0)-(b.eta||0));
-}
-function pigeonState(r){
-  if(!inFlight(r)) return "delivered";
-  return pigeonProgress(r)>0.85?"delivering":"enroute";
-}
-
-/* ---- an in-flight bubble on the sender's side ---- */
-function pigeonFlightNode(rec){
-  const w=document.createElement("div"); w.className="pgflight";
-  w.innerHTML='<span class="pgf-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c4-1 6-4 7-7 1 3 2 5 5 5 3 0 5 2 5 5 0 3-3 6-7 6-5 0-10-4-10-9z"/><path d="M10 5.5h.01"/></svg></span>'+
-    '<span class="pgf-txt"><b></b><small></small></span>';
-  w.querySelector("b").textContent="Pigeon in flight"+(rec.mine?" to "+pigeonPeerName():"");
-  w._tick=()=>{
-    const sm=w.querySelector("small"); if(!sm) return;
-    const left=Math.max(0,(rec.eta||0)-Date.now());
-    sm.textContent=Math.round((rec.dist||0)*(1-pigeonProgress(rec)))+" km · ETA "+fmtClock(left);
-  };
-  w._tick();
-  return w;
-}
-function pigeonBadgeNode(rec){
-  const b=document.createElement("div"); b.className="pgbadge";
-  b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12c4-1 6-4 7-7 1 3 2 5 5 5 3 0 5 2 5 5 0 3-3 6-7 6-5 0-10-4-10-9z"/></svg><span></span>';
-  b.querySelector("span").textContent="Pigeon post · "+(rec.dist||0)+" km";
-  return b;
-}
-/* the body of a landed pigeon: badge on top, then the note itself */
-function pigeonBodyNode(rec){
-  const wrap=document.createElement("div");
-  wrap.appendChild(pigeonBadgeNode(rec));
-  const t=document.createElement("div"); t.innerHTML=textHTML(rec.text||"");
-  wrap.appendChild(t);
-  return wrap;
-}
-
-/* ---- the moment it lands ---- */
-const pgTimers=new Map();          // id -> timeout, so a reload does not double-fire
-function schedulePigeon(rec){
-  if(!rec||!rec.pigeon) return;
-  if(pgTimers.has(rec.id)) return;
-  const wait=Math.max(0,(rec.eta||0)-Date.now());
-  pgTimers.set(rec.id,setTimeout(()=>{ pgTimers.delete(rec.id); landPigeon(rec.id); },wait+120));
-}
-function landPigeon(id){
-  const rec=hist.get(id);
-  if(!rec||!rec.pigeon||rec.pgLanded||rec.deleted) return;
-  rec.pgLanded=1;
-  saveRec(rec);
-  if(rec.mine){
-    /* swap our own in-flight bubble for the note it was carrying */
-    const el=msgEls.get(id), body=el&&el.querySelector(".body");
-    if(body){ body.innerHTML=""; body.appendChild(pigeonBodyNode(rec)); el.classList.add("pglanded"); fitMeta(el); }
-  }else{
-    /* it was never drawn: this is the first the recipient sees of it */
-    const stick=nearBottom();
-    const b=addBubble({id,name:rec.name,mine:false,ts:Date.now(),reply:rec.reply,kind:"text",
-      bodyNode:pigeonBodyNode(rec)});
-    if(b&&b.el) b.el.classList.add("pglanded");
-    msgInfo.set(id,{name:rec.name,kind:"text",deleted:false,preview:(rec.text||"").slice(0,80)});
-    try{ ScreenFX.checkMessageForEffects(rec.text); }catch(e){}
-    ackDelivered(id);
-    maybeMarkSeen(id);
-    applyPending(id);
-    notifyMe(rec.name||"Peer","🕊️ Pigeon post: "+(rec.text||"").slice(0,80));
-    if(!inLobby) toast("A pigeon landed from "+(rec.name||"Peer"));
-    else lobbyBump();
-    tabPing("chat");
-    if(stick) scrollDown();
-  }
-  paintTracker();
-  paintPigeonCount();
-}
-/* anything still in the air when the app opens gets its timer back */
-function resumePigeons(){
-  for(const r of hist.values()){
-    if(!r.pigeon||r.pgLanded||r.deleted) continue;
-    if(inFlight(r)) schedulePigeon(r);
-    else landPigeon(r.id);            // it landed while we were away
-  }
-  paintPigeonCount();
-}
-
-/* ---- receiving ---- */
-function recvPigeon(m){
-  const ts=m.ts||Date.now();
-  let eta=m.eta||0;
-  /* Both stamps were taken by the SENDER's clock, so their difference - the
-     flight time - is sound, while the arrival stamp measured against OUR clock
-     is only as good as the gap between the two devices. A phone a few minutes
-     fast would strand the bird in the air; one a few minutes slow would land it
-     the instant it arrived. Never let it have further to fly than the whole
-     journey was ever meant to take. */
-  const dur=Math.max(0,eta-ts);
-  if(eta-Date.now()>dur) eta=Date.now()+dur;
-  const rec={id:m.id,from:m.from,name:m.name,mine:false,kind:"text",text:m.text||"",
-             ts,reply:m.reply,pigeon:1,eta,dist:m.dist||0,
-             to:m.to,toName:m.toName};
-  saveRec(rec);                        // kept, encrypted, but deliberately not drawn
-  if(inFlight(rec)){
-    schedulePigeon(rec);
-    const who=m.name||"Peer";
-    if(inLobby) lobbyBump();
-    else toast("\u{1F54A}\uFE0F A pigeon is on its way from "+who);
-    tabPing("pigeon");
-    paintPigeonCount(); paintTracker();
-  }else{
-    landPigeon(rec.id);                // sent with no distance left to fly
-  }
-}
-
-/* ---- sending ----
-   A pigeon is addressed to the ROOM, not to a person. The room is the shared
-   secret: everyone holding it decrypts the same topic, so delivery never
-   depended on a name in the first place - and the old list of name chips was
-   worse than useless. It grew a button for every spelling anyone had ever
-   logged in with ("Nandini", "nandini", "Nandinj", "Wife of dinesh"...), because
-   it was built from every device id the room had ever seen. Picking the wrong
-   one of those could only ever mislabel the flight; it could never route it. */
-function pigeonPeerName(){
-  if(peers.size===1) return [...peers.values()][0].name||"them";
-  if(peers.size>1) return "the room";
-  const ls=lastSeenLine();
-  return (ls&&ls.name)||"the room";
-}
-function paintPigeonDest(){
-  const el=$("pgDest"); if(!el) return;
-  el.textContent=peers.size?pigeonPeerName():"whoever is in this room";
-}
-function paintPigeonDist(){
-  const km=+$("pgDist").value||92;
-  $("pgDistTxt").textContent=km+" km · "+fmtClock(pigeonMs(km));
-}
-function paintPigeonCount(){
-  const n=pigeonFlights().filter(inFlight).length;
-  const b=$("pgCount"); if(!b) return;
-  b.hidden=!n; b.textContent=n>9?"9+":String(n);
-}
-function openPigeon(){
-  closeGif&&closeGif(); closeEmoji&&closeEmoji();
-  showTab("pigeon");
-  setTimeout(()=>{ try{ $("pgText").focus(); }catch(e){} },80);
-}
-function closePigeon(){ showTab("chat"); }
-function togglePigeon(){ activeTab==="pigeon"?closePigeon():openPigeon(); }
-
-async function sendPigeon(){
-  const text=$("pgText").value.trim();
-  if(!text){ toast("Give the pigeon something to carry"); return; }
-  const km=+$("pgDist").value||92;
-  const ts=Date.now();
-  const eta=ts+pigeonMs(km);
-  const id=uid();
-  const rec={id,from:me.id,name:me.name,mine:true,kind:"text",text,ts,status:"sent",
-             pigeon:1,eta,dist:km};
-  saveRec(rec);
-  msgInfo.set(id,{name:me.name,kind:"text",deleted:false,preview:"🕊️ "+text.slice(0,70)});
-  addBubble({id,name:me.name,mine:true,ts,kind:"text",bodyNode:pigeonFlightNode(rec)});
-  schedulePigeon(rec);
-
-  $("pgText").value="";
-  try{ skyTakeoff(); }catch(e){}                 // feathers at the loft
-  toast("Pigeon dispatched · "+fmtClock(pigeonMs(km))+" to go");
-  paintPigeonCount(); paintTracker();
-
-  await publish({t:"msg",id,from:me.id,name:me.name,text,ts,pigeon:1,eta,dist:km});
-  ensureMailbox(id);
-}
-/* calling it back before it arrives - the note is never revealed */
-function recallPigeon(id){
-  const rec=hist.get(id);
-  if(!rec||!rec.mine||!inFlight(rec)) return;
-  clearTimeout(pgTimers.get(id)); pgTimers.delete(id);
-  publish({t:"pgrecall",from:me.id,id});
-  mbReap(id);
-  applyDelete(id,false);
-  toast("Pigeon recalled");
-  paintTracker(); paintPigeonCount();
-}
-
-/* ---- the tracker ---- */
-let ptRaf=null, ptOpen=false;
-function openTracker(){ showTab("pigeon"); }
-function paintTracker(){
-  /* the in-flight bubbles tick along with the tracker */
-  msgEls.forEach(el=>{ const f=el.querySelector(".pgflight"); if(f&&f._tick) f._tick(); });
-  if(!ptOpen) return;
-  const list=$("ptList"); if(!list) return;
-  const flights=pigeonFlights();
-  if(!flights.length){
-    list.innerHTML='<div class="pt-empty">No pigeons in the air.<br>Send one from the composer and watch it cross.</div>';
-    return;
-  }
-  list.innerHTML="";
-  flights.slice().reverse().forEach(r=>{
-    const st=pigeonState(r);
-    const pct=Math.round(pigeonProgress(r)*100);
-    const left=Math.max(0,(r.eta||0)-Date.now());
-    const row=document.createElement("div");
-    row.className="pt-row"+(st==="delivered"?" done":"");
-    const l1=document.createElement("div"); l1.className="pt-line1";
-    l1.innerHTML='<span></span><span class="pt-arrow">→</span><span></span><span class="pt-state '+st+'"></span>';
-    l1.children[0].textContent=r.mine?"You":(r.name||"Peer");
-    l1.children[2].textContent=r.mine?pigeonPeerName():"You";
-    l1.children[3].textContent=st==="enroute"?"En route":st==="delivering"?"Delivering":"Delivered";
-    row.appendChild(l1);
-    const prev=document.createElement("div"); prev.className="pt-prev";
-    /* a pigeon still in the air keeps its secret, even from the tracker */
-    prev.textContent=(!r.mine&&inFlight(r))?"Sealed until it lands":(r.text||"");
-    row.appendChild(prev);
-    const bar=document.createElement("div"); bar.className="pt-bar";
-    const fill=document.createElement("i"); fill.style.width=pct+"%"; bar.appendChild(fill);
-    row.appendChild(bar);
-    const stx=document.createElement("div"); stx.className="pt-stats";
-    const remain=Math.round((r.dist||0)*(1-pigeonProgress(r)));
-    stx.innerHTML='<span>Remaining <b>'+(inFlight(r)?remain+" km":"0 km")+'</b></span>'+
-                  '<span>ETA <b>'+(inFlight(r)?fmtClock(left):"landed")+'</b></span>'+
-                  '<span>Distance <b>'+(r.dist||0)+' km</b></span>';
-    if(r.mine&&inFlight(r)){
-      const rc=document.createElement("button"); rc.className="pt-recall"; rc.textContent="Recall";
-      rc.addEventListener("click",()=>recallPigeon(r.id));
-      stx.appendChild(rc);
-    }
-    row.appendChild(stx);
-    list.appendChild(row);
-  });
-}
-/* ---------------------------------------------------------------------------
-   THE FLIGHT SKY
-   ---------------------------------------------------------------------------
-   The tracker used to be a wireframe radar sweep, which told you a number but
-   showed you nothing. This is the actual journey: a dark sky with your loft on
-   the left, their window on the right, and a bird beating its wings along a
-   curved path between them. Distance ticks march down the route, clouds drift
-   past at two depths, and the countdown rides just behind the bird.
-
-   Everything is procedural vector work on one canvas, and the loop is stopped
-   the moment you leave the tab.
-   --------------------------------------------------------------------------- */
-let skyClouds=null, skyStars=null, skyW=0, takeoffs=[];
-function skySetup(w,h){
-  const rnd=(n)=>{ let x=n*9301+49297; return ((x%233280)/233280); };
-  skyStars=[]; for(let i=0;i<46;i++) skyStars.push({x:rnd(i*3+1),y:rnd(i*7+2)*0.72,r:0.4+rnd(i*11+3)*1.2,ph:rnd(i*5+4)*6.283});
-  skyClouds=[]; for(let i=0;i<7;i++) skyClouds.push({x:rnd(i*13+5),y:0.10+rnd(i*17+6)*0.68,
-    s:0.45+rnd(i*19+7)*1.1, sp:(0.006+rnd(i*23+8)*0.020)*(i%2?1:-1), far:i%2===0});
-  skyW=w;
-}
-/* a feather flurry where a bird just left */
-function skyTakeoff(){ takeoffs.push({t:0,n:14}); }
-
-/* The bird: a white carrier pigeon, wings mid-beat, with the rolled letter
-   held in its talons. Drawn as one vector so it scales to any canvas. */
-function drawPigeon(g,x,y,ang,flap,s,alpha){
-  g.save();
-  g.translate(x,y); g.rotate(ang); g.scale(s,s);
-  g.globalAlpha=alpha==null?1:alpha;
-  const up=Math.sin(flap);
-
-  /* the letter, swinging a little under the bird */
-  g.save();
-  g.translate(-1,7.6);
-  g.rotate(up*0.16);
-  g.fillStyle="#f6f1e4";
-  g.beginPath(); g.roundRect?g.roundRect(-5.2,-3.1,10.4,6.2,1.4):g.rect(-5.2,-3.1,10.4,6.2); g.fill();
-  g.strokeStyle="#cfc4ab"; g.lineWidth=0.7;
-  g.beginPath(); g.moveTo(-5.2,-3.1); g.lineTo(0,0.9); g.lineTo(5.2,-3.1); g.stroke();
-  g.strokeStyle="#c0392b"; g.lineWidth=1.5;                    // the wax seal ribbon
-  g.beginPath(); g.moveTo(0,-3.1); g.lineTo(0,3.1); g.stroke();
-  g.restore();
-  /* talons gripping it */
-  g.strokeStyle="#e0a24e"; g.lineWidth=1.3; g.lineCap="round";
-  g.beginPath(); g.moveTo(-2.2,4.4); g.lineTo(-1.6,6.4); g.moveTo(2.0,4.4); g.lineTo(1.4,6.4); g.stroke();
-
-  for(const side of [-1,1]){
-    const lift=up*side>0?up:up*0.82;
-    g.save();
-    g.translate(0,-1.5);
-    g.rotate(-lift*0.95*side*0.6-(side<0?0.15:-0.15));
-    const wg=g.createLinearGradient(0,0,-13,-9*side);
-    wg.addColorStop(0,side<0?"#ffffff":"#f2f4fa");
-    wg.addColorStop(1,side<0?"#c8d0e0":"#dde3ee");
-    g.fillStyle=wg;
-    g.beginPath();
-    g.moveTo(1,0);
-    g.quadraticCurveTo(-7,-7*side-lift*7*side,-15,-5*side-lift*9*side);
-    g.quadraticCurveTo(-9,1.5*side,-1,2.5*side);
-    g.closePath(); g.fill();
-    g.strokeStyle="rgba(150,162,186,.55)"; g.lineWidth=0.6; g.stroke();
-    g.restore();
-    if(side===-1){
-      const bg=g.createLinearGradient(0,-6,0,7);
-      bg.addColorStop(0,"#ffffff"); bg.addColorStop(0.6,"#f4f6fb"); bg.addColorStop(1,"#d2d9e6");
-      g.fillStyle=bg;
-      g.beginPath(); g.ellipse(0,0,11,6.2,0,0,6.283); g.fill();
-      g.beginPath();
-      g.moveTo(-8,-2.5); g.lineTo(-19,-4.5); g.lineTo(-19,3.5); g.lineTo(-8,2.5);
-      g.closePath(); g.fillStyle="#e6ebf4"; g.fill();
-      g.fillStyle="#ffffff";
-      g.beginPath(); g.arc(9.5,-3.4,4.4,0,6.283); g.fill();
-      g.fillStyle="#f0a24e";
-      g.beginPath(); g.moveTo(13.4,-3.6); g.lineTo(17.8,-2.4); g.lineTo(13.4,-1.1); g.closePath(); g.fill();
-      g.fillStyle="#22283a";
-      g.beginPath(); g.arc(11,-4.5,1.05,0,6.283); g.fill();
-      g.fillStyle="rgba(255,255,255,.9)";
-      g.beginPath(); g.arc(11.35,-4.85,.35,0,6.283); g.fill();
-    }
-  }
-  g.restore();
-}
-
-function startSky(){
-  ptOpen=true;
-  if(!ptRaf) ptRaf=requestAnimationFrame(skyFrame);
-}
-function stopSky(){
-  ptOpen=false;
-  if(ptRaf){ cancelAnimationFrame(ptRaf); ptRaf=null; }
-}
-
-function skyFrame(now){
-  ptRaf=ptOpen?requestAnimationFrame(skyFrame):null;
-  const cv=$("pgSky"); if(!cv||!ptOpen) return;
-  const dpr=Math.min(2,window.devicePixelRatio||1);
-  const w=cv.clientWidth, h=cv.clientHeight;
-  if(!w||!h) return;
-  if(cv.width!==Math.round(w*dpr)||cv.height!==Math.round(h*dpr)){ cv.width=Math.round(w*dpr); cv.height=Math.round(h*dpr); }
-  if(!skyClouds||skyW!==w) skySetup(w,h);
-  const g=cv.getContext("2d");
-  g.setTransform(dpr,0,0,dpr,0,0);
-  g.clearRect(0,0,w,h);
-  const t=(now||performance.now())/1000;
-
-  /* --- sky, stars, a low warm horizon --- */
-  const sky=g.createLinearGradient(0,0,0,h);
-  sky.addColorStop(0,"#080b1a"); sky.addColorStop(0.55,"#141230"); sky.addColorStop(1,"#2a1730");
-  g.fillStyle=sky; g.fillRect(0,0,w,h);
-  skyStars.forEach(st=>{
-    const a=0.25+0.55*Math.abs(Math.sin(t*0.8+st.ph));
-    g.fillStyle="rgba(255,255,255,"+a.toFixed(3)+")";
-    g.beginPath(); g.arc(st.x*w,st.y*h,st.r,0,6.283); g.fill();
-  });
-  const glow=g.createRadialGradient(w*0.5,h*1.02,0,w*0.5,h*1.02,h*0.75);
-  glow.addColorStop(0,"rgba(255,110,60,.22)"); glow.addColorStop(1,"rgba(255,110,60,0)");
-  g.fillStyle=glow; g.fillRect(0,0,w,h);
-
-  /* --- clouds at two depths --- */
-  skyClouds.forEach(c=>{
-    const x=(((c.x+t*c.sp)%1.3)+1.3)%1.3*w-w*0.15, y=c.y*h;
-    const s=c.s*Math.min(w,h)*(c.far?0.07:0.11);
-    g.fillStyle=c.far?"rgba(150,160,205,.07)":"rgba(180,170,210,.11)";
-    g.beginPath();
-    g.arc(x,y,s*0.62,0,6.283); g.arc(x+s*0.6,y+s*0.1,s*0.46,0,6.283);
-    g.arc(x-s*0.56,y+s*0.12,s*0.4,0,6.283); g.arc(x+s*0.14,y-s*0.26,s*0.42,0,6.283);
-    g.fill();
-  });
-
-  const flights=pigeonFlights();
-  const air=flights.filter(inFlight);
-  const live=$("pvLive"); if(live) live.textContent=air.length===1?"1 flying":air.length+" flying";
-
-  /* --- the two ends of every journey --- */
-  const ax=w*0.11, bx=w*0.89, baseY=h*0.80;
-  function post(x,y,label,lit){
-    g.strokeStyle=lit?"rgba(255,179,46,.85)":"rgba(190,198,230,.45)";
-    g.lineWidth=1.6; g.lineCap="round";
-    g.beginPath(); g.moveTo(x,y); g.lineTo(x,y-14); g.stroke();
-    g.beginPath(); g.arc(x,y-18,4.2,0,6.283);
-    g.fillStyle=lit?"rgba(255,179,46,.95)":"rgba(190,198,230,.5)"; g.fill();
-    if(lit){
-      const gl=g.createRadialGradient(x,y-18,0,x,y-18,20);
-      gl.addColorStop(0,"rgba(255,179,46,.35)"); gl.addColorStop(1,"rgba(255,179,46,0)");
-      g.fillStyle=gl; g.beginPath(); g.arc(x,y-18,20,0,6.283); g.fill();
-    }
-    g.font="9px ui-monospace,monospace"; g.textAlign="center";
-    g.fillStyle="rgba(214,220,245,.55)";
-    g.fillText(label,x,y+13);
-  }
-  post(ax,baseY,"HERE",air.length>0);
-  post(bx,baseY,"THEM",air.some(r=>pigeonProgress(r)>0.82));
-
-  if(!air.length){
-    g.font="11px ui-monospace,monospace"; g.textAlign="center";
-    g.fillStyle="rgba(214,220,245,.32)";
-    g.fillText("no birds in the air",w*0.5,h*0.52);
-  }
-
-  /* --- one arc per flight --- */
-  air.slice(0,4).forEach((r,i)=>{
-    const lane=(air.length>1?(i/(air.length-1)-0.5):0);
-    const topY=h*(0.30+lane*0.16);
-    const cx=(ax+bx)/2, cy=topY-h*0.10;
-    const pr=pigeonProgress(r);
-    const mine=!!r.mine;
-    const P=(u)=>{                                   // quadratic bezier along the route
-      const m=1-u;
-      return {x:m*m*ax+2*m*u*cx+u*u*bx, y:m*m*baseY+2*m*u*cy+u*u*baseY};
-    };
-    /* the route: travelled solid, remaining faint */
-    g.lineWidth=1.5; g.setLineDash([5,6]); g.lineDashOffset=-t*14;
-    g.strokeStyle="rgba(160,172,215,.22)";
-    g.beginPath();
-    for(let u=0;u<=1.0001;u+=0.02){ const p=P(u); u?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y); }
-    g.stroke(); g.setLineDash([]);
-    g.lineWidth=2.2;
-    const trail=g.createLinearGradient(ax,0,bx,0);
-    trail.addColorStop(0,"rgba(255,90,45,.05)");
-    trail.addColorStop(1,mine?"rgba(255,179,46,.75)":"rgba(143,214,255,.75)");
-    g.strokeStyle=trail;
-    g.beginPath();
-    for(let u=0;u<=pr+0.0001;u+=0.02){ const p=P(u); u?g.lineTo(p.x,p.y):g.moveTo(p.x,p.y); }
-    g.stroke();
-
-    /* distance ticks, counting down what is left */
-    if(i===0){
-      g.font="8px ui-monospace,monospace"; g.textAlign="center";
-      for(let k=1;k<=3;k++){
-        const u=k/4, p=P(u);
-        g.fillStyle="rgba(160,172,215,.30)";
-        g.beginPath(); g.arc(p.x,p.y,1.6,0,6.283); g.fill();
-        g.fillStyle="rgba(160,172,215,.34)";
-        g.fillText(Math.round((r.dist||0)*(1-u))+"km",p.x,p.y-8);
-      }
-    }
-
-    /* the bird, angled along its own path */
-    const p=P(pr), p2=P(Math.min(1,pr+0.012));
-    const ang=Math.atan2(p2.y-p.y,p2.x-p.x);
-    const flap=t*11+i*1.7;
-    const sc=Math.min(1.25,Math.max(0.62,w/380));
-    drawPigeon(g,p.x,p.y,ang,flap,sc);
-
-    /* the countdown, riding just behind it */
-    const left=Math.max(0,(r.eta||0)-Date.now());
-    g.font="600 10px ui-monospace,monospace"; g.textAlign="center";
-    g.fillStyle=mine?"rgba(255,201,128,.95)":"rgba(170,222,255,.95)";
-    g.fillText(fmtClock(left),p.x,p.y-20*sc);
-  });
-
-  /* --- feathers from a bird that just left --- */
-  for(let i=takeoffs.length-1;i>=0;i--){
-    const k=takeoffs[i]; k.t+=0.016;
-    if(k.t>1.4){ takeoffs.splice(i,1); continue; }
-    for(let n=0;n<k.n;n++){
-      const a=(n/k.n)*6.283+k.t*1.2;
-      const d=k.t*46+6;
-      const x=ax+Math.cos(a)*d, y=baseY-18+Math.sin(a)*d*0.55+k.t*k.t*22;
-      g.globalAlpha=Math.max(0,1-k.t/1.4)*0.7;
-      g.fillStyle="rgba(225,232,255,.9)";
-      g.save(); g.translate(x,y); g.rotate(a+k.t*2);
-      g.beginPath(); g.ellipse(0,0,3.1,1.1,0,0,6.283); g.fill();
-      g.restore();
-      g.globalAlpha=1;
-    }
-  }
-}
-/* One clock drives every countdown on screen - and, more importantly, does the
-   landing itself. Each bird also has its own setTimeout, but a timer is a weak
-   promise: a backgrounded tab throttles it to a crawl and a reload loses it
-   outright. The arrival time is an absolute stamp, so the honest test is simply
-   "is it due yet", asked once a second against the clock. */
-setInterval(()=>{
-  if(!hist.size) return;
-  const now=Date.now();
-  for(const r of hist.values()){
-    if(r.pigeon&&!r.pgLanded&&!r.deleted&&(r.eta||0)<=now) landPigeon(r.id);
-  }
-  paintTracker();
-},1000);
-
-/* ---------------------------------------------------------------------------
-   WAITING ROOM
-   ---------------------------------------------------------------------------
-   Opening a room no longer drops you straight into the conversation. You land in
-   a lobby that shows who is actually in the room, and you choose who to sit down
-   with. The room itself is live the whole time - relays connect, the mailbox is
-   collected, history is unwrapped and messages arrive in the background - so
-   nothing is lost while you are looking at this screen, and the button carries a
-   count of anything that came in while you decided.
-
-   Whoever arrives first has nobody to tap, so "Open the room" is always there.
-   --------------------------------------------------------------------------- */
-let inLobby=false, lobbyUnread=0;
-
-function openLobby(){
-  inLobby=true;
-  $("lbRoom").textContent=roomLabel||"this line";
-  showTab("chat");
-  paintLobby();
-}
-function openChatView(){
-  inLobby=false;
-  lobbyUnread=0;
-  refreshHeader();
-  showTab("chat");
-}
-/* tapping a person: the conversation is the room's, and their name rides the header */
-function joinWith(id,name){
-  focusPeer=id||null;
-  if(name) toast("Joined "+name);
-  openChatView();
-}
-function lobbyBump(){
-  if(!inLobby) return;
-  lobbyUnread++;
-  const b=$("lbUnread");
-  if(b){ b.hidden=false; b.textContent=lobbyUnread>99?"99+":String(lobbyUnread); }
-}
-function lobbyAvatar(id,name){
-  const a=document.createElement("div"); a.className="lb-ava";
-  const s=document.createElement("span"); s.textContent=(name||"?").trim().charAt(0).toUpperCase()||"?";
-  a.appendChild(s); a.appendChild(document.createElement("i"));
-  avatarCss(a,id?(peerAvatars.get(id)||null):myAvatar);
-  return a;
-}
-function lobbyRow({id,name,sub,here,mine,onpick}){
-  const b=document.createElement("button");
-  b.className="lb-person"+(here?" here":"");
-  b.appendChild(lobbyAvatar(mine?null:id,name));
-  const who=document.createElement("div"); who.className="lb-who";
-  const nb=document.createElement("b"); nb.textContent=name||"Peer";
-  const sm=document.createElement("small"); sm.textContent=sub||"";
-  who.appendChild(nb); who.appendChild(sm); b.appendChild(who);
-  if(onpick){
-    const go=document.createElement("span"); go.className="lb-go";
-    go.innerHTML='<span>Join chat</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>';
-    b.appendChild(go);
-    b.addEventListener("click",onpick);
-  }else{
-    b.style.cursor="default";
-  }
-  return b;
-}
-function paintLobby(){
-  if(!inLobby) return;
-  const list=$("lbList"); if(!list) return;
-  const live=readyLinks().length;
-  const rel=$("lbRelay"), relTxt=$("lbRelayTxt");
-  if(rel){ rel.classList.toggle("live",live>0); }
-  if(relTxt) relTxt.textContent=live?(live+" of "+links.length+" relays"):"connecting";
-
-  list.innerHTML="";
-  /* us, first, so the room always has at least one face in it */
-  list.appendChild(lobbyRow({name:(me.name||"You")+" (you)",mine:true,here:true,
-    sub:live?"Connected · waiting here":"Connecting…"}));
-
-  const here=[...peers.entries()];
-  here.forEach(([id,p])=>{
-    list.appendChild(lobbyRow({id,name:p.name||"Peer",here:true,
-      sub:p.lastLive?"In the room now":"Announced by the relay",
-      onpick:()=>joinWith(id,p.name)}));
-  });
-
-  /* the handful of people the room has seen lately, not everyone who ever was */
-  for(const[id,v]of lastSeenMap){
-    if(peers.has(id)) continue;
-    list.appendChild(lobbyRow({id,name:v.name||"Peer",here:false,
-      sub:"Last seen "+agoText(v.at),
-      onpick:()=>joinWith(id,v.name)}));
-  }
-
-  if(!here.length){
-    const e=document.createElement("div"); e.className="lb-empty";
-    e.innerHTML='<div class="lb-pulse"></div><b>Nobody else is here yet</b>'+
-      'Share the room and secret with your person and their name appears here the moment they arrive. '+
-      'You can open the room now and write anyway — anything you send waits for them.';
-    list.appendChild(e);
-  }
-}
-
 async function start(){
   const name=$("name").value.trim()||"Anon";
   const room=$("room").value.trim();
@@ -9363,20 +7360,14 @@ async function start(){
   $("attachBtn").disabled=false;
   $("gifBtn").disabled=false;
   $("emojiBtn").disabled=false;
-  $("pigeonBtn").disabled=false;
   composerLive=true; toggleSend();      // mic becomes available immediately
-  /* The room is live from this moment either way - the relays are connecting, the
-     mailbox is being collected and history is being unwrapped. The waiting room
-     only decides which VIEW you are looking at while that happens. */
+  /* Straight into the conversation, before a single byte has crossed the
+     network. Deriving the key, reaching the relays and unwrapping history all
+     happen behind this screen - none of them gates it. You can type into the
+     composer while the handshake is still running; anything written before a
+     relay answers goes to the outbox and leaves the moment one does. */
   roomOpen=true;
-  $("tabbar").hidden=false;
-  $("tabbar").classList.add("on");
-  /* Straight into the conversation. The waiting room used to be the landing
-     screen, and it hid the very thing it was reporting on: the room is live
-     from the moment the key is derived, so messages were arriving and piling up
-     behind an "Open the room" button while it looked like nothing was syncing.
-     It still exists, on demand, from the menu - it is just not in the way. */
-  openChatView();
+  $("chat").classList.add("on");
   setState("unlocking\u2026",false,"warn");
 
   const derived=await deriveBoth(secret,room);
@@ -9407,7 +7398,6 @@ async function start(){
   if(wantEmail) sendNotify(room,secret,name);
 
   await histReady;
-  Moments.begin();                      // unlock the moments vault for this room
 }
 
 function leave(){
@@ -9447,34 +7437,6 @@ function hydrate(){
 
 /* ---------- wiring ---------- */
 $("enter").addEventListener("click",start);
-$("lbOpen").addEventListener("click",()=>openChatView());
-$("lbLeave").addEventListener("click",leave);
-$("lobbyBtn").addEventListener("click",()=>{ closeMenu(); openLobby(); });
-
-/* ---- carrier pigeon ---- */
-$("pigeonBtn").addEventListener("click",togglePigeon);
-$("pgDist").addEventListener("input",paintPigeonDist);
-$("pgSend").addEventListener("click",sendPigeon);
-$("pgText").addEventListener("keydown",e=>{
-  if(e.key==="Enter"&&(e.metaKey||e.ctrlKey)){ e.preventDefault(); sendPigeon(); }
-});
-$("trackBtn").addEventListener("click",()=>{ closeMenu(); showTab("pigeon"); });
-document.querySelectorAll(".tabbar .tab").forEach(b=>{
-  b.addEventListener("click",()=>showTab(b.dataset.tab));
-});
-
-/* ---- moments ---- */
-$("moFab").addEventListener("click",()=>Moments.openSheet());
-$("moClose").addEventListener("click",()=>Moments.closeSheet());
-$("moSheet").addEventListener("click",e=>{ if(e.target.id==="moSheet") Moments.closeSheet(); });
-$("moPick").addEventListener("click",()=>$("moFile").click());
-$("moPrev").addEventListener("click",e=>{ if(e.target.closest("#moPick")) $("moFile").click(); });
-$("moFile").addEventListener("change",e=>{
-  const f=e.target.files[0]; e.target.value="";
-  if(f) Moments.chose(f);
-});
-$("moShare").addEventListener("click",()=>Moments.share());
-
 $("advBtn").addEventListener("click",()=>{ $("adv").classList.toggle("open"); $("advBtn").textContent=$("adv").classList.contains("open")?"\u2013 advanced":"+ advanced"; });
 /* ---------- profile photo ----------
    Kept on this device (and re-sent to the other side on connect) so it survives
@@ -9500,7 +7462,6 @@ function avatarCss(el,url){
 function paintMyAvatar(){ avatarCss($("meAva"),myAvatar); }
 function paintPeerAvatar(){
   let url=null;
-  if(focusPeer&&peerAvatars.has(focusPeer)){ avatarCss($("barAva"),peerAvatars.get(focusPeer)||null); return; }
   if(peers.size===1){ const id=[...peers.keys()][0]; url=peerAvatars.get(id)||null; }
   else { const ls=lastSeenLine(); if(ls&&ls.id) url=peerAvatars.get(ls.id)||null; }
   avatarCss($("barAva"),url);
@@ -9552,7 +7513,9 @@ function currentTheme(){
   try{ return localStorage.getItem(THEME_KEY)||"meridian"; }catch(e){ return "meridian"; }
 }
 const MODE_KEY="sl.mode";
-function currentMode(){ try{ return localStorage.getItem(MODE_KEY)||"light"; }catch(e){ return "light"; } }
+/* Dark by default - this is a chat you open in bed. The Light/Dark switch is
+   still there, and a choice already saved on this device still wins. */
+function currentMode(){ try{ return localStorage.getItem(MODE_KEY)||"dark"; }catch(e){ return "dark"; } }
 /* One switch re-skins whichever palette is active: every theme defines a light
    set and a dark set, and this flips between them. */
 function applyMode(mode,save){
@@ -9870,7 +7833,6 @@ $("menu").addEventListener("click",()=>setTimeout(closeMenu,0));
 document.addEventListener("keydown",e=>{
   if(e.key!=="Escape") return;
   closeMenu();
-  if(activeTab!=="chat") showTab("chat");
 });
 
 /* ---------- calls ---------- */
