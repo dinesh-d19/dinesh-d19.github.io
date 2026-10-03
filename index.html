@@ -7,15 +7,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="color-scheme" content="dark">
-<title>Secure Line</title>
+<title>DuoNode</title>
 <meta name="theme-color" content="#f1f2f4">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Secure Line">
+<meta name="apple-mobile-web-app-title" content="DuoNode">
 <link rel="manifest" id="manifest">
-<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a1315'/%3E%3Cg fill='none' stroke='%23ff9d8a' stroke-width='4.5' stroke-linecap='round'%3E%3Crect x='19' y='29' width='26' height='19' rx='4'/%3E%3Cpath d='M25 29v-6a7 7 0 0 1 14 0v6'/%3E%3C/g%3E%3C/svg%3E">
-<link rel="apple-touch-icon" id="touchicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a1315'/%3E%3Cg fill='none' stroke='%23ff9d8a' stroke-width='4.5' stroke-linecap='round'%3E%3Crect x='19' y='29' width='26' height='19' rx='4'/%3E%3Cpath d='M25 29v-6a7 7 0 0 1 14 0v6'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='t' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231b2a33'/%3E%3Cstop offset='1' stop-color='%230a1218'/%3E%3C/linearGradient%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='46.5' y1='17.5' x2='17.5' y2='46.5'%3E%3Cstop offset='0' stop-color='%2357dbc0'/%3E%3Cstop offset='1' stop-color='%2348a3d0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='15' fill='url%28%23t%29'/%3E%3Cpath d='M46.5 17.5C27.5 17.5 36.5 46.5 17.5 46.5' fill='none' stroke='url%28%23g%29' stroke-width='6.8' stroke-linecap='round'/%3E%3Ccircle cx='46.5' cy='17.5' r='7.4' fill='%2357dbc0'/%3E%3Ccircle cx='17.5' cy='46.5' r='7.4' fill='%2348a3d0'/%3E%3C/svg%3E">
+<link rel="apple-touch-icon" id="touchicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='t' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231b2a33'/%3E%3Cstop offset='1' stop-color='%230a1218'/%3E%3C/linearGradient%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='46.5' y1='17.5' x2='17.5' y2='46.5'%3E%3Cstop offset='0' stop-color='%2357dbc0'/%3E%3Cstop offset='1' stop-color='%2348a3d0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='15' fill='url%28%23t%29'/%3E%3Cpath d='M46.5 17.5C27.5 17.5 36.5 46.5 17.5 46.5' fill='none' stroke='url%28%23g%29' stroke-width='6.8' stroke-linecap='round'/%3E%3Ccircle cx='46.5' cy='17.5' r='7.4' fill='%2357dbc0'/%3E%3Ccircle cx='17.5' cy='46.5' r='7.4' fill='%2348a3d0'/%3E%3C/svg%3E">
 
 <!-- Webfonts are a bonus, never a blocker. The page paints immediately using the
      local fallbacks in --display/--body/--mono below; Fraunces, Inter and Space
@@ -815,12 +815,17 @@
   }
   .crest{position:relative;width:60px;height:60px;margin-bottom:20px}
   .crest-ring{position:absolute;inset:-5px;border-radius:20px;background:conic-gradient(from 120deg,var(--teal),var(--gold),var(--violet),var(--teal));opacity:.5;filter:blur(6px);animation:spin 9s linear infinite}
-  .lock{
+  .logo{
+    /* the two nodes: bright accent and the theme's second colour in the dark;
+       in light mode the second colour is too pale to hold on white, so both
+       ends move to the accent's own deeper shades */
+    --mark-a:var(--teal-2); --mark-b:var(--violet);
     position:relative;width:60px;height:60px;border-radius:17px;display:grid;place-items:center;
     background:radial-gradient(120% 120% at 30% 20%,rgba(var(--accent-rgb),.2),rgba(238,202,143,.08)),var(--surface);
     border:1px solid var(--hair);box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
   }
-  .lock svg{width:27px;height:27px}
+  .logo svg{width:40px;height:40px}
+  html:not([data-mode="dark"]) .logo{--mark-a:var(--teal); --mark-b:var(--teal-deep)}
   .eyebrow{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--teal-deep);margin:0 0 9px}
   .eyebrow i{width:6px;height:6px;border-radius:50%;background:var(--teal);box-shadow:0 0 8px var(--teal)}
   h1{margin:0 0 8px;font-family:var(--display);font-size:29px;letter-spacing:-.02em;font-weight:600;line-height:1.05}
@@ -1289,6 +1294,8 @@
   /* written while offline and still sitting in the outbox: an hourglass, not a
      tick, breathing gently so it reads as "working on it" rather than "failed" */
   .tick.queued{letter-spacing:0;opacity:.75;animation:tickwait 1.8s ease-in-out infinite}
+  /* the mesh is split - they are there, but no relay carries both of us */
+  .relinking{color:var(--gold);animation:tickwait 1.6s ease-in-out infinite}
   @keyframes tickwait{0%,100%{opacity:.45}50%{opacity:.95}}
   /* read receipt: a deliberately different hue from the bubble so the second
      tick is unmistakable at a glance */
@@ -1470,15 +1477,19 @@
     <div class="card">
       <div class="crest">
         <span class="crest-ring"></span>
-        <div class="lock">
-          <svg viewBox="0 0 24 24" fill="none" stroke="url(#g)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-            <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#a99bf0"/><stop offset="1" stop-color="#ffd479"/></linearGradient></defs>
-            <rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>
+        <div class="logo">
+          <!-- two people, one line between them. Coloured from the active theme,
+               so it follows every palette and both light and dark. -->
+          <svg viewBox="0 0 64 64" aria-hidden="true">
+            <defs><linearGradient id="dnMark" gradientUnits="userSpaceOnUse" x1="46.5" y1="17.5" x2="17.5" y2="46.5"><stop offset="0" style="stop-color:var(--mark-a)"/><stop offset="1" style="stop-color:var(--mark-b)"/></linearGradient></defs>
+            <path d="M46.5 17.5C27.5 17.5 36.5 46.5 17.5 46.5" fill="none" stroke="url(#dnMark)" stroke-width="6.8" stroke-linecap="round"/>
+            <circle cx="46.5" cy="17.5" r="7.4" style="fill:var(--mark-a)"/>
+            <circle cx="17.5" cy="46.5" r="7.4" style="fill:var(--mark-b)"/>
           </svg>
         </div>
       </div>
       <p class="eyebrow"><i></i> Just the two of us</p>
-      <h1>Secure <span>Line</span></h1>
+      <h1>Duo<span>Node</span></h1>
       <p class="sub">A quiet little line for two. Share one room and one secret with your person, and everything between you stays encrypted end to end.</p>
 
       <div class="field">
@@ -1877,7 +1888,7 @@ function ntfyPing(text){
     if(ac) setTimeout(()=>{ try{ ac.abort(); }catch(e){} },8000);
     fetch("https://ntfy.sh/"+encodeURIComponent(NTFY.topic),{
       method:"POST",
-      headers:{Title:"Secure Line",Priority:"high",Tags:"green_circle"},
+      headers:{Title:"DuoNode",Priority:"high",Tags:"green_circle"},
       body:text,
       keepalive:true,
       signal:ac?ac.signal:undefined
@@ -2888,6 +2899,12 @@ function retryUndelivered(){
   if(!anyLink()) return;
   const pend=undeliveredMine();
   if(!pend.length) return;
+  /* We hold a relay, we have sent these, and nothing has come back. Whatever
+     the dot says, something between us is not joined up - so rebuild the mesh
+     before trying again. This is the backstop that needs no cooperation from
+     the other side: it works even when the split is total and the two phones
+     cannot exchange so much as a heartbeat to discover each other. */
+  meshRepair("messages not being acknowledged");
   syncMailbox();                       // re-park, including on any newly-up relay
   pend.slice(-6).forEach((r,i)=>{
     if((r.rtry||0)>=RESEND_MAX) return;
@@ -2969,7 +2986,10 @@ function publishAck(obj){
       try{
         l.client.publish(topic,body,{qos:1},err=>{
           left--;
-          if(!err){ noteRtt(Date.now()-t0); finish(true); }
+          /* Only the FIRST relay home counts. Sampling every relay meant the
+             slowest one in the mesh set the pace, and one distant broker could
+             talk the whole app into 12 KB chunks on a perfectly good link. */
+          if(!err){ if(!settled) noteRtt(Date.now()-t0); finish(true); }
           else if(left<=0) finish(false);
         });
       }catch(e){ left--; if(left<=0) finish(false); }
@@ -2995,9 +3015,17 @@ function publishAck(obj){
 const BROKERS=[
   "wss://broker.emqx.io:8084/mqtt",
   "wss://broker.hivemq.com:8884/mqtt",
-  "wss://test.mosquitto.org:8081/mqtt"
+  "wss://test.mosquitto.org:8081/mqtt",
+  /* A fourth, deliberately on different infrastructure. The mesh only works if
+     the two phones have a relay IN COMMON, and the odds of that go up with
+     every independent endpoint - especially when the thing blocking one of them
+     is a carrier or a café firewall rather than the broker being down. */
+  "wss://broker-cn.emqx.io:8084/mqtt"
 ];
-const RETRY_MIN=2500, RETRY_MAX=30000;
+/* Thirty seconds between retries is a long time to be one relay short, and
+   being one relay short is exactly how two phones end up with no relay in
+   common. Fifteen keeps a throttled broker coming back quickly. */
+const RETRY_MIN=2500, RETRY_MAX=15000;
 let links=[], reviveTimer=null, upTimer=null, meshNoted=false;
 
 function hostOf(u){ try{ return new URL(u).hostname.replace(/^broker\./,""); }catch(e){ return "relay"; } }
@@ -3156,6 +3184,7 @@ async function onPacket(t,payload,url){
   if(m.from===me.id) return;                                              // ignore own echo
   if(!pkFresh(m.pk)) return;                                              // same packet, second relay
   const known=peers.has(m.from);
+  if(m.rl) notePeerRelays(m.from,m.rl);
   seen(m.from,m.name);
   if(m.t==="msg"){
     hidePeerTyping();
@@ -3245,13 +3274,119 @@ let presenceStarted=false, annTimer=null;
    Three relays hold three opinions and they are merged, never overwritten - one
    relay losing us must not mark us absent on the other two. */
 const linkPresence=new Map();
+/* A retained record is a relay repeating something it was told once. A peer who
+   is really there overwrites it every 60 seconds, so one older than three and a
+   half of those intervals is not evidence of anything - it is the last thing
+   they said before they lost that relay.
+
+   This is why a peer could show as "online" indefinitely while nothing crossed:
+   peerOnline() believed any record flagged on, and sweep() will not remove a
+   peer while a relay still vouches for them, so one frozen record pinned them
+   there for the full twelve hours of PR_MAX_AGE. Freshness is checked HERE, at
+   read time, because nothing arrives to re-evaluate a record that has stopped
+   being republished. */
+const PR_FRESH=210000;
 function peerOnline(id){
   const byLink=linkPresence.get(id); if(!byLink) return false;
-  for(const v of byLink.values()) if(v.on) return true;
+  const now=Date.now();
+  for(const v of byLink.values()) if(v.on&&now-(v.at||0)<PR_FRESH) return true;
   return false;
 }
 function forgetLinkPresence(url){
   for(const byLink of linkPresence.values()) byLink.delete(url);
+}
+
+/* ---------------------------------------------------------------------------
+   KEEPING THE MESH JOINED
+   ---------------------------------------------------------------------------
+   The mesh works on one condition the code never actually checked: that the two
+   phones share a relay. Each side connects to whichever brokers will have it,
+   and "am I online" was answered with "do I hold any socket at all" - so two
+   phones, one on emqx and one on hivemq, both showed a green dot, both showed
+   the other as present, and not one message could ever cross between them.
+
+   So every heartbeat now carries the list of relays it was sent over (inside
+   the encryption, like everything else). That turns the overlap from something
+   assumed into something known, which means it can be reported honestly and
+   repaired on purpose. */
+const peerRelays=new Map();                       // peer id -> {hosts, at}
+function myHosts(){ return readyLinks().map(l=>l.host); }
+function notePeerRelays(id,rl){
+  if(!id||id===me.id||!Array.isArray(rl)) return;
+  peerRelays.set(id,{hosts:rl.filter(h=>typeof h==="string").slice(0,8),at:Date.now()});
+}
+/* null = we have not heard their list yet, so we cannot judge. [] = we have,
+   and there is nothing in common, which is the broken case. */
+function sharedWith(id){
+  const pr=peerRelays.get(id);
+  if(!pr||Date.now()-pr.at>PR_FRESH) return null;
+  const mine=new Set(myHosts());
+  return pr.hosts.filter(h=>mine.has(h));
+}
+/* The relay lists are only as current as the last packet that carried one -
+   which means that at the exact moment a split forms, both sides are still
+   holding a list that says they overlap. A split cannot announce itself.
+
+   So the lists are the second line of evidence, not the first. The first needs
+   no cooperation at all: SILENCE. A peer who is really reachable sends a
+   heartbeat every 12 seconds, so when one we believe is present has sent
+   nothing for 30, something between us has come apart - and that is true
+   whether the cause is a split mesh, a throttled broker or a dead subscription.
+
+   Two thresholds on purpose. Repairing is silent and cheap, so it starts early.
+   Telling the user their line is broken is neither, so it waits until either
+   the overlap is provably empty or the silence is too long to explain away by a
+   backgrounded tab throttling its own timers. */
+const HB_QUIET_REPAIR=30000;
+const HB_QUIET_REPORT=75000;
+function quietFor(id){
+  const p=peers.get(id);
+  if(!p||!p.lastLive) return 0;
+  return Date.now()-p.lastLive;
+}
+function provablySplit(id){
+  const sh=sharedWith(id);
+  return !!(sh&&!sh.length);
+}
+/* worth repairing quietly */
+function meshSuspect(){
+  for(const id of peers.keys())
+    if(provablySplit(id)||quietFor(id)>HB_QUIET_REPAIR) return id;
+  return null;
+}
+/* worth telling the user about */
+function meshSplit(){
+  for(const id of peers.keys())
+    if(provablySplit(id)||quietFor(id)>HB_QUIET_REPORT) return id;
+  return null;
+}
+/* Open everything that is not open, right now, ignoring the backoff. Used when
+   we can prove something is wrong - either no relay in common with someone we
+   can see, or our own messages are not being acknowledged. A relay URL is only
+   ever taken from BROKERS, never from a packet. */
+let lastRepair=0;
+function meshRepair(why){
+  const now=Date.now();
+  if(now-lastRepair<8000) return;                 // this is a nudge, not a drum
+  lastRepair=now;
+  let woke=0;
+  links.forEach(l=>{
+    if(l.ready&&l.client) return;
+    clearTimeout(l.timer); l.timer=null; l.tries=0;
+    if(!l.client){ woke++; openLink(l); }
+  });
+  /* A peer on a relay we are not even carrying: add it and dial it. */
+  for(const[id,pr]of peerRelays){
+    if(!peers.has(id)) continue;
+    pr.hosts.forEach(h=>{
+      if(links.some(l=>l.host===h)) return;
+      const url=BROKERS.find(u=>hostOf(u)===h);
+      if(!url) return;                            // not one of ours - ignore it
+      const l={url,host:h,client:null,ready:false,tries:0,timer:null};
+      links.push(l); woke++; openLink(l);
+    });
+  }
+  return woke;
 }
 
 /* Our "gone" record, built once at connect time: a will has to travel inside the
@@ -3266,7 +3401,7 @@ function willFor(){
   return {topic:prTopic+me.id,payload:byeBlob,qos:1,retain:true};
 }
 async function presenceBlob(on){
-  try{ return await encryptObj({t:"pr",on:on?1:0,from:me.id,name:me.name,at:Date.now()}); }
+  try{ return await encryptObj({t:"pr",on:on?1:0,from:me.id,name:me.name,at:Date.now(),rl:myHosts()}); }
   catch(e){ return null; }
 }
 async function publishPresenceOn(l,on){          // announce on ONE relay, as it comes up
@@ -3292,6 +3427,7 @@ function onPresence(slot,m,url){
   if(!id||id===me.id) return;
   let byLink=linkPresence.get(id);
   if(!byLink){ byLink=new Map(); linkPresence.set(id,byLink); }
+  if(m.rl) notePeerRelays(id,m.rl);
   const on=!!m.on && !(m.at && Date.now()-m.at>PR_MAX_AGE);
   byLink.set(url||"?",{on,at:m.at||Date.now()});
   if(on){
@@ -3306,13 +3442,13 @@ function onPresence(slot,m,url){
 }
 
 function announce(){
-  publish({t:"join",from:me.id,name:me.name});
+  publish({t:"join",from:me.id,name:me.name,rl:myHosts()});
   publishPresence(true);
-  setTimeout(()=>publish({t:"here",from:me.id,name:me.name}),700);
-  setTimeout(()=>publish({t:"here",from:me.id,name:me.name}),2100);
+  setTimeout(()=>publish({t:"here",from:me.id,name:me.name,rl:myHosts()}),700);
+  setTimeout(()=>publish({t:"here",from:me.id,name:me.name,rl:myHosts()}),2100);
 }
 function announceSoon(){ clearTimeout(annTimer); annTimer=setTimeout(announce,250); }
-function pingNow(){ if(anyLink()) publish({t:"ping",from:me.id,name:me.name}); }
+function pingNow(){ if(anyLink()) publish({t:"ping",from:me.id,name:me.name,rl:myHosts()}); }
 /* Setting up the timers and announcing ourselves are two different jobs. They
    used to be one function with a run-once guard on top, so every later call -
    from onLinkUp, from the 12s timer, from the visibility handler - hit the guard
@@ -3326,6 +3462,16 @@ function startPresence(){
      four heartbeats have to be missed before anyone is called away. */
   setInterval(pingNow,slowNet()?15000:12000);
   setInterval(sweep,2000);
+  /* sweep() only looks at peers it already knows. This also catches the case
+     where our own messages are going unacknowledged while nobody is listed as
+     present at all - the total split, where the two phones cannot exchange so
+     much as a heartbeat and neither can ever learn the other is there. */
+  setInterval(()=>{
+    if(!anyLink()||!roomOpen) return;
+    if(meshSuspect()) return meshRepair("peer has gone quiet");
+    const now=Date.now();
+    if(undeliveredMine().some(r=>now-(r.ts||0)>12000)) meshRepair("nothing is being acknowledged");
+  },10000);
   /* re-stamp the retained record: a relay that restarted lost its retained store
      and would otherwise show us as absent until we next happened to speak */
   setInterval(()=>{ if(anyLink()) publishPresence(true); },60000);
@@ -3385,6 +3531,9 @@ function sweep(){
       changed=true;
     }
   }
+  /* Someone is here and we share no relay with them: nothing either of us
+     sends can reach the other, however healthy both ends look. Dial out. */
+  if(meshSuspect()){ meshRepair("no sign of the other side"); changed=true; }
   /* even with nobody here, refresh every ~20s so "last seen 2 mins ago" keeps ticking */
   if(changed || (peers.size===0 && now-lastPresenceTick>5000)){ lastPresenceTick=now; refreshPresence(); }
 }
@@ -3477,7 +3626,7 @@ function headerName(){
   if(peers.size>1) return peers.size+" people";
   const ls=lastSeenLine();
   if(ls&&ls.name) return ls.name;      // we know who they are - keep their name
-  return roomLabel||"Secure Line";     // nobody has ever joined here: show the room
+  return roomLabel||"DuoNode";     // nobody has ever joined here: show the room
 }
 function refreshHeader(){
   const nm=headerName();
@@ -3495,13 +3644,23 @@ function refreshPresence(){
     if(ls) el.innerHTML=`last seen ${escapeHtml(seenStamp(ls.at))}`;
     else el.innerHTML=`waiting for them to join`;
   }
-  else if(n===1){ el.innerHTML=`<span class="on-now">online</span>`; }
+  else if(n===1){
+    /* "online" has to mean "can reach them". Saying it while the mesh is split
+       is the single most misleading thing this app did - you would sit and
+       watch one tick, with every indicator insisting it had worked. */
+    const split=meshSplit();
+    if(split) el.innerHTML=`<span class="relinking">reconnecting to their relay\u2026</span>`;
+    else el.innerHTML=`<span class="on-now">online</span>`;
+  }
   else el.innerHTML=`${n} people here`;
 }
 
 /* ---------- ui basics ---------- */
 function setState(txt,live,cls){
-  const dot=$("dot"); dot.className="status-dot"+(live?" live":cls==="warn"?" warn":"");
+  const dot=$("dot");
+  /* a split mesh is not a healthy green dot, whatever the socket count says */
+  if(live&&meshSplit()) live=false, cls="warn", txt="reconnecting\u2026";
+  dot.className="status-dot"+(live?" live":cls==="warn"?" warn":"");
   if(!live) $("barState").innerHTML=escapeHtml(txt);
   else refreshPresence();
 }
@@ -4933,7 +5092,7 @@ async function sendNotify(room,secret,name){
   const withKey=NOTIFY.includeSecret;
   const link=withKey ? inviteLink(room,secret) : (location.origin+location.pathname);
   const lines=[
-    `${name} just opened a Secure Line.`,
+    `${name} just opened DuoNode.`,
     ``,
     `Room: ${room}`,
     withKey ? `Secret: ${secret}` : `Secret: (already shared privately)`,
@@ -4945,8 +5104,8 @@ async function sendNotify(room,secret,name){
   ];
   const body={
     access_key:NOTIFY.accessKey,
-    from_name:"Secure Line",
-    subject:`${name} opened a Secure Line`,
+    from_name:"DuoNode",
+    subject:`${name} is on DuoNode`,
     who:name,
     room:room,
     link:link,
@@ -4983,28 +5142,39 @@ function roundRectPath(x,r,w,h,rad){ x.beginPath();
   x.lineTo(rad,h); x.quadraticCurveTo(0,h,0,h-rad);
   x.lineTo(0,rad); x.quadraticCurveTo(0,0,rad,0); x.closePath();
 }
-function makeIcon(size){
+/* The home-screen icon is drawn here rather than shipped, so this stays one file.
+   Same 64-unit geometry as the favicon's SVG, through Path2D, so the two can
+   never drift apart. A maskable icon is full-bleed - the launcher cuts its own
+   shape - with the mark pulled inside the 80% safe circle. */
+const MARK_PATH="M46.5 17.5C27.5 17.5 36.5 46.5 17.5 46.5";
+function makeIcon(size,bleed){
   try{
     const c=document.createElement("canvas");
     if(!c||!c.getContext) return "";
     c.width=c.height=size;
     const x=c.getContext("2d"); if(!x) return "";
-    roundRectPath(x,null,size,size,size*0.22);
-    const g=x.createLinearGradient(0,0,size,size);
-    g.addColorStop(0,"#271b1d"); g.addColorStop(1,"#151011");
-    x.fillStyle=g; x.fill();
-    const bw=size*0.40,bh=size*0.29,bx=(size-bw)/2,by=size*0.47;
-    x.save(); x.translate(bx,by);
-    roundRectPath(x,null,bw,bh,size*0.055);
-    x.fillStyle="#8776ea"; x.fill(); x.restore();
-    x.strokeStyle="#8776ea"; x.lineWidth=size*0.072; x.lineCap="round";
-    x.beginPath(); x.arc(size/2,by,size*0.128,Math.PI,0); x.stroke();
+    const bg=x.createLinearGradient(0,0,size,size);
+    bg.addColorStop(0,"#1b2a33"); bg.addColorStop(1,"#0a1218");
+    x.fillStyle=bg;
+    if(bleed) x.fillRect(0,0,size,size);
+    else { roundRectPath(x,null,size,size,size*0.234); x.fill(); }
+    if(typeof Path2D!=="function") return c.toDataURL("image/png");
+    x.save();
+    const k=size/64; x.scale(k,k);
+    if(bleed){ x.translate(32,32); x.scale(.86,.86); x.translate(-32,-32); }
+    const g=x.createLinearGradient(46.5,17.5,17.5,46.5);
+    g.addColorStop(0,"#57dbc0"); g.addColorStop(1,"#48a3d0");
+    x.strokeStyle=g; x.lineWidth=6.8; x.lineCap="round";
+    x.stroke(new Path2D(MARK_PATH));
+    x.fillStyle="#57dbc0"; x.beginPath(); x.arc(46.5,17.5,7.4,0,Math.PI*2); x.fill();
+    x.fillStyle="#48a3d0"; x.beginPath(); x.arc(17.5,46.5,7.4,0,Math.PI*2); x.fill();
+    x.restore();
     return c.toDataURL("image/png");
   }catch(e){ return ""; }
 }
 function installShell(){
   try{
-    const i192=makeIcon(192), i512=makeIcon(512);
+    const i192=makeIcon(192), i512=makeIcon(512), m512=makeIcon(512,true);
     if(i192){
       const fav=$("favicon"), tch=$("touchicon");
       if(fav) fav.href=i192;
@@ -5013,14 +5183,14 @@ function installShell(){
     const link=$("manifest"); if(!link||!i512) return;
     const base=location.origin+location.pathname;
     const man={
-      name:"Secure Line", short_name:"Secure Line",
+      name:"DuoNode", short_name:"DuoNode",
       description:"A private, end-to-end encrypted line for two.",
       start_url:base, scope:base, id:base,
-      display:"standalone", background_color:"#f1f2f4", theme_color:"#8776ea",
+      display:"standalone", background_color:"#0b141a", theme_color:"#0b141a",
       icons:[
         {src:i192,sizes:"192x192",type:"image/png",purpose:"any"},
         {src:i512,sizes:"512x512",type:"image/png",purpose:"any"},
-        {src:i512,sizes:"512x512",type:"image/png",purpose:"maskable"}
+        {src:m512||i512,sizes:"512x512",type:"image/png",purpose:"maskable"}
       ]
     };
     /* a blob URL is same-origin as this page, so start_url stays valid */
