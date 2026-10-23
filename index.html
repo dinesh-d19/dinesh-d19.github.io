@@ -7,7 +7,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="color-scheme" content="dark">
-<title>DuoNode</title>
+<title>Phase-locked loop - CircuitWiki</title>
 <meta name="theme-color" content="#0b141a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -519,7 +519,6 @@
   body.callmini .wrap{padding-top:56px}
 
   /* ---------- connect ---------- */
-  #gate{flex:1;min-height:0;display:flex;align-items:flex-start;justify-content:center;padding:24px 0;overflow-y:auto}
   #gate .card{margin:auto 0}
   .card{
     width:100%;max-width:452px;position:relative;
@@ -1027,52 +1026,322 @@
     font-weight:700;font-size:9.5px;border-radius:10px;padding:1px 5px;min-width:17px;text-align:center;display:none;
   }
   .fab.unread .n{display:block}
+  /* "show earlier messages" at the top of a long room */
+  .older{display:block;margin:6px auto 12px;background:var(--surface-2);border:1px solid var(--hair);color:var(--muted);
+    border-radius:999px;padding:7px 15px;font:inherit;font-size:12.5px;cursor:pointer;transition:.14s}
+  .older:hover{color:var(--teal);border-color:var(--teal-deep)}
+
+  /* ---------- the way in: an encyclopedia page ----------
+     Light and plain whatever the app's theme is, and laid over the whole
+     screen with its own scroll, so nothing about the chat shows through. */
+  #gate{position:fixed;inset:0;z-index:30;display:block;overflow-y:auto;overflow-x:hidden;padding:0;
+    background:#fff;color:#202122;color-scheme:light;-webkit-text-size-adjust:100%;
+    font:15px/1.6 -apple-system,"Segoe UI","Helvetica Neue",Arial,sans-serif}
+  #gate a{color:#36c;text-decoration:none}
+  #gate a:hover{text-decoration:underline}
+  #gate .wk-top{display:flex;align-items:center;gap:18px;padding:10px 22px;border-bottom:1px solid #eaecf0;background:#fff}
+  #gate .wk-brand{display:flex;align-items:center;gap:10px;color:#202122;flex:none}
+  #gate .wk-brand:hover{text-decoration:none}
+  #gate .wk-logo{width:40px;height:40px}
+  #gate .wk-name{display:flex;flex-direction:column;line-height:1.15}
+  #gate .wk-name b{font:400 21px/1.1 "Linux Libertine","Georgia","Times New Roman",serif;letter-spacing:.02em}
+  #gate .wk-name small{font-size:11px;color:#54595d}
+  #gate .wk-search{display:flex;flex:1;max-width:460px;margin-left:auto}
+  #gate .wk-search input{flex:1;min-width:0;border:1px solid #a2a9b1;border-right:0;border-radius:2px 0 0 2px;padding:6px 9px;font:inherit;font-size:14px;background:#fff;color:#202122}
+  #gate .wk-search input:focus{outline:none;border-color:#36c;box-shadow:inset 0 0 0 1px #36c}
+  #gate .wk-search button{border:1px solid #a2a9b1;background:#f8f9fa;color:#202122;border-radius:0 2px 2px 0;padding:0 12px;font-size:14px;font-weight:600}
+  #gate .wk-user{flex:none;font-size:14px}
+  #gate .wk-page{display:flex;max-width:1180px;margin:0 auto}
+  #gate .wk-side{flex:none;width:150px;padding:20px 8px 30px 22px;font-size:13px}
+  #gate .wk-side ul{list-style:none;margin:0 0 14px;padding:0}
+  #gate .wk-side li{padding:3px 0}
+  #gate .wk-side h4{margin:16px 0 6px;font-size:12px;font-weight:400;color:#54595d;border-bottom:1px solid #c8ccd1;padding-bottom:3px}
+  #gate .wk-main{flex:1;min-width:0;padding:14px 26px 30px;border-left:1px solid #eaecf0}
+  #gate .wk-tabs{display:flex;gap:16px;font-size:13px;border-bottom:1px solid #a2a9b1;margin-bottom:14px;padding-bottom:6px;color:#36c}
+  #gate .wk-tabs span{color:#36c}
+  #gate .wk-tabs .on{color:#202122;font-weight:600}
+  #gate .wk-tabs span.r.on{margin-left:auto}
+  #gate .wk-h1{font:400 30px/1.25 "Linux Libertine","Georgia","Times New Roman",serif;margin:0 0 2px;padding:0;border:0;color:#000;letter-spacing:0}
+  #gate .wk-from{font-size:13px;color:#54595d;margin-bottom:10px}
+  #gate .wk-hat{font-style:italic;padding-left:1.6em;margin-bottom:12px;font-size:14px}
+  #gate h2{font:400 23px/1.3 "Linux Libertine","Georgia","Times New Roman",serif;color:#000;margin:26px 0 8px;padding-bottom:3px;border-bottom:1px solid #a2a9b1;display:flex;align-items:baseline;gap:10px}
+  #gate h3{font-size:16px;font-weight:700;margin:18px 0 4px;color:#000}
+  #gate p{margin:6px 0 12px}
+  #gate ul,#gate ol{margin:4px 0 12px 1.6em;padding:0}
+  #gate li{margin-bottom:4px}
+  #gate var{font-family:"Times New Roman",serif;font-style:italic;font-size:1.05em}
+  #gate .wk-edit{font:13px -apple-system,"Segoe UI",Arial,sans-serif;margin-left:auto;color:#36c}
+  #gate .wk-ref{font-size:.75em;line-height:1;vertical-align:super}
+  #gate .wk-math{margin:6px 0 12px 1.6em;font:17px "Times New Roman",serif}
+  #gate .wk-info{float:right;clear:right;width:290px;margin:0 0 14px 20px;border:1px solid #a2a9b1;background:#f8f9fa;
+    border-collapse:collapse;font-size:13px;line-height:1.45}
+  #gate .wk-info caption{font-weight:700;font-size:16px;padding:6px 4px 4px;background:#f8f9fa;border:1px solid #a2a9b1;border-bottom:0}
+  #gate .wk-info th{text-align:left;padding:4px 6px;vertical-align:top;width:42%}
+  #gate .wk-info td{padding:4px 6px;vertical-align:top}
+  #gate .wk-info .wk-img{text-align:center;padding:6px}
+  #gate .wk-info .wk-img svg{width:100%;height:auto;border:1px solid #c8ccd1}
+  #gate .wk-info .wk-cap{text-align:center;font-size:12px;color:#202122;padding:0 8px 8px}
+  #gate .wk-toc{display:inline-block;border:1px solid #a2a9b1;background:#f8f9fa;padding:7px 14px 4px 10px;margin:8px 0 6px;font-size:14px}
+  #gate .wk-toc-h{font-weight:700;text-align:center;margin-bottom:4px}
+  #gate .wk-toc-h a{font-weight:400;font-size:12px;margin-left:6px}
+  #gate .wk-toc ol{margin:0 0 4px 1.3em;padding:0}
+  #gate .wk-toc ol ol{margin:2px 0 2px 1.4em;list-style:decimal}
+  #gate .wk-toc li{margin:1px 0}
+  #gate .wk-toc.closed ol{display:none}
+  #gate .wk-tablewrap{overflow-x:auto;margin:6px 0 14px}
+  #gate .wk-table{border-collapse:collapse;background:#f8f9fa;border:1px solid #a2a9b1;font-size:14px}
+  #gate .wk-table th,#gate .wk-table td{border:1px solid #a2a9b1;padding:5px 9px;text-align:left;vertical-align:top}
+  #gate .wk-table th{background:#eaecf0}
+  #gate .wk-narrow td:first-child{font-family:Consolas,"Courier New",monospace}
+  #gate .wk-reflist{font-size:13.5px}
+  #gate .wk-cats{border:1px solid #a2a9b1;background:#f8f9fa;padding:5px 9px;font-size:13px;margin-top:22px;clear:both}
+  #gate .wk-foot{border-top:1px solid #a2a9b1;max-width:1180px;margin:10px auto 0;padding:12px 22px 36px 196px;font-size:12px;color:#54595d}
+  #gate .wk-foot p{margin:3px 0}
+  #gate .wk-hit{background:#fef6e7;outline:2px solid #fc3;border-radius:2px}
+
+  /* the contributor box - the one place on the page that does anything */
+  #gate .wk-signin{clear:both;border:1px solid #a2a9b1;border-left:4px solid #36c;background:#f8f9fa;padding:9px 12px 10px;margin:16px 0 18px;font-size:13.5px;
+    scroll-margin-top:20px}
+  #gate .wk-signin-h{display:flex;gap:8px;align-items:flex-start;line-height:1.45}
+  #gate .wk-signin-h svg{width:18px;height:18px;flex:none;margin-top:1px}
+  #gate .wk-signin-f{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:flex-end;margin-top:9px}
+  #gate .wk-signin-f label{display:flex;flex-direction:column;gap:2px;flex:1 1 130px;min-width:0}
+  #gate .wk-signin-f label span{font-size:12px;color:#54595d}
+  /* the chat styles every label and text field globally (monospace capitals,
+     dark rounded inputs); none of that belongs on this page */
+  #gate label{font:inherit;letter-spacing:normal;text-transform:none;color:inherit;margin:0}
+  #gate .wk-signin-f input[type=text],#gate .wk-signin-f input[type=password]{height:auto;min-height:0;margin:0;
+    border:1px solid #a2a9b1;border-radius:2px;padding:5px 8px;background:#fff;color:#202122;box-shadow:none;font-size:14px}
+  #gate .wk-signin-f input[type=text]:focus,#gate .wk-signin-f input[type=password]:focus{border-color:#36c;background:#fff;box-shadow:inset 0 0 0 1px #36c}
+  #gate .wk-watch input{appearance:auto;-webkit-appearance:checkbox;width:auto;height:auto;margin:0;accent-color:#36c}
+  #gate .wk-signin-f input{border:1px solid #a2a9b1;border-radius:2px;padding:5px 8px;font:inherit;font-size:14px;background:#fff;color:#202122;width:100%;box-sizing:border-box}
+  #gate .wk-signin-f input:focus{outline:none;border-color:#36c;box-shadow:inset 0 0 0 1px #36c}
+  #gate .wk-btn{flex:none;border:1px solid #36c;background:#36c;color:#fff;border-radius:2px;padding:6px 14px;font:inherit;font-size:14px;font-weight:600}
+  #gate .wk-btn:hover{background:#447ff5}
+  #gate .wk-btn:disabled{opacity:.6;cursor:default}
+  #gate .wk-watch{display:flex;align-items:center;gap:6px;margin-top:8px;font-size:12.5px;color:#54595d}
+  #gate .wk-watch[hidden]{display:none}
+  #gate .wk-signin-msg{margin-top:6px;font-size:12.5px;min-height:0;color:#54595d}
+  #gate .wk-signin-msg:empty{display:none}
+  #gate .wk-signin-msg.err{color:#d33}
+
+  @media (max-width:900px){
+    #gate .wk-side{display:none}
+    #gate .wk-main{border-left:0}
+    #gate .wk-foot{padding-left:22px}
+  }
+  @media (max-width:640px){
+    #gate{font-size:15px}
+    #gate .wk-top{flex-wrap:wrap;gap:8px 12px;padding:8px 14px}
+    #gate .wk-search{order:3;flex:1 1 100%;max-width:none}
+    #gate .wk-user{margin-left:auto}
+    #gate .wk-main{padding:10px 14px 24px}
+    #gate .wk-tabs{gap:12px;font-size:12.5px}
+    #gate .wk-tabs .r:not(.on){display:none}
+    #gate .wk-h1{font-size:26px}
+    #gate .wk-info{float:none;width:100%;margin:6px 0 14px}
+    #gate .wk-toc{display:block}
+    #gate .wk-foot{padding:12px 14px 30px}
+  }
+  @media print{ #gate{position:static;overflow:visible} #gate .wk-side,#gate .wk-top,#gate .wk-signin{display:none} }
 </style>
 </head>
 <body>
 <div class="orbs" aria-hidden="true"><span></span><span></span></div>
 <div class="wrap" id="wrap">
 
-  <!-- CONNECT -->
+  <!-- CONNECT
+       The way in looks like a page from an electronics encyclopedia. The sign-in
+       sits inside the article as a contributor box, and every [edit] link and the
+       "Log in" link at the top lead to it - which is exactly what they would do on
+       a real wiki. The ids name / room / secret / enter / notify are the app's. -->
   <section id="gate">
-    <div class="card">
-      <div class="crest">
-        <span class="crest-ring"></span>
-        <div class="logo">
-          <!-- two people, one line between them. Coloured from the active theme,
-               so it follows every palette and both light and dark. -->
-          <svg viewBox="0 0 64 64" aria-hidden="true">
-            <defs><linearGradient id="dnMark" gradientUnits="userSpaceOnUse" x1="46.5" y1="17.5" x2="17.5" y2="46.5"><stop offset="0" style="stop-color:var(--mark-a)"/><stop offset="1" style="stop-color:var(--mark-b)"/></linearGradient></defs>
-            <path d="M46.5 17.5C27.5 17.5 36.5 46.5 17.5 46.5" fill="none" stroke="url(#dnMark)" stroke-width="6.8" stroke-linecap="round"/>
-            <circle cx="46.5" cy="17.5" r="7.4" style="fill:var(--mark-a)"/>
-            <circle cx="17.5" cy="46.5" r="7.4" style="fill:var(--mark-b)"/>
-          </svg>
+    <header class="wk-top">
+      <a class="wk-brand" href="#wk-top" aria-label="CircuitWiki main page">
+        <svg class="wk-logo" viewBox="0 0 48 48" aria-hidden="true">
+          <circle cx="24" cy="24" r="21.5" fill="#f8f9fa" stroke="#72777d" stroke-width="1.6"/>
+          <path d="M6 24h8l2.4-5 4.2 10 4.2-10 4.2 10 4.2-10 2.4 5H42" fill="none" stroke="#202122" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
+          <circle cx="6" cy="24" r="2" fill="#202122"/><circle cx="42" cy="24" r="2" fill="#202122"/>
+        </svg>
+        <span class="wk-name"><b>CircuitWiki</b><small>The open electronics reference</small></span>
+      </a>
+      <form class="wk-search" id="wkSearch" role="search" autocomplete="off">
+        <input id="wkQ" type="search" placeholder="Search CircuitWiki" aria-label="Search CircuitWiki" maxlength="80">
+        <button type="submit">Search</button>
+      </form>
+      <nav class="wk-user"><a href="#" class="wk-login" data-signin>Log in</a></nav>
+    </header>
+
+    <div class="wk-page">
+      <aside class="wk-side" aria-label="Site">
+        <ul>
+          <li><a href="#" data-go="top">Main page</a></li>
+          <li><a href="#" data-go="toc">Contents</a></li>
+          <li><a href="#" data-go="random">Random article</a></li>
+          <li><a href="#" data-go="top">About CircuitWiki</a></li>
+        </ul>
+        <h4>Contribute</h4>
+        <ul>
+          <li><a href="#" data-signin>Help</a></li>
+          <li><a href="#" data-signin>Community portal</a></li>
+          <li><a href="#" data-signin>Upload file</a></li>
+        </ul>
+        <h4>Tools</h4>
+        <ul>
+          <li><a href="#" data-go="refs">What links here</a></li>
+          <li><a href="#" data-go="print">Printable version</a></li>
+          <li><a href="#" data-go="refs">Cite this page</a></li>
+        </ul>
+      </aside>
+
+      <main class="wk-main" id="wk-top">
+        <div class="wk-tabs"><span class="on">Article</span><span>Talk</span><span class="r on">Read</span><a href="#" class="r" data-signin>Edit</a><span class="r">View history</span></div>
+        <h1 class="wk-h1">Phase-locked loop</h1>
+        <div class="wk-from">From CircuitWiki, the open electronics reference</div>
+        <div class="wk-hat">"PLL" redirects here. This article is about the electronic control system. For digitally controlled variants, see <a href="#wk-types">All-digital PLL</a>.</div>
+
+        <table class="wk-info">
+          <caption>Phase-locked loop</caption>
+          <tr><td colspan="2" class="wk-img">
+            <svg viewBox="0 0 270 160" role="img" aria-label="Block diagram of a charge-pump phase-locked loop">
+              <defs><marker id="wkArr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10z" fill="#202122"/></marker></defs>
+              <rect width="270" height="160" fill="#fff"/>
+              <g font-family="Arial,sans-serif" font-size="10.5" fill="#202122" text-anchor="middle">
+                <text x="18" y="38">f<tspan font-size="7.5" dy="2">ref</tspan></text>
+                <path d="M6 48H44" stroke="#202122" stroke-width="1.6" fill="none" marker-end="url(#wkArr)"/>
+                <rect x="45" y="30" width="48" height="36" fill="#eaf3ff" stroke="#36c" stroke-width="1.4"/>
+                <text x="69" y="52">PFD</text>
+                <path d="M93 48H113" stroke="#202122" stroke-width="1.6" fill="none" marker-end="url(#wkArr)"/>
+                <rect x="114" y="30" width="56" height="36" fill="#fef6e7" stroke="#ac6600" stroke-width="1.4"/>
+                <text x="142" y="45">CP +</text><text x="142" y="58">filter</text>
+                <path d="M170 48H190" stroke="#202122" stroke-width="1.6" fill="none" marker-end="url(#wkArr)"/>
+                <rect x="191" y="30" width="44" height="36" fill="#eaf8ef" stroke="#14866d" stroke-width="1.4"/>
+                <text x="213" y="52">VCO</text>
+                <path d="M235 48H266" stroke="#202122" stroke-width="1.6" fill="none" marker-end="url(#wkArr)"/>
+                <text x="255" y="38">f<tspan font-size="7.5" dy="2">out</tspan></text>
+                <circle cx="248" cy="48" r="2.2" fill="#202122"/>
+                <path d="M248 48V124H171" stroke="#202122" stroke-width="1.6" fill="none" marker-end="url(#wkArr)"/>
+                <rect x="114" y="106" width="56" height="36" fill="#f8f9fa" stroke="#72777d" stroke-width="1.4"/>
+                <text x="142" y="128">÷ N</text>
+                <path d="M114 124H69V67" stroke="#202122" stroke-width="1.6" fill="none" marker-end="url(#wkArr)"/>
+                <text x="88" y="118" font-size="8.5" fill="#54595d">f<tspan font-size="6.5" dy="2">fb</tspan></text>
+              </g>
+            </svg>
+          </td></tr>
+          <tr><td colspan="2" class="wk-cap">Charge-pump PLL used as an integer-N frequency synthesiser: f<sub>out</sub> = N · f<sub>ref</sub></td></tr>
+          <tr><th>Type</th><td><a href="#wk-op">Feedback control system</a></td></tr>
+          <tr><th>Building blocks</th><td>Phase detector, loop filter, <a href="#wk-op">VCO</a>, frequency divider</td></tr>
+          <tr><th>First described</th><td>1932, <a href="#wk-history">Henri de Bellescize</a></td></tr>
+          <tr><th>Early ICs</th><td>NE565, CD4046</td></tr>
+          <tr><th>Variants</th><td><a href="#wk-types">Analog, digital, all-digital</a></td></tr>
+          <tr><th>Applications</th><td><a href="#wk-synth">Frequency synthesis</a>, <a href="#wk-apps">clock recovery</a>, demodulation</td></tr>
+        </table>
+
+        <p>A <b>phase-locked loop</b> (<b>PLL</b>) is a feedback control system that generates an output signal whose phase is held in a fixed relationship to the phase of a reference signal. A basic PLL contains a <a href="#wk-op">voltage-controlled oscillator</a> (VCO), a <a href="#wk-pd">phase detector</a> that compares the oscillator with the reference, and a <a href="#wk-op">loop filter</a> that turns the detector's error into a smoothed control voltage. Because frequency is the time derivative of phase, a loop that keeps the phases aligned also keeps the frequencies equal.<sup class="wk-ref"><a href="#wk-r1">[1]</a></sup></p>
+        <p>Placing a frequency divider in the feedback path makes the loop produce an exact multiple of a stable reference, which is the basis of the frequency synthesisers in radios, mobile phones and the clock generators of nearly every processor. PLLs are also used to recover clocks from serial data, demodulate FM and PM signals and keep power converters synchronised with the electrical grid.<sup class="wk-ref"><a href="#wk-r2">[2]</a></sup></p>
+
+        <div class="wk-toc" id="wk-toc">
+          <div class="wk-toc-h">Contents <a href="#" class="wk-toc-x">[hide]</a></div>
+          <ol>
+            <li><a href="#wk-history">History</a></li>
+            <li><a href="#wk-op">Operation</a>
+              <ol><li><a href="#wk-blocks">Building blocks</a></li><li><a href="#wk-lock">Acquisition and lock</a></li><li><a href="#wk-synth">Frequency synthesis</a></li></ol></li>
+            <li><a href="#wk-pd">Phase detectors</a></li>
+            <li><a href="#wk-noise">Loop dynamics and noise</a></li>
+            <li><a href="#wk-types">Types</a></li>
+            <li><a href="#wk-apps">Applications</a></li>
+            <li><a href="#wk-refs">References</a></li>
+          </ol>
         </div>
-      </div>
-      <h1>Duo<span>Node</span></h1>
 
-      <div class="field">
-        <label for="name">Your name</label>
-        <input id="name" type="text" placeholder="e.g. Nandini" autocomplete="off" maxlength="24">
-      </div>
-      <div class="field">
-        <label for="room">Room</label>
-        <input id="room" type="text" placeholder="a shared name you both type" autocomplete="off" maxlength="60">
-      </div>
-      <div class="field">
-        <label for="secret">Key</label>
-        <input id="secret" type="password" placeholder="the passphrase that unlocks it" autocomplete="off">
-      </div>
+        <h2 id="wk-history">History<a href="#" class="wk-edit" data-signin>[edit]</a></h2>
+        <p>The principle was published in 1932 by the French engineer Henri de Bellescize, who used it for the synchronous reception of radio signals, locking a local oscillator to the incoming carrier.<sup class="wk-ref"><a href="#wk-r1">[1]</a></sup> The extra circuitry kept it out of mass-produced receivers for some years, but phase comparison was adopted in television sets from the late 1940s to hold the horizontal sweep in step with the broadcast sync pulses despite noise.</p>
+        <p>Monolithic PLLs appeared around 1970, notably the Signetics NE565 and the CMOS CD4046, which put a VCO and two types of phase detector on a single chip. Floyd M. Gardner's 1980 analysis of charge-pump loops defined the architecture still used in most integrated synthesisers,<sup class="wk-ref"><a href="#wk-r4">[4]</a></sup> and from the 2000s all-digital PLLs built in deep-submicron CMOS began to replace analog designs in mobile radios.<sup class="wk-ref"><a href="#wk-r5">[5]</a></sup></p>
 
-      <label class="check" id="notifyRow" hidden>
-        <input type="checkbox" id="notify">
-        <span>Email my friend the invite when I open this line</span>
-      </label>
+        <h2 id="wk-op">Operation<a href="#" class="wk-edit" data-signin>[edit]</a></h2>
+        <h3 id="wk-blocks">Building blocks</h3>
+        <ul>
+          <li><b>Phase detector</b> — produces a signal that depends on the phase difference between the reference and the fed-back oscillator.</li>
+          <li><b>Loop filter</b> — a low-pass network that sets the dynamics of the loop and removes ripple at the comparison frequency.</li>
+          <li><b>Voltage-controlled oscillator</b> — its frequency moves with the control voltage, ideally linearly:
+            <div class="wk-math"><var>f</var><sub>VCO</sub> = <var>f</var><sub>0</sub> + <var>K</var><sub>VCO</sub> · <var>v</var><sub>ctrl</sub></div></li>
+          <li><b>Feedback divider</b> — divides the output frequency by <var>N</var> before it reaches the phase detector.</li>
+        </ul>
+        <h3 id="wk-lock">Acquisition and lock</h3>
+        <p>Out of lock, the detector's average output pulls the VCO towards the reference frequency; the span of input frequencies over which this succeeds is the <i>pull-in</i> range. Once locked, the loop follows changes in the input phase within its <i>lock</i> (hold) range. Because the VCO integrates frequency into phase, a loop whose filter adds a second integrator — as a charge pump driving a capacitor does — is a <i>type-II</i> loop, which settles with zero static phase error for a constant-frequency input.<sup class="wk-ref"><a href="#wk-r1">[1]</a></sup></p>
+        <h3 id="wk-synth">Frequency synthesis</h3>
+        <p>In an <b>integer-N</b> synthesiser the locked output is</p>
+        <div class="wk-math"><var>f</var><sub>out</sub> = <var>N</var> · <var>f</var><sub>ref</sub></div>
+        <p>so the channel spacing equals the reference frequency. A small spacing forces a low reference and therefore a narrow, slow loop. A <b>fractional-N</b> synthesiser instead switches the divide ratio between neighbouring integers so that its average is fractional,</p>
+        <div class="wk-math"><var>f</var><sub>out</sub> = (<var>N</var> + <var>k</var>/<var>M</var>) · <var>f</var><sub>ref</sub></div>
+        <p>and drives that switching from a delta-sigma modulator, which pushes the resulting quantisation noise to high offset frequencies where the loop filter removes it.<sup class="wk-ref"><a href="#wk-r3">[3]</a></sup></p>
 
+        <h2 id="wk-pd">Phase detectors<a href="#" class="wk-edit" data-signin>[edit]</a></h2>
+        <p>The choice of phase detector decides the loop's linear range, whether it can also correct frequency errors, and how much ripple reaches the VCO.</p>
+        <div class="wk-tablewrap">
+        <table class="wk-table">
+          <tr><th>Detector</th><th>Linear range</th><th>Frequency-sensitive</th><th>Notes</th></tr>
+          <tr><td>Analog multiplier (mixer)</td><td>about ±π/2</td><td>No</td><td>Output follows the sine of the phase error; locks with the inputs in quadrature</td></tr>
+          <tr><td>XOR gate</td><td>0 to π</td><td>No</td><td>Needs 50% duty-cycle inputs; locks at a 90° offset</td></tr>
+          <tr><td>Phase-frequency detector</td><td>±2π</td><td>Yes</td><td>Edge-triggered, drives a charge pump; can show a small dead zone</td></tr>
+          <tr><td>Bang-bang (Alexander)</td><td>Binary</td><td>No</td><td>Reports only early or late; common in clock and data recovery</td></tr>
+        </table>
+        </div>
 
-      <button class="go" id="enter">Open the line</button>
+        <!-- the way in -->
+        <div class="wk-signin" id="wkSignin">
+          <div class="wk-signin-h">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#36c"/><path d="M12 7v6M12 16.5v.5" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+            <span><b>Contributor sign-in.</b> Editing this article is limited to registered contributors.</span>
+          </div>
+          <div class="wk-signin-f">
+            <label><span>Username</span><input id="name" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="24"></label>
+            <label><span>Project</span><input id="room" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="60"></label>
+            <label><span>Password</span><input id="secret" type="password" autocomplete="off"></label>
+            <button class="wk-btn" id="enter" type="button">Sign in</button>
+          </div>
+          <label class="wk-watch" id="notifyRow" hidden><input type="checkbox" id="notify"> Email watchers when I sign in</label>
+          <div class="wk-signin-msg" id="gateMsg" role="status" aria-live="polite"></div>
+        </div>
 
+        <h2 id="wk-noise">Loop dynamics and noise<a href="#" class="wk-edit" data-signin>[edit]</a></h2>
+        <p>The loop bandwidth sets a trade-off between two noise sources. Inside the bandwidth the output follows the reference path, so noise from the reference, phase detector and charge pump appears at the output raised by 20 log<sub>10</sub> <var>N</var> dB. Outside it the loop cannot correct the oscillator, and the VCO's own phase noise dominates. The bandwidth giving the lowest total noise usually lies near the offset where the two contributions cross.<sup class="wk-ref"><a href="#wk-r3">[3]</a></sup></p>
+        <p>A wider loop also locks faster, since settling time scales roughly inversely with bandwidth, but it passes more of the reference-frequency ripple that appears as spurious tones either side of the carrier. Because a charge-pump loop corrects the VCO only once per reference cycle, a common rule of thumb keeps the bandwidth below about one-tenth of the reference frequency to preserve stability. In digital systems the same noise is usually quoted as jitter, obtained by integrating the phase-noise spectrum over the band of interest.</p>
+
+        <h2 id="wk-types">Types<a href="#" class="wk-edit" data-signin>[edit]</a></h2>
+        <ul>
+          <li><b>Analog (linear) PLL</b> — an analog multiplier as phase detector, a passive or active RC filter and a VCO.</li>
+          <li><b>Digital PLL</b> — a digital phase detector such as an XOR gate or phase-frequency detector, combined with an analog filter and VCO; the usual charge-pump synthesiser belongs here.</li>
+          <li><b>All-digital PLL (ADPLL)</b> — a time-to-digital converter measures the phase error, a digital filter processes it and a digitally controlled oscillator closes the loop, which suits deep-submicron CMOS.<sup class="wk-ref"><a href="#wk-r5">[5]</a></sup></li>
+          <li><b>Software PLL</b> — the whole loop runs as code on a processor, as in software-defined radios and the grid-synchronisation of solar inverters.</li>
+        </ul>
+
+        <h2 id="wk-apps">Applications<a href="#" class="wk-edit" data-signin>[edit]</a></h2>
+        <ul>
+          <li><b>Frequency synthesis</b> — local oscillators in radio transceivers and the multiplied core clocks of processors and FPGAs.</li>
+          <li><b>Clock and data recovery</b> — extracting the bit clock from serial links such as SATA, PCI Express and Ethernet, which send no separate clock.</li>
+          <li><b>Demodulation</b> — the VCO control voltage of a loop locked to an FM signal is the demodulated audio; PLLs also recover the carrier for coherent PSK and QAM receivers.</li>
+          <li><b>Clock de-skewing</b> — aligning the internal clock of a chip with the clock at its pins to remove buffer delay.</li>
+          <li><b>Motor and grid control</b> — holding motor speed against a reference, and keeping inverters in phase with the mains.</li>
+        </ul>
+
+        <h2 id="wk-refs">References<a href="#" class="wk-edit" data-signin>[edit]</a></h2>
+        <ol class="wk-reflist">
+          <li id="wk-r1">Gardner, Floyd M. (2005). <i>Phaselock Techniques</i> (3rd ed.). Wiley.</li>
+          <li id="wk-r2">Best, Roland E. <i>Phase-Locked Loops: Design, Simulation, and Applications</i>. McGraw-Hill.</li>
+          <li id="wk-r3">Razavi, Behzad (2020). <i>Design of CMOS Phase-Locked Loops</i>. Cambridge University Press.</li>
+          <li id="wk-r4">Gardner, Floyd M. (1980). "Charge-Pump Phase-Lock Loops". <i>IEEE Transactions on Communications</i>. 28 (11).</li>
+          <li id="wk-r5">Staszewski, Robert Bogdan; Balsara, Poras T. (2006). <i>All-Digital Frequency Synthesizer in Deep-Submicron CMOS</i>. Wiley.</li>
+        </ol>
+        <div class="wk-cats">Categories: <a href="#wk-op">Electronic oscillators</a> | <a href="#wk-lock">Control theory</a> | <a href="#wk-synth">Radio electronics</a> | <a href="#wk-history">1932 introductions</a></div>
+      </main>
     </div>
+
+    <footer class="wk-foot">
+      <p>This page was last edited on 12 September 2026, at 18:04.</p>
+      <p>Text is available under the Creative Commons Attribution-ShareAlike 4.0 licence; additional terms may apply.</p>
+      <p><a href="#" data-go="top">About CircuitWiki</a> · <a href="#" data-go="top">Disclaimers</a> · <a href="#" data-go="top">Privacy</a></p>
+    </footer>
   </section>
 
   <!-- CHAT -->
@@ -1088,6 +1357,7 @@
         <button id="invite"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></svg><span>Copy invite link</span></button>
         <button id="roomBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 16v-4M12 8h.01"/></svg><span>Room info</span></button>
         <button id="themeBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18c1.4 0 2-.8 2-1.7 0-1.6-1.6-1.6-1.6-2.9 0-.9.7-1.5 1.7-1.5H16a5 5 0 0 0 5-5c0-3.9-4-6.9-9-6.9z"/></svg><span>Colour theme</span></button>
+        <button id="veilBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"/><path d="M10.6 5.1A9.7 9.7 0 0 1 12 5c5 0 8.5 4.3 9.6 6.3a1.4 1.4 0 0 1 0 1.4 15 15 0 0 1-2.6 3.4"/><path d="M6.6 6.6C4.6 8 3.1 10 2.4 11.3a1.4 1.4 0 0 0 0 1.4C3.5 14.7 7 19 12 19c1.9 0 3.6-.6 5-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg><span>Hide</span></button>
         <button class="danger" id="leave"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Leave the line</span></button>
       </div>
     </div>
@@ -1310,8 +1580,8 @@ function uid(){ return rid()+rid(); }
 /* ---------------------------------------------------------------------------
    TUNING
    --------------------------------------------------------------------------- */
-const KEEP_MS=48*3600*1000;        // how long the room remembers a message
-const LOG_MAX=1000;                // messages kept per room, per device
+const KEEP_MS=3*24*3600*1000;      // how long the room remembers a message: three days
+const LOG_MAX=300;                 // messages kept per room, per device: the newest 300
 const TEXT_MAX=4000;               // characters in one message
 const BROKERS=[
   "wss://broker.emqx.io:8084/mqtt",
@@ -1324,9 +1594,15 @@ const HEARTBEAT=12000;             // live "I'm here" ping
 const PR_RESTAMP=60000;            // refresh our retained presence record
 const LIVE_WINDOW=40000;           // heard from within this long = online
 const PR_FRESH=90000;              // a retained "here" younger than this counts
-const SETTLE_QUIET=2500;           // relay has finished sending its log ...
-const SETTLE_MAX=15000;            // ... or we stop waiting for it
-const SEED_WINDOW=8;               // re-seed publishes in flight per relay
+const SETTLE_QUIET=3000;           // relay has finished sending its log ...
+const SETTLE_MAX=60000;            // ... or we stop waiting for it (a busy room takes a while)
+/* Measured 2026-10-09 on all three working relays: 10 publishes a second for a
+   minute is fine, 20 a second gets the connection cut - and a cut connection
+   reconnects and tries again, which in a busy room becomes a loop. 5 a second,
+   with a short burst, is half the safe rate. */
+const RATE_PER_SEC=5, RATE_BURST=8;
+const RENDER_WINDOW=300;           // bubbles drawn on open; the rest one tap away
+const BRIDGE_KEEP_S=2*24*3600;     // old-version copies only need to outlive a reload
 const RC_EXPIRY=7*24*3600;         // receipt slots, seconds
 const PR_EXPIRY=24*3600;           // presence slots, seconds
 const NUDGE_EVERY=3*60*1000;       // at most one "message waiting" push per this
@@ -1504,7 +1780,8 @@ function normalize(r){
     reply:cleanReply(r.reply),
     del,
     hidden:(r.hidden||r.delLocal)?1:0,
-    acked:("acked" in r)?!!r.acked:true
+    acked:("acked" in r)?!!r.acked:true,
+    ivs:(r.ivs&&typeof r.ivs==="object"&&!Array.isArray(r.ivs))?r.ivs:undefined
   };
 }
 /* what goes on the wire: never the local-only flags */
@@ -1531,11 +1808,26 @@ function secondsLeft(r){
    new to us. */
 function ingest(raw,how){
   const r=normalize(raw); if(!r) return false;
-  if(expired(r)) return false;
+  if(expired(r)){ if(how==="relay") noteDropped(r.id); return false; }
   const have=msgs.get(r.id);
   if(!have){
+    if(how!=="store"){ r.hidden=0; r.ivs=undefined; }
+    /* Each phone carries only the newest LOG_MAX. The room itself keeps every
+       message for the full retention window on the relays, so nothing is lost
+       before a device has seen it - a phone simply stops carrying the oldest.
+       One exception: our own message that has not reached a relay yet is never
+       the one dropped. */
+    if(msgs.size>=LOG_MAX){
+      let oldest=null;
+      for(const x of msgs.values()) if((x.acked||!isMine(x)) && (!oldest||x.ts<oldest.ts)) oldest=x;
+      if(oldest){
+        if(r.ts<=oldest.ts){ noteDropped(r.id); return false; }   // older than everything kept
+        noteDropped(oldest.id);
+        msgs.delete(oldest.id); idbDel(topic+"|"+oldest.id);
+        const el=msgEls.get(oldest.id); if(el){ el.remove(); msgEls.delete(oldest.id); }
+      }
+    }
     if(how==="relay") r.acked=true;
-    if(how!=="store") r.hidden=0;
     msgs.set(r.id,r);
     if(how!=="store") storeRec(r);
     if(!bulkMode) queueRender(r);
@@ -1555,6 +1847,73 @@ function ingest(raw,how){
   return false;
 }
 
+/* ---------------------------------------------------------------------------
+   THE SPEED LIMIT
+   ---------------------------------------------------------------------------
+   Every write to a relay goes through one queue per relay, drained at a rate
+   the relay will accept. Three lanes, so the thing a person is waiting for is
+   never stuck behind housekeeping:
+     hi   your own messages and deletions
+     mid  presence, receipts, typing, the old-version copies
+     lo   refilling a relay that is missing part of the room
+   --------------------------------------------------------------------------- */
+function lq(l){ if(!l.q) l.q={hi:[],mid:[],lo:[],tokens:RATE_BURST,last:Date.now(),timer:null}; return l.q; }
+function linkSend(l,t,body,opts,cb,prio){
+  const c=l.client;
+  if(!c||!l.ready){ if(cb) cb(new Error("relay down")); return; }
+  const q=lq(l);
+  (prio==="hi"?q.hi:prio==="lo"?q.lo:q.mid).push({c,t,body,opts,cb});
+  drain(l);
+}
+function drain(l){
+  const q=l.q; if(!q) return;
+  const now=Date.now();
+  q.tokens=Math.min(RATE_BURST,q.tokens+(now-q.last)/1000*RATE_PER_SEC); q.last=now;
+  while(q.tokens>=1){
+    const job=q.hi.shift()||q.mid.shift()||q.lo.shift(); if(!job) break;
+    if(l.client!==job.c){ if(job.cb) job.cb(new Error("stale")); continue; }
+    q.tokens-=1;
+    try{ job.c.publish(job.t,job.body,job.opts,job.cb); }catch(e){ if(job.cb) job.cb(e); }
+  }
+  if((q.hi.length||q.mid.length||q.lo.length)&&!q.timer)
+    q.timer=setTimeout(()=>{ q.timer=null; drain(l); },Math.ceil(1000/RATE_PER_SEC));
+}
+function dropQueue(l){ if(l.q){ clearTimeout(l.q.timer); l.q=null; } }
+
+/* ---------------------------------------------------------------------------
+   KNOWN COPIES
+   ---------------------------------------------------------------------------
+   Every device downloads the whole room each time it opens it - that is what
+   makes the log reliable. What it does NOT need to do is unpick every one of
+   those messages again. A ciphertext's first 16 characters are its random IV,
+   unique to that exact copy, so once we have read a copy we remember its IV
+   with the message and recognise it next time without decrypting anything.
+   --------------------------------------------------------------------------- */
+const ivOf=b=>String(b).slice(0,16);
+/* Messages this phone has chosen not to carry - older than its newest LOG_MAX.
+   The relays still replay them on every open; remembering their ids means they
+   are recognised from the slot name alone and never unpacked again. */
+let dropped=new Set(), dropTimer=null;
+const DROP_KEY=()=>"sl.drop."+roomFP;
+function loadDropped(){ try{ dropped=new Set(JSON.parse(localStorage.getItem(DROP_KEY())||"[]")); }catch(e){ dropped=new Set(); } }
+function noteDropped(id){
+  if(!id||dropped.has(id)) return;
+  dropped.add(id);
+  if(dropped.size>6000){ const a=[...dropped]; dropped=new Set(a.slice(a.length-5000)); }
+  if(!dropTimer) dropTimer=setTimeout(()=>{ dropTimer=null; try{ localStorage.setItem(DROP_KEY(),JSON.stringify([...dropped])); }catch(e){} },2000);
+}
+const ivDirty=new Set(); let ivTimer=null;
+function noteIv(r,iv,del){
+  if(!r||!iv) return;
+  if(!r.ivs) r.ivs={};
+  if(Object.prototype.hasOwnProperty.call(r.ivs,iv)) return;
+  const keys=Object.keys(r.ivs);
+  if(keys.length>=8) delete r.ivs[keys[0]];
+  r.ivs[iv]=del?1:0;
+  ivDirty.add(r.id);
+  if(!ivTimer) ivTimer=setTimeout(()=>{ ivTimer=null; ivDirty.forEach(id=>{ const x=msgs.get(id); if(x) storeRec(x); }); ivDirty.clear(); },3000);
+}
+
 /* write one record to one relay, or to every relay we hold */
 async function publishRec(r,only){
   if(!topic||expired(r)) return;
@@ -1562,16 +1921,16 @@ async function publishRec(r,only){
   if(!targets.length) return;
   let body;
   try{ body=await encryptObj(wire(r)); }catch(e){ return; }
+  noteIv(r,ivOf(body),r.del);
   const opts={qos:1,retain:true,properties:{messageExpiryInterval:secondsLeft(r)}};
+  const prio=isMine(r)?"hi":"mid";
   targets.forEach(l=>{
     const c=l.client; if(!c||!l.ready) return;
-    try{
-      c.publish(logTopic(r.id),body,opts,err=>{
-        if(err||l.client!==c) return;
-        l.have.set(r.id,r.del?1:0);
-        markAcked(r);
-      });
-    }catch(e){}
+    linkSend(l,logTopic(r.id),body,opts,err=>{
+      if(err||l.client!==c) return;
+      l.have.set(r.id,r.del?1:0);
+      markAcked(r);
+    },prio);
   });
 }
 function spreadNow(r){ publishRec(r); }
@@ -1600,14 +1959,14 @@ async function bridgeOut(r){
     live=await encryptObj({t:"msg",id:r.id,from:r.from,name:r.name,text:r.text,ts:r.ts,reply:r.reply,pk:rid()+rid(),rm:roomFP});
     park=await encryptObj({t:"hist",from:me.id,rec,rm:roomFP});
   }catch(e){ return; }
-  ls.forEach(l=>{ try{
-    l.client.publish(topic,live,{qos:1});
-    l.client.publish(topic+"/mb/"+r.id,park,{qos:1,retain:true,properties:{messageExpiryInterval:secondsLeft(r)}});
-  }catch(e){} });
+  ls.forEach(l=>{
+    linkSend(l,topic,live,{qos:1},null,"mid");
+    linkSend(l,topic+"/mb/"+r.id,park,{qos:1,retain:true,properties:{messageExpiryInterval:Math.min(secondsLeft(r),BRIDGE_KEEP_S)}},null,"mid");
+  });
 }
 function bridgeClear(id){
   if(!LEGACY_BRIDGE||!topic) return;
-  readyLinks().forEach(l=>{ try{ l.client.publish(topic+"/mb/"+id,"",{qos:1,retain:true}); }catch(e){} });
+  readyLinks().forEach(l=>linkSend(l,topic+"/mb/"+id,"",{qos:1,retain:true},null,"hi"));
 }
 
 /* After a relay has handed us its log, give it back whatever it is missing -
@@ -1623,25 +1982,28 @@ function reconcile(l){
   }
   if(!todo.length) return;
   todo.sort((a,b)=>b.ts-a.ts);
-  let i=0, inFlight=0;
-  const pump=()=>{
-    while(inFlight<SEED_WINDOW && i<todo.length){
+  /* Fed into the slow lane a few at a time, and each one checked again just
+     before it goes: another device in the room may be refilling the same relay,
+     and whatever it has already put back arrives here and needs no second copy. */
+  let i=0;
+  const feed=async()=>{
+    while(i<todo.length){
       if(l.client!==c||!l.ready) return;
-      const r=todo[i++]; inFlight++;
-      encryptObj(wire(r)).then(body=>{
-        if(l.client!==c){ inFlight--; return; }
-        c.publish(logTopic(r.id),body,{qos:1,retain:true,properties:{messageExpiryInterval:secondsLeft(r)}},err=>{
-          inFlight--;
-          if(!err&&l.client===c){
-            l.have.set(r.id,r.del?1:0);
-            markAcked(r);
-          }
-          pump();
-        });
-      }).catch(()=>{ inFlight--; pump(); });
+      if(lq(l).lo.length>=4) return;
+      const r=todo[i++];
+      const h=l.have.get(r.id);
+      if(h!==undefined && !(r.del && !h)) continue;
+      if(r.ts < Date.now()-KEEP_MS+60000) continue;
+      let body; try{ body=await encryptObj(wire(r)); }catch(e){ continue; }
+      if(l.client!==c) return;
+      noteIv(r,ivOf(body),r.del);
+      linkSend(l,logTopic(r.id),body,{qos:1,retain:true,properties:{messageExpiryInterval:secondsLeft(r)}},err=>{
+        if(!err&&l.client===c){ l.have.set(r.id,r.del?1:0); markAcked(r); }
+        feed();
+      },"lo");
     }
   };
-  pump();
+  feed();
 }
 /* our own messages that have never reached any relay go first, the moment a
    relay answers - before we wait for its log to settle */
@@ -1658,7 +2020,7 @@ function flushPending(l){
    like whatever any device's clock says.
    --------------------------------------------------------------------------- */
 function noteReceipts(){
-  if(!document.hidden && roomOpen) mySeen=Math.max(mySeen,myGot);
+  if(!document.hidden && roomOpen && !veiled) mySeen=Math.max(mySeen,myGot);
   clearTimeout(rcTimer);
   rcTimer=setTimeout(publishReceipts,1200);
 }
@@ -1670,7 +2032,7 @@ async function publishReceipts(force){
   let body;
   try{ body=await encryptObj({t:"rc",rm:roomFP,from:me.id,name:me.name,got:myGot,seen:mySeen,at:Date.now()}); }catch(e){ return; }
   rcSent=sig;
-  ls.forEach(l=>{ try{ l.client.publish(topic+"/rc/"+me.id,body,{qos:1,retain:true,properties:{messageExpiryInterval:RC_EXPIRY}}); }catch(e){} });
+  ls.forEach(l=>linkSend(l,topic+"/rc/"+me.id,body,{qos:1,retain:true,properties:{messageExpiryInterval:RC_EXPIRY}},null,"mid"));
 }
 function onReceipt(m){
   if(!m.from||m.from===me.id) return;
@@ -1754,12 +2116,12 @@ async function buildBye(){
 async function publishPresence(){
   const ls=readyLinks(); if(!ls.length||!topic) return;
   let body; try{ body=await encryptObj({t:"pr",rm:roomFP,on:1,from:me.id,name:me.name,at:Date.now()}); }catch(e){ return; }
-  ls.forEach(l=>{ try{ l.client.publish(topic+"/pr/"+me.id,body,{qos:1,retain:true,properties:{messageExpiryInterval:PR_EXPIRY}}); }catch(e){} });
+  ls.forEach(l=>linkSend(l,topic+"/pr/"+me.id,body,{qos:1,retain:true,properties:{messageExpiryInterval:PR_EXPIRY}},null,"mid"));
 }
 async function publishLive(obj){
   const ls=readyLinks(); if(!ls.length||!topic) return;
   let body; try{ body=await encryptObj(Object.assign({rm:roomFP,from:me.id,name:me.name},obj)); }catch(e){ return; }
-  ls.forEach(l=>{ try{ l.client.publish(topic,body,{qos:0}); }catch(e){} });
+  ls.forEach(l=>linkSend(l,topic,body,{qos:0},null,"mid"));
 }
 /* leaving: the record is pre-encrypted, because an await never completes in
    an unload handler */
@@ -1799,7 +2161,7 @@ function openLink(l){
       will:byeBlob?{topic:topic+"/pr/"+me.id,payload:byeBlob,qos:1,retain:true,properties:{messageExpiryInterval:PR_EXPIRY}}:undefined
     });
   }catch(e){ scheduleLink(l); return; }
-  l.client=c; l.have=new Map(); l.settled=false;
+  l.client=c; l.have=new Map(); l.settled=false; dropQueue(l);
 
   c.on("connect",()=>{
     if(l.client!==c) return;
@@ -1828,7 +2190,7 @@ function openLink(l){
   });
   const down=()=>{
     if(l.client!==c) return;
-    l.ready=false; l.client=null; l.settled=false;
+    l.ready=false; l.client=null; l.settled=false; dropQueue(l);
     try{ c.removeAllListeners&&c.removeAllListeners(); c.end(true); }catch(e){}
     paintStatus();
     scheduleLink(l);
@@ -1847,7 +2209,7 @@ function wake(){
   if(!topic) return;
   links.forEach(l=>{ if(!l.client){ clearTimeout(l.timer); l.timer=null; l.tries=0; openLink(l); } });
   if(anyLink()){ publishLive({t:"ping"}); publishPresence(); }
-  if(!document.hidden){ mySeen=Math.max(mySeen,myGot); publishReceipts(); }
+  if(!document.hidden&&!veiled){ mySeen=Math.max(mySeen,myGot); publishReceipts(); }
 }
 
 
@@ -1856,8 +2218,21 @@ async function onPacket(l,c,t,payload){
   const isLog=t.lastIndexOf(topic+"/log/",0)===0;
   if(isLog) l.lastLog=Date.now();
   if(!payload||!payload.length) return;              // a slot that has lapsed
+  const raw=typeof payload==="string"?payload:payload.toString();
+  const iv=ivOf(raw);
+  if(isLog){
+    const lid=t.slice((topic+"/log/").length);
+    if(dropped.has(lid)&&!msgs.has(lid)) return;      // one we chose not to carry
+    const known=msgs.get(lid);
+    if(known&&known.ivs&&Object.prototype.hasOwnProperty.call(known.ivs,iv)){ l.have.set(known.id,known.ivs[iv]); return; }
+  }else if(t.lastIndexOf(topic+"/mb/",0)===0){
+    /* old-version slots: receipts, file parts and reactions are never needed,
+       and a message already in the log needs nothing from its old copy */
+    const slot=t.slice((topic+"/mb/").length);
+    if(slot.indexOf(".")>=0||msgs.has(slot)) return;
+  }
   let m;
-  try{ m=await decryptObj(typeof payload==="string"?payload:payload.toString()); }catch(e){ return; }
+  try{ m=await decryptObj(raw); }catch(e){ return; }
   if(!m||typeof m!=="object") return;
   if(m.rm&&roomFP&&m.rm!==roomFP) return;
   if(isLog){
@@ -1865,6 +2240,7 @@ async function onPacket(l,c,t,payload){
     if(m.id!==id) return;                             // a slot must hold its own message
     l.have.set(id,m.del?1:0);
     ingest(m,"relay");
+    noteIv(msgs.get(id),iv,m.del);
     return;
   }
   if(t.lastIndexOf(topic+"/rc/",0)===0){ if(m.t==="rc") onReceipt(m); return; }
@@ -1927,11 +2303,23 @@ async function sendMsg(){
   const r={id:uid(),from:me.id,name:me.name,text,ts:Date.now(),reply:replyTo||undefined,del:0,hidden:0,acked:false};
   box.value=""; autosize(); toggleSend(); clearReply();
   msgs.set(r.id,r);
+  trimHeld();
   renderRec(r);
   scrollDown();
   await storeRec(r);               // safe on this phone before it goes anywhere
   publishRec(r);
   nudgeIfAway();
+}
+/* what we send counts toward the newest-LOG_MAX too, not just what arrives */
+function trimHeld(){
+  while(msgs.size>LOG_MAX){
+    let oldest=null;
+    for(const x of msgs.values()) if((x.acked||!isMine(x)) && (!oldest||x.ts<oldest.ts)) oldest=x;
+    if(!oldest) return;                               // only unsent messages of ours left: keep them all
+    noteDropped(oldest.id);
+    msgs.delete(oldest.id); idbDel(topic+"|"+oldest.id);
+    const el=msgEls.get(oldest.id); if(el){ el.remove(); msgEls.delete(oldest.id); }
+  }
 }
 function deleteForEveryone(id){
   const r=msgs.get(id); if(!r||!isMine(r)||r.del) return;
@@ -1989,22 +2377,30 @@ function purgeOld(){
   });
 }
 
+let starting=false;
 async function start(){
   const name=$("name").value.trim().slice(0,24)||"Anon";
   const room=$("room").value.trim();
   const secret=$("secret").value;
-  if(!window.isSecureContext||!crypto.subtle){ toast("Open over https for encryption"); return; }
-  if(!room||!secret){ toast("Room and key are both required"); return; }
+  /* every message here reads like the wiki it sits in - nothing on this page
+     may say what it really is */
+  if(!room||!secret){ gateMsg("Please fill in all fields.",true); return; }
+  if(roomOpen) return unveil(room,secret);              // already in the room, behind the page
+  if(starting) return;                                   // a double tap must not open the room twice
+  if(!window.isSecureContext||!crypto.subtle){ gateMsg("Sign-in is not available on this connection.",true); return; }
+  starting=true;
+  $("enter").disabled=true; gateMsg("Signing in\u2026");
   if(typeof mqtt==="undefined"){
     for(let i=0;i<60&&typeof mqtt==="undefined";i++) await sleep(50);
-    if(typeof mqtt==="undefined"){ toast("Still loading · try again in a second"); return; }
+    if(typeof mqtt==="undefined"){ starting=false; $("enter").disabled=false; gateMsg("Sign-in is temporarily unavailable. Please try again.",true); return; }
   }
   me.name=name; roomLabel=room;
   try{ localStorage.setItem("sl.name",name); localStorage.setItem("sl.room",room); }catch(e){}
   try{ const sid=localStorage.getItem("sl.id"); if(sid) me.id=sid; else { me.id=rid(); localStorage.setItem("sl.id",me.id); } }catch(e){ me.id=rid(); }
   try{ localStorage.removeItem("sl.broker"); }catch(e){}
 
-  $("gate").style.display="none";
+  hideGate();
+  $("enter").disabled=false; gateMsg(""); $("secret").value="";
   $("chat").classList.add("on");
   roomOpen=true;
   $("input").disabled=false; $("emojiBtn").disabled=false;
@@ -2014,6 +2410,7 @@ async function start(){
   const d=await deriveBoth(secret,room);
   key=d.key; topic=d.topic; roomFP=topic.slice(-12);
   window._room={room,secret};
+  loadDropped();
   await buildBye();
   await loadHistory();
   paintHeader();
@@ -2044,8 +2441,9 @@ function copyInvite(){
   navigator.clipboard.writeText(inviteLink(r.room,r.secret)).then(()=>toast("Invite link copied")).catch(()=>toast("Copy failed"));
 }
 function hydrate(){
+  /* only the username is remembered, as any sign-in box would; the project
+     (the room) is never left sitting on the page for someone else to read */
   try{ const n=localStorage.getItem("sl.name"); if(n) $("name").value=n; }catch(e){}
-  try{ const rm=localStorage.getItem("sl.room"); if(rm) $("room").value=rm; }catch(e){}
   if(NOTIFY.accessKey){ $("notifyRow").hidden=false; try{ $("notify").checked=localStorage.getItem("sl.notify")==="1"; }catch(e){} }
   const h=location.hash.slice(1);
   if(h){
@@ -2054,10 +2452,104 @@ function hydrate(){
     if(r) $("room").value=r;
     if(k) $("secret").value=k;
     if(r&&k){
-      toast("Invite loaded · press Open the line");
+      gateMsg("Sign-in details filled in from your link.");
       try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){}
     }
   }
+}
+
+/* ---------------------------------------------------------------------------
+   THE PAGE IN FRONT
+   ---------------------------------------------------------------------------
+   Hide puts the encyclopedia page back over the chat WITHOUT leaving the room:
+   the relays stay connected and messages keep arriving underneath. Coming back
+   needs the password again, checked against the room we are in - so whoever
+   picks the phone up next cannot just tap their way back into the chat. While
+   the page is up, nothing that arrives is marked as seen.
+   --------------------------------------------------------------------------- */
+let veiled=false;
+function gateMsg(text,err){ const m=$("gateMsg"); if(!m) return; m.textContent=text||""; m.classList.toggle("err",!!err); }
+function chromeColor(light){
+  try{
+    const meta=document.querySelector('meta[name="theme-color"]');
+    if(meta) meta.setAttribute("content",light?"#ffffff":(getComputedStyle(document.documentElement).getPropertyValue("--ink").trim()||"#0b141a"));
+  }catch(e){}
+}
+function showGate(){ $("gate").style.display=""; $("gate").scrollTop=0; chromeColor(true); }
+function hideGate(){ $("gate").style.display="none"; chromeColor(false); }
+function veil(){
+  if(!roomOpen||veiled) return;
+  veiled=true;
+  try{ closeMenu(); closeSheet(); closeEmoji(); hidePeerTyping(); }catch(e){}
+  $("chat").classList.remove("on");
+  $("room").value=""; $("secret").value=""; gateMsg("");
+  try{ document.activeElement&&document.activeElement.blur(); }catch(e){}
+  showGate();
+}
+async function unveil(room,secret){
+  $("enter").disabled=true; gateMsg("Signing in\u2026");
+  let ok=false;
+  try{ const d=await deriveBoth(secret,room); ok=d.topic===topic; }catch(e){}
+  $("enter").disabled=false;
+  if(!ok){ gateMsg("Incorrect username or password.",true); $("secret").value=""; return; }
+  veiled=false;
+  $("secret").value=""; $("room").value=""; gateMsg("");
+  hideGate();
+  $("chat").classList.add("on");
+  mySeen=Math.max(mySeen,myGot); publishReceipts();
+  paintStatus(); scrollDown(); refitAll();
+}
+/* the page behaves like a page: links scroll, [edit] and "Log in" lead to the
+   sign-in box, search finds words in the article, the tools do tool things */
+function openSignin(){
+  const box=$("wkSignin"); if(!box) return;
+  box.scrollIntoView({behavior:"smooth",block:"center"});
+  const f=$("name").value.trim()?($("room").value.trim()?$("secret"):$("room")):$("name");
+  setTimeout(()=>{ try{ f.focus({preventScroll:true}); }catch(e){ f.focus(); } },350);
+}
+function wikiFind(q){
+  q=(q||"").trim().toLowerCase(); if(!q) return;
+  const prev=document.querySelector("#gate .wk-hit"); if(prev) prev.classList.remove("wk-hit");
+  const nodes=document.querySelectorAll("#gate .wk-main p, #gate .wk-main li, #gate .wk-main h2, #gate .wk-main h3, #gate .wk-main td");
+  for(const n of nodes){
+    if(n.closest(".wk-signin")) continue;
+    if(n.textContent.toLowerCase().indexOf(q)>=0){
+      n.classList.add("wk-hit"); n.scrollIntoView({behavior:"smooth",block:"center"});
+      setTimeout(()=>n.classList.remove("wk-hit"),2600);
+      return;
+    }
+  }
+  const h=document.querySelector("#gate .wk-h1");
+  const note=document.createElement("div"); note.className="wk-hat"; note.textContent="There were no results matching the query.";
+  h.insertAdjacentElement("afterend",note); setTimeout(()=>note.remove(),3000);
+}
+function wireGate(){
+  const g=$("gate"); if(!g) return;
+  g.addEventListener("click",e=>{
+    const a=e.target.closest("a"); if(!a||!g.contains(a)) return;
+    if(a.hasAttribute("data-signin")){ e.preventDefault(); openSignin(); return; }
+    const go=a.getAttribute("data-go");
+    if(go){
+      e.preventDefault();
+      if(go==="top") g.scrollTo({top:0,behavior:"smooth"});
+      else if(go==="toc"){ const t=$("wk-toc"); if(t) t.scrollIntoView({behavior:"smooth",block:"start"}); }
+      else if(go==="refs"){ const t=$("wk-refs"); if(t) t.scrollIntoView({behavior:"smooth",block:"start"}); }
+      else if(go==="print"){ try{ window.print(); }catch(err){} }
+      else if(go==="random"){ const hs=g.querySelectorAll(".wk-main h2"); const t=hs[Math.floor(Math.random()*hs.length)]; if(t) t.scrollIntoView({behavior:"smooth",block:"start"}); }
+      return;
+    }
+    if(a.classList.contains("wk-toc-x")){ e.preventDefault(); const t=$("wk-toc"); t.classList.toggle("closed"); a.textContent=t.classList.contains("closed")?"[show]":"[hide]"; return; }
+    const h=a.getAttribute("href")||"";
+    if(h.charAt(0)==="#"){
+      e.preventDefault();                       // never touch location.hash - invite links live there
+      const t=h.length>1?document.getElementById(h.slice(1)):null;
+      if(t&&g.contains(t)) t.scrollIntoView({behavior:"smooth",block:"start"});
+      else g.scrollTo({top:0,behavior:"smooth"});
+    }
+  });
+  $("wkSearch").addEventListener("submit",e=>{ e.preventDefault(); wikiFind($("wkQ").value); });
+  ["name","room","secret"].forEach(id=>$(id).addEventListener("input",()=>{ if($("gateMsg").classList.contains("err")) gateMsg(""); }));
+  chromeColor(true);
 }
 
 /* ---------------------------------------------------------------------------
@@ -2167,9 +2659,51 @@ function bodyNode(r){
   if(r.del) return tombstoneNode();
   const n=document.createElement("div"); n.innerHTML=textHTML(r.text); return n;
 }
+/* Drawing every bubble in a busy room is what would make a budget phone
+   crawl - measured: 2,000 bubbles took 0.8s on a laptop, several seconds on a
+   cheap phone, and left 20,000 elements on the page. Only the latest are drawn;
+   older ones are all still here, one tap away. */
+let renderFloor=0, olderTimer=null, expanded=false;
+function olderCount(){ let n=0; if(renderFloor) for(const r of msgs.values()) if(!r.hidden&&r.ts<renderFloor) n++; return n; }
+function paintOlderBtn(){
+  const s=$("stream"); let b=$("olderBtn");
+  const n=olderCount();
+  if(!n){ if(b) b.remove(); if(!n) renderFloor=0; return; }
+  if(!b){ b=document.createElement("button"); b.id="olderBtn"; b.className="older"; b.addEventListener("click",showEarlier); }
+  b.textContent="Show "+n+" earlier message"+(n>1?"s":"");
+  if(s.firstChild!==b) s.insertBefore(b,s.firstChild);
+}
+function paintOlderSoon(){ if(!olderTimer) olderTimer=setTimeout(()=>{ olderTimer=null; paintOlderBtn(); },300); }
+function showEarlier(){
+  expanded=true;                                       // they asked for it: never trim it away again
+  const s=$("stream"); const before=s.scrollHeight, top=s.scrollTop;
+  const older=[...msgs.values()].filter(r=>!r.hidden&&r.ts<renderFloor).sort((a,b)=>a.ts-b.ts);
+  const batch=older.slice(-RENDER_WINDOW);
+  renderFloor=older.length>RENDER_WINDOW?batch[0].ts:0;
+  bulkMode=true; try{ batch.forEach(renderRec); }finally{ bulkMode=false; }
+  regroup(); refitAll(); paintOlderBtn();
+  s.scrollTop=top+(s.scrollHeight-before);            // stay on what you were reading
+}
+/* The same limit for a room that arrives over the network rather than from
+   this device's storage - a new phone opening a busy room is handed all of it
+   at once. Once more than a screenful past the limit is drawn, the oldest
+   bubbles are taken back off the page (never out of the room). */
+function trimDrawn(){
+  if(expanded) return;
+  const s=$("stream");
+  const els=[...s.querySelectorAll(".msg")];
+  if(els.length<=RENDER_WINDOW+100) return;
+  const stick=nearBottom(), before=s.scrollHeight, top=s.scrollTop;
+  const cut=els.length-RENDER_WINDOW;
+  for(let i=0;i<cut;i++){ msgEls.delete(els[i].dataset.id); els[i].remove(); }
+  renderFloor=Number(els[cut].dataset.ts)||renderFloor;
+  paintOlderBtn();
+  if(stick) scrollDown(); else s.scrollTop=Math.max(0,top-(before-s.scrollHeight));
+}
 function renderRec(r){
   if(r.hidden) return;
   const old=msgEls.get(r.id); if(old) return;
+  if(renderFloor&&r.ts<renderFloor){ paintOlderSoon(); return; }
   const mine=isMine(r);
   const stick=bulkMode?false:nearBottom();
   const div=document.createElement("div");
@@ -2233,19 +2767,25 @@ function flushRender(){
   try{
     list.forEach(r=>{
       if(r.hidden||msgEls.has(r.id)||!msgs.has(r.id)) return;
-      renderRec(r); fresh.push(msgEls.get(r.id));
+      renderRec(r);
+      const el=msgEls.get(r.id); if(!el) return;          // older than what is drawn
+      fresh.push(el);
       if(!isMine(r)) theirs++;
     });
   }finally{ bulkMode=false; }
   regroup();
   if(fresh.length===1) fitMeta(fresh[0]); else if(fresh.length) refitAll();
+  trimDrawn();
+  if(renderFloor) paintOlderBtn();
   if(stick) scrollDown(); else if(theirs){ unread+=theirs; updateFab(); }
 }
 function renderAll(){
-  const list=[...msgs.values()].sort((a,b)=>a.ts-b.ts);
+  const list=[...msgs.values()].filter(r=>!r.hidden).sort((a,b)=>a.ts-b.ts);
+  const show=list.slice(-RENDER_WINDOW);
+  renderFloor=list.length>RENDER_WINDOW?show[0].ts:0;
   bulkMode=true;
-  try{ list.forEach(renderRec); }finally{ bulkMode=false; }
-  regroup(); refitAll(); scrollDown();
+  try{ show.forEach(renderRec); }finally{ bulkMode=false; }
+  regroup(); refitAll(); paintOlderBtn(); scrollDown();
   if(list.length) flash(list.length+" message"+(list.length>1?"s":"")+" on this device");
 }
 function paintTick(id){
@@ -2861,6 +3401,15 @@ $("menuBtn").addEventListener("click",e=>{ e.stopPropagation(); $("menu").classL
 document.addEventListener("click",e=>{ if(!$("menu").contains(e.target)&&e.target!==$("menuBtn")) closeMenu(); });
 $("menu").addEventListener("click",()=>setTimeout(closeMenu,0));
 document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeMenu(); });
+$("veilBtn").addEventListener("click",()=>{ closeMenu(); veil(); });
+/* desktop: Escape twice, quickly, puts the page back over the chat */
+let lastEsc=0;
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Escape"||!roomOpen||veiled) return;
+  const now=Date.now();
+  if(now-lastEsc<450){ lastEsc=0; veil(); } else lastEsc=now;
+});
+wireGate();
 let fabRaf=0;
 $("stream").addEventListener("scroll",()=>{ if(fabRaf) return; fabRaf=requestAnimationFrame(()=>{ fabRaf=0; updateFab(); }); },{passive:true});
 $("fab").addEventListener("click",()=>scrollDown());
@@ -2889,6 +3438,7 @@ updateFab();
 initSheet();
 installShell();
 hydrate();
+if(!roomOpen) chromeColor(true);       // the theme code above set the browser bar to the chat's colour
 
 </script>
 </body>
