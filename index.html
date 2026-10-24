@@ -1947,6 +1947,7 @@ function markAcked(r){
   storeRec(r);
   paintTick(r.id);
   bridgeOut(r);
+  if(r.from===me.id && !r.del) nudgeIfAway();
 }
 /* our message, in the old version's two shapes: a live packet for an old tab
    that is open right now, and a parked mailbox record for one that opens later */
@@ -2282,13 +2283,17 @@ function onArrival(r){
     },1500);
   }
 }
-/* A message left while they are away: tell their phone (never the content). */
+/* A message left while they are away: tell their phone (never the content).
+   Called only once a relay holds the message, so the push never promises a
+   message that is still stuck on this phone. The room code lets them check
+   against Room info that they are signed into the same room. */
+const roomCode=()=>roomFP?roomFP.slice(0,4):"";
 function nudgeIfAway(){
   const p=otherPerson();
   if(p&&p.online) return;
   if(Date.now()-lastNudge<NUDGE_EVERY) return;
   lastNudge=Date.now();
-  ntfyPing(me.name+" left you a message in DuoNode");
+  ntfyPing(me.name+" left you a message in DuoNode · room code "+roomCode());
 }
 
 /* ---------------------------------------------------------------------------
@@ -2307,8 +2312,7 @@ async function sendMsg(){
   renderRec(r);
   scrollDown();
   await storeRec(r);               // safe on this phone before it goes anywhere
-  publishRec(r);
-  nudgeIfAway();
+  publishRec(r);                   // the push goes out from markAcked, once a relay has it
 }
 /* what we send counts toward the newest-LOG_MAX too, not just what arrives */
 function trimHeld(){
@@ -2377,7 +2381,19 @@ function purgeOld(){
   });
 }
 
-let starting=false;
+let starting=false, confirmFP="";
+/* rooms this device has opened before, by fingerprint only - never by name */
+function knownRooms(){
+  const out=new Set();
+  try{
+    const last=localStorage.getItem("sl.fp"); if(last) out.add(last);
+    for(let i=0;i<localStorage.length;i++){
+      const m=/^sl\.(?:seen|drop)\.([0-9a-f]{12})$/.exec(localStorage.key(i)||"");
+      if(m) out.add(m[1]);
+    }
+  }catch(e){}
+  return out;
+}
 async function start(){
   const name=$("name").value.trim().slice(0,24)||"Anon";
   const room=$("room").value.trim();
@@ -2394,8 +2410,20 @@ async function start(){
     for(let i=0;i<60&&typeof mqtt==="undefined";i++) await sleep(50);
     if(typeof mqtt==="undefined"){ starting=false; $("enter").disabled=false; gateMsg("Sign-in is temporarily unavailable. Please try again.",true); return; }
   }
+  const d=await deriveBoth(secret,room);
+  /* A project name or password typed slightly differently opens a different,
+     empty room - and the push still arrives, because ntfy does not know about
+     rooms. If this device has been in other rooms but never this one, say so
+     before going in; a second tap goes in anyway. */
+  const fp=d.topic.slice(-12), known=knownRooms();
+  if(fp!==confirmFP && known.size && !known.has(fp)){
+    confirmFP=fp; starting=false; $("enter").disabled=false;
+    gateMsg("These details open a different project from the one used last time on this device. Project and password are case-sensitive - check them, or press Sign in again to continue.",true);
+    return;
+  }
+  confirmFP="";
   me.name=name; roomLabel=room;
-  try{ localStorage.setItem("sl.name",name); localStorage.setItem("sl.room",room); }catch(e){}
+  try{ localStorage.setItem("sl.name",name); localStorage.setItem("sl.room",room); localStorage.setItem("sl.fp",fp); }catch(e){}
   try{ const sid=localStorage.getItem("sl.id"); if(sid) me.id=sid; else { me.id=rid(); localStorage.setItem("sl.id",me.id); } }catch(e){ me.id=rid(); }
   try{ localStorage.removeItem("sl.broker"); }catch(e){}
 
@@ -2407,7 +2435,6 @@ async function start(){
   toggleSend();
   setBar("unlocking…","warn");
 
-  const d=await deriveBoth(secret,room);
   key=d.key; topic=d.topic; roomFP=topic.slice(-12);
   window._room={room,secret};
   loadDropped();
@@ -2418,7 +2445,7 @@ async function start(){
   connectAll();
 
   askNotifyPermission();
-  ntfyPing(name+" is online in room \""+room+"\"");
+  ntfyPing(name+" is online in room \""+room+"\" · room code "+roomCode());
   const wantEmail=$("notify")&&$("notify").checked;
   try{ localStorage.setItem("sl.notify",wantEmail?"1":""); }catch(e){}
   if(wantEmail) sendNotify(room,secret,name);
