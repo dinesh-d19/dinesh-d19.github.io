@@ -1947,7 +1947,6 @@ function markAcked(r){
   storeRec(r);
   paintTick(r.id);
   bridgeOut(r);
-  if(r.from===me.id && !r.del) nudgeIfAway();
 }
 /* our message, in the old version's two shapes: a live packet for an old tab
    that is open right now, and a parked mailbox record for one that opens later */
@@ -2283,17 +2282,13 @@ function onArrival(r){
     },1500);
   }
 }
-/* A message left while they are away: tell their phone (never the content).
-   Called only once a relay holds the message, so the push never promises a
-   message that is still stuck on this phone. The room code lets them check
-   against Room info that they are signed into the same room. */
-const roomCode=()=>roomFP?roomFP.slice(0,4):"";
+/* A message left while they are away: tell their phone (never the content). */
 function nudgeIfAway(){
   const p=otherPerson();
   if(p&&p.online) return;
   if(Date.now()-lastNudge<NUDGE_EVERY) return;
   lastNudge=Date.now();
-  ntfyPing(me.name+" left you a message in DuoNode · room code "+roomCode());
+  ntfyPing(me.name+" left you a message in DuoNode");
 }
 
 /* ---------------------------------------------------------------------------
@@ -2312,7 +2307,8 @@ async function sendMsg(){
   renderRec(r);
   scrollDown();
   await storeRec(r);               // safe on this phone before it goes anywhere
-  publishRec(r);                   // the push goes out from markAcked, once a relay has it
+  publishRec(r);
+  nudgeIfAway();
 }
 /* what we send counts toward the newest-LOG_MAX too, not just what arrives */
 function trimHeld(){
@@ -2381,19 +2377,7 @@ function purgeOld(){
   });
 }
 
-let starting=false, confirmFP="";
-/* rooms this device has opened before, by fingerprint only - never by name */
-function knownRooms(){
-  const out=new Set();
-  try{
-    const last=localStorage.getItem("sl.fp"); if(last) out.add(last);
-    for(let i=0;i<localStorage.length;i++){
-      const m=/^sl\.(?:seen|drop)\.([0-9a-f]{12})$/.exec(localStorage.key(i)||"");
-      if(m) out.add(m[1]);
-    }
-  }catch(e){}
-  return out;
-}
+let starting=false;
 async function start(){
   const name=$("name").value.trim().slice(0,24)||"Anon";
   const room=$("room").value.trim();
@@ -2410,20 +2394,8 @@ async function start(){
     for(let i=0;i<60&&typeof mqtt==="undefined";i++) await sleep(50);
     if(typeof mqtt==="undefined"){ starting=false; $("enter").disabled=false; gateMsg("Sign-in is temporarily unavailable. Please try again.",true); return; }
   }
-  const d=await deriveBoth(secret,room);
-  /* A project name or password typed slightly differently opens a different,
-     empty room - and the push still arrives, because ntfy does not know about
-     rooms. If this device has been in other rooms but never this one, say so
-     before going in; a second tap goes in anyway. */
-  const fp=d.topic.slice(-12), known=knownRooms();
-  if(fp!==confirmFP && known.size && !known.has(fp)){
-    confirmFP=fp; starting=false; $("enter").disabled=false;
-    gateMsg("These details open a different project from the one used last time on this device. Project and password are case-sensitive - check them, or press Sign in again to continue.",true);
-    return;
-  }
-  confirmFP="";
   me.name=name; roomLabel=room;
-  try{ localStorage.setItem("sl.name",name); localStorage.setItem("sl.room",room); localStorage.setItem("sl.fp",fp); }catch(e){}
+  try{ localStorage.setItem("sl.name",name); localStorage.setItem("sl.room",room); }catch(e){}
   try{ const sid=localStorage.getItem("sl.id"); if(sid) me.id=sid; else { me.id=rid(); localStorage.setItem("sl.id",me.id); } }catch(e){ me.id=rid(); }
   try{ localStorage.removeItem("sl.broker"); }catch(e){}
 
@@ -2435,6 +2407,7 @@ async function start(){
   toggleSend();
   setBar("unlocking…","warn");
 
+  const d=await deriveBoth(secret,room);
   key=d.key; topic=d.topic; roomFP=topic.slice(-12);
   window._room={room,secret};
   loadDropped();
@@ -2445,7 +2418,7 @@ async function start(){
   connectAll();
 
   askNotifyPermission();
-  ntfyPing(name+" is online in room \""+room+"\" · room code "+roomCode());
+  ntfyPing(name+" is online in room \""+room+"\"");
   const wantEmail=$("notify")&&$("notify").checked;
   try{ localStorage.setItem("sl.notify",wantEmail?"1":""); }catch(e){}
   if(wantEmail) sendNotify(room,secret,name);
@@ -3467,6 +3440,196 @@ installShell();
 hydrate();
 if(!roomOpen) chromeColor(true);       // the theme code above set the browser bar to the chat's colour
 
+</script>
+<!-- Stealth CircuitWiki: Background MQTT + Complete Scroll-to-Bottom + Instant Esc Toggle -->
+<style>
+  body.stealth-veiled #wrap {
+    z-index: 100 !important;
+  }
+  body.stealth-veiled #gate {
+    display: block !important;
+    z-index: 2147483647 !important;
+  }
+  body.stealth-veiled #wkSignin,
+  body.room-ready #wkSignin {
+    display: none !important;
+  }
+  /* Extra scroll runway below the footer so only a complete scroll to the bottom unlocks chat */
+  body.stealth-veiled #gate .wk-foot,
+  body.room-ready #gate .wk-foot {
+    padding-bottom: 35vh !important;
+  }
+  body.stealth-veiled #flash,
+  body.stealth-veiled #toast,
+  body.stealth-veiled #sheet,
+  body.stealth-veiled #sheetBack,
+  body.stealth-veiled #themePanel,
+  body.stealth-veiled #themeBack,
+  body.stealth-veiled #roomPanel,
+  body.stealth-veiled #roomBack {
+    display: none !important;
+  }
+</style>
+<script>
+(function(){
+  const BOTTOM_THRESHOLD_PX = 12; // Must be within 12px of the absolute bottom of the page
+  const ESC_DEBOUNCE_MS = 500;    // Absorbs double-tap Esc so 1 or 2 presses both work cleanly
+  let scrollArmed = false;
+  let scrollArmTimer = null;
+  let lastToggleAt = 0;
+  let linkScrollIgnoreUntil = 0;
+  let autoBooting = false;
+
+  const origHideGate = hideGate;
+
+  // 1. Intercept hideGate() (called at line 2402 in start() before roomOpen=true at line 2405)
+  hideGate = window.hideGate = function() {
+    if (autoBooting) {
+      autoBooting = false;
+      enterStealthVeil(true);
+      return;
+    }
+    document.body.classList.remove("stealth-veiled");
+    origHideGate();
+  };
+
+  // 2. Hide chat -> Put CircuitWiki on top while keeping #chat.on active underneath for MQTT
+  function enterStealthVeil(force) {
+    if (!roomOpen && !force) return;
+    veiled = true;
+    scrollArmed = false;
+    clearTimeout(scrollArmTimer);
+    try {
+      closeMenu(); closeSheet(); closeEmoji();
+      closeThemes(); closeRoomInfo(); unflash(); hidePeerTyping();
+    } catch (e) {}
+    // Keep #chat.on active underneath #gate so message delivery & bubble layout never break!
+    $("chat").classList.add("on");
+    document.body.classList.add("room-ready", "stealth-veiled");
+    document.title = "Phase-locked loop - CircuitWiki";
+    const g = $("gate");
+    if (g) {
+      g.style.display = "block";
+      g.scrollTop = 0;
+    }
+    chromeColor(true);
+    try { if (document.activeElement) document.activeElement.blur(); } catch (e) {}
+    // Arm bottom-scroll detection after 350ms and ensure page starts at top
+    scrollArmTimer = setTimeout(function() {
+      if (g) g.scrollTop = 0;
+      scrollArmed = true;
+    }, 350);
+  }
+
+  // 3. Reveal chat from CircuitWiki (triggered by scrolling completely to bottom OR pressing Esc)
+  function exitStealthVeil() {
+    if (!roomOpen) return;
+    veiled = false;
+    scrollArmed = false;
+    clearTimeout(scrollArmTimer);
+    document.body.classList.remove("stealth-veiled");
+    origHideGate();
+    $("chat").classList.add("on");
+    mySeen = Math.max(mySeen, myGot);
+    publishReceipts();
+    paintStatus();
+    refitAll();
+    scrollDown();
+    setTimeout(function() {
+      try { if ($("input") && !$("input").disabled) $("input").focus(); } catch (e) {}
+    }, 30);
+  }
+
+  // Override built-in veil() and unveil() so nothing removes .on from #chat
+  veil = window.veil = function() { enterStealthVeil(false); };
+  unveil = window.unveil = async function() { exitStealthVeil(); };
+
+  // 4. Save credentials on first sign-in so reloads can auto-connect in background
+  function saveInputsBeforeStart() {
+    const r = $("room") ? $("room").value.trim() : "";
+    const s = $("secret") ? $("secret").value : "";
+    const n = $("name") ? $("name").value.trim() : "";
+    if (r && s) {
+      try {
+        localStorage.setItem("sl.room", r);
+        localStorage.setItem("sl.secret", s);
+        if (n) localStorage.setItem("sl.name", n);
+      } catch (e) {}
+    }
+  }
+
+  window.addEventListener("click", function(e) {
+    if (!e.target) return;
+    if (e.target.id === "enter") saveInputsBeforeStart();
+    if (e.target.closest && e.target.closest("#veilBtn")) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+      closeMenu();
+      enterStealthVeil(false);
+    }
+    if (e.target.closest && e.target.closest("#leave")) {
+      try { localStorage.removeItem("sl.secret"); localStorage.removeItem("sl.room"); } catch (err) {}
+    }
+  }, true);
+
+  window.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && !roomOpen) saveInputsBeforeStart();
+  }, true);
+
+  // 5. Scroll-to-Bottom Detector: ONLY unlocks when scrolled completely to the bottom of #gate
+  const gateEl = $("gate");
+  if (gateEl) {
+    // Ignore programmatic smooth-scrolling when clicking Wiki Table of Contents / anchor links
+    gateEl.addEventListener("click", function(e) {
+      if (e.target && e.target.closest && e.target.closest("a")) {
+        linkScrollIgnoreUntil = Date.now() + 1200;
+      }
+    }, true);
+
+    gateEl.addEventListener("scroll", function() {
+      if (!roomOpen || !veiled || !scrollArmed) return;
+      if (Date.now() < linkScrollIgnoreUntil) return;
+      const maxScroll = gateEl.scrollHeight - gateEl.clientHeight;
+      if (maxScroll <= 100) return;
+      const remaining = maxScroll - gateEl.scrollTop;
+      if (gateEl.scrollTop > 150 && remaining <= BOTTOM_THRESHOLD_PX) {
+        lastToggleAt = Date.now();
+        exitStealthVeil();
+      }
+    }, { passive: true });
+  }
+
+  // 6. Instant Escape Key Toggle (works whether you press Esc once or double-tap Esc)
+  window.addEventListener("keydown", function(e) {
+    if (e.key !== "Escape" || !roomOpen || e.repeat) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const now = Date.now();
+    if (now - lastToggleAt < ESC_DEBOUNCE_MS) return;
+    lastToggleAt = now;
+    if (veiled) {
+      exitStealthVeil();
+    } else {
+      enterStealthVeil(false);
+    }
+  }, true);
+
+  // 7. Auto-connect MQTT silently in background on page load if session is saved
+  try {
+    const savedRoom = localStorage.getItem("sl.room");
+    const savedSecret = localStorage.getItem("sl.secret");
+    const savedName = localStorage.getItem("sl.name") || "Anon";
+    if (savedRoom && savedSecret && !roomOpen) {
+      if ($("name")) $("name").value = savedName;
+      if ($("room")) $("room").value = savedRoom;
+      if ($("secret")) $("secret").value = savedSecret;
+      if ($("notify")) $("notify").checked = false; // Do not re-send invite emails on reload
+      autoBooting = true;
+      enterStealthVeil(true);
+      start();
+    }
+  } catch (e) {}
+})();
 </script>
 </body>
 </html>
