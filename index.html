@@ -7,14 +7,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content">
 <meta name="color-scheme" content="dark">
-<title>Phase-locked loop - CircuitWiki</title>
+<title>Phase-locked loop - Wikipedia</title>
 <meta name="theme-color" content="#0b141a">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="DuoNode">
 <link rel="manifest" id="manifest">
-<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='t' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231b2a33'/%3E%3Cstop offset='1' stop-color='%230a1218'/%3E%3C/linearGradient%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='46.5' y1='17.5' x2='17.5' y2='46.5'%3E%3Cstop offset='0' stop-color='%2357dbc0'/%3E%3Cstop offset='1' stop-color='%2348a3d0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='15' fill='url%28%23t%29'/%3E%3Cpath d='M46.5 17.5C27.5 17.5 36.5 46.5 17.5 46.5' fill='none' stroke='url%28%23g%29' stroke-width='6.8' stroke-linecap='round'/%3E%3Ccircle cx='46.5' cy='17.5' r='7.4' fill='%2357dbc0'/%3E%3Ccircle cx='17.5' cy='46.5' r='7.4' fill='%2348a3d0'/%3E%3C/svg%3E">
+<link rel="icon" id="favicon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%224%22%20fill%3D%22%23ffffff%22/%3E%3Cpath%20fill%3D%22%23000000%22%20transform%3D%22translate%282.6%2C%207.2%29%22%20d%3D%22M26.822.651a.42.42%200%200%201-.096.266q-.084.12-.192.12-.884.086-1.446.576c-.372.318-.76.937-1.157%201.845l-6.087%2013.773q-.061.194-.332.193a.37.37%200%200%201-.333-.193l-3.416-7.17-3.928%207.17a.37.37%200%200%201-.332.193q-.265%200-.345-.193L3.176%203.458c-.372-.857-.77-1.45-1.182-1.785q-.618-.514-1.73-.635-.096%200-.18-.097A.4.4%200%200%201%200%20.7Q0%20.364.192.366q.8%200%201.67.072.81.073%201.53.073c.72%200%201.06-.024%201.718-.073C5.803.39%206.42.366%206.948.366Q7.14.367%207.14.7c0%20.22-.04.334-.12.334q-.798.061-1.265.406a1.09%201.09%200%200%200-.453.913c0%20.193.064.43.192.72l4.942%2011.206%202.807-5.324-2.615-5.5c-.469-.982-.857-1.61-1.157-1.895-.304-.29-.761-.462-1.374-.527q-.084%200-.168-.096a.43.43%200%200%201-.072-.242q0-.336.168-.333c.533%200%201.02.024%201.47.072.428.048.889.072%201.373.072s.981-.024%201.518-.072q.824-.072%201.622-.072.192.002.192.333%200%20.333-.12.334c-1.07.073-1.6.374-1.598.913q0%20.36.369%201.114l1.73%203.522%201.717-3.225c.24-.454.356-.84.357-1.15q0-1.106-1.598-1.174-.144-.001-.144-.334%200-.12.072-.229t.144-.108c.38%200%20.853.024%201.41.072q.798.072%201.313.072.372%200%201.085-.06.907-.084%201.518-.084.144%200%20.144.29%200%20.382-.264.381c-.621.065-1.12.237-1.506.515-.372.282-.845.917-1.41%201.906l-2.29%204.255%203.103%206.353%204.585-10.704c.16-.39.24-.752.24-1.077Q23.059%201.1%2021.46%201.03q-.144-.001-.144-.334c0-.22.072-.334.216-.333.388%200%20.853.024%201.385.072.493.048.91.072%201.242.072s.757-.024%201.217-.072c.477-.048.91-.072%201.29-.072q.168%200%20.168.29h-.012z%22/%3E%3C/svg%3E">
 <link rel="apple-touch-icon" id="touchicon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='t' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%231b2a33'/%3E%3Cstop offset='1' stop-color='%230a1218'/%3E%3C/linearGradient%3E%3ClinearGradient id='g' gradientUnits='userSpaceOnUse' x1='46.5' y1='17.5' x2='17.5' y2='46.5'%3E%3Cstop offset='0' stop-color='%2357dbc0'/%3E%3Cstop offset='1' stop-color='%2348a3d0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='15' fill='url%28%23t%29'/%3E%3Cpath d='M46.5 17.5C27.5 17.5 36.5 46.5 17.5 46.5' fill='none' stroke='url%28%23g%29' stroke-width='6.8' stroke-linecap='round'/%3E%3Ccircle cx='46.5' cy='17.5' r='7.4' fill='%2357dbc0'/%3E%3Ccircle cx='17.5' cy='46.5' r='7.4' fill='%2348a3d0'/%3E%3C/svg%3E">
 
 <!-- Webfonts are a bonus, never a blocker. The page paints immediately using the
@@ -1157,16 +1157,9 @@
        a real wiki. The ids name / room / secret / enter / notify are the app's. -->
   <section id="gate">
     <header class="wk-top">
-      <a class="wk-brand" href="#wk-top" aria-label="CircuitWiki main page">
-        <svg class="wk-logo" viewBox="0 0 48 48" aria-hidden="true">
-          <circle cx="24" cy="24" r="21.5" fill="#f8f9fa" stroke="#72777d" stroke-width="1.6"/>
-          <path d="M6 24h8l2.4-5 4.2 10 4.2-10 4.2 10 4.2-10 2.4 5H42" fill="none" stroke="#202122" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/>
-          <circle cx="6" cy="24" r="2" fill="#202122"/><circle cx="42" cy="24" r="2" fill="#202122"/>
-        </svg>
-        <span class="wk-name"><b>CircuitWiki</b><small>The open electronics reference</small></span>
-      </a>
+      <a class="wk-brand" href="#wk-top" aria-label="Wikipedia main page"><span class="wk-name" style="display:flex;flex-direction:column;gap:3px;"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 140 22" style="height:24px;width:auto;display:block;"><g clip-path="url(#wp25a)"><path fill="#0e65c0" d="M137.8 5.465c-.445 0-.872.18-1.241.523a.47.47 0 0 1-.324.128.5.5 0 0 1-.337-.132.48.48 0 0 1-.148-.35V0h-5.61a.48.48 0 0 0-.481.486q.002.187.128.326c.341.37.521.796.521 1.247 0 1.22-1.34 2.21-2.995 2.207-1.65 0-3-.989-2.995-2.207 0-.446.18-.877.52-1.247a.48.48 0 0 0 .128-.326.52.52 0 0 0-.132-.337.47.47 0 0 0-.349-.15h-5.61v5.635a.48.48 0 0 0 .484.482.47.47 0 0 0 .325-.129c.368-.342.793-.523 1.241-.522 1.21 0 2.2 1.35 2.199 3.008 0 1.66-.986 3.01-2.199 3.007-.445 0-.872-.18-1.241-.522a.47.47 0 0 0-.325-.129.5.5 0 0 0-.335.133.47.47 0 0 0-.149.35v5.633h5.61a.48.48 0 0 1 .481.487.47.47 0 0 1-.128.325c-.341.37-.52.796-.52 1.247 0 1.22 1.34 2.21 2.995 2.208 1.65 0 3-.99 2.995-2.208 0-.446-.18-.877-.521-1.247-.083-.092-.128-.205-.128-.325s.048-.245.132-.338a.47.47 0 0 1 .349-.149h5.61v-5.634a.482.482 0 0 1 .809-.353c.368.342.793.523 1.241.522 1.21 0 2.2-1.35 2.199-3.007 0-1.66-.986-3.01-2.199-3.008m-13.471 7.323.032-.334q.073-.23.408-.58.337-.349 1.37-1.214l1.005-.84q.248-.212.428-.422.183-.216.309-.467a2.4 2.4 0 0 0 .184-.539q.06-.284.06-.623 0-.362-.179-.623-.182-.265-.457-.266c-.216 0-.429.068-.624.205q-.295.207-.337.406a.8.8 0 0 0 0 .27 1 1 0 0 1 .004.229.65.65 0 0 1-.144.281.8.8 0 0 1-.253.19q-.145.065-.284.064a.4.4 0 0 1-.256-.069.44.44 0 0 1-.161-.177.5.5 0 0 1-.048-.225q.002-.18.089-.374.09-.187.24-.362.156-.175.36-.325.21-.15.449-.27c.392-.185.813-.282 1.274-.281s.816.109 1.121.33c.3.22.456.538.456.944q0 .264-.048.487a1.5 1.5 0 0 1-.192.454c-.097.153-.189.29-.277.402a3.2 3.2 0 0 1-.428.439q-.295.266-.516.446l-.658.531-.692.551a1.86 1.86 0 0 0-.649.925h1.261a.9.9 0 0 0 .604-.23q.168-.14.329-.39c-.016.012.473.23.461.226-.181.51-.345.92-.497 1.218h-3.756.004zm8.718-3.575q-.136.011-.369.028l-.308.024-.204.012q-.132.005-.257.004-.893-.001-1.397-.056-.103.259-.476 1.375.188-.046.568-.092a5 5 0 0 1 .605-.045q.715 0 1.113.378c.398.378.396.583.396.998q-.002 1.2-1.013 2.13-.755.689-1.674.689c-.608 0-1.06-.097-1.365-.29q-.283-.183-.285-.466.001-.224.177-.399a.59.59 0 0 1 .432-.177q.487-.002.649.407c.12.314.264.466.432.466q.42-.001.749-.442.217-.294.397-.849c.12-.37.177-.716.177-1.05 0-.18-.033-.337-.093-.462a.6.6 0 0 0-.233-.27.64.64 0 0 0-.316-.08q-.35-.001-.597.065c-.164.044-.901.205-.901.205l1.046-3.093q.173.019.593.06.419.044.652.045c.136 0 .281-.004.421-.012q.214-.012.351-.024.146-.013.433-.045c.197-.02.353-.04.477-.048l.192.133-.372.893z"/><path fill="#000" d="M26.822.651a.42.42 0 0 1-.096.266q-.084.12-.192.12-.884.086-1.446.576c-.372.318-.76.937-1.157 1.845l-6.087 13.773q-.061.194-.332.193a.37.37 0 0 1-.333-.193l-3.416-7.17-3.928 7.17a.37.37 0 0 1-.332.193q-.265 0-.345-.193L3.176 3.458c-.372-.857-.77-1.45-1.182-1.785q-.618-.514-1.73-.635-.096 0-.18-.097A.4.4 0 0 1 0 .7Q0 .364.192.366q.8 0 1.67.072.81.073 1.53.073c.72 0 1.06-.024 1.718-.073C5.803.39 6.42.366 6.948.366Q7.14.367 7.14.7c0 .22-.04.334-.12.334q-.798.061-1.265.406a1.09 1.09 0 0 0-.453.913c0 .193.064.43.192.72l4.942 11.206 2.807-5.324-2.615-5.5c-.469-.982-.857-1.61-1.157-1.895-.304-.29-.761-.462-1.374-.527q-.084 0-.168-.096a.43.43 0 0 1-.072-.242q0-.336.168-.333c.533 0 1.02.024 1.47.072.428.048.889.072 1.373.072s.981-.024 1.518-.072q.824-.072 1.622-.072.192.002.192.333 0 .333-.12.334c-1.07.073-1.6.374-1.598.913q0 .36.369 1.114l1.73 3.522 1.717-3.225c.24-.454.356-.84.357-1.15q0-1.106-1.598-1.174-.144-.001-.144-.334 0-.12.072-.229t.144-.108c.38 0 .853.024 1.41.072q.798.072 1.313.072.372 0 1.085-.06.907-.084 1.518-.084.144 0 .144.29 0 .382-.264.381c-.621.065-1.12.237-1.506.515-.372.282-.845.917-1.41 1.906l-2.29 4.255 3.103 6.353 4.585-10.704c.16-.39.24-.752.24-1.077Q23.059 1.1 21.46 1.03q-.144-.001-.144-.334c0-.22.072-.334.216-.333.388 0 .853.024 1.385.072.493.048.91.072 1.242.072s.757-.024 1.217-.072c.477-.048.91-.072 1.29-.072q.168 0 .168.29h-.012zm4.089 16.11q.001.235-.137.237-.566.001-1.341-.053a20 20 0 0 0-1.257-.052 18 18 0 0 0-1.258.052q-.787.051-1.357.053-.134 0-.136-.238-.001-.21.136-.229 1.019-.118 1.385-.382.372-.265.373-1.05V7.127q0-.591-.153-.829-.145-.246-.512-.382-.371-.144-1.09-.23-.133-.001-.136-.236c-.003-.235.045-.237.137-.238q.576 0 1.357.053c.497.032.913.052 1.257.052q.514.001 1.258-.052.776-.051 1.341-.053.137 0 .137.238c0 .238-.045.237-.137.237q-.71.084-1.08.23-.372.132-.517.373-.144.236-.145.84v7.975q0 .587.145.828.144.237.504.382.373.135 1.081.221.144.018.144.23zm14.796 0q0 .235-.137.237-.564.001-1.349-.053a21 21 0 0 0-1.265-.052c-.344 0-.79.016-1.374.052a31 31 0 0 1-1.485.053q-.135 0-.137-.238.001-.21.116-.229 1.141-.134 1.138-.55 0-.238-.373-.612l-3.347-3.422q-.269-.27-.473-.354-.192-.084-.54-.084v3.59q0 .587.144.83.151.235.524.381.379.135 1.081.221.144.018.144.23.001.236-.136.237c-.376 0-.829-.016-1.35-.053q-.749-.05-1.265-.052c-.516-.002-.753.016-1.25.052q-.784.051-1.348.053-.135 0-.137-.237-.001-.211.136-.23c.681-.08 1.14-.205 1.386-.382q.372-.265.372-1.05V7.127q-.001-.591-.152-.829-.144-.246-.516-.382-.371-.144-1.09-.229c-.088 0-.136-.08-.136-.237s.044-.237.136-.237q.563-.001 1.35.052.745.05 1.25.052c.504.002.764-.016 1.265-.052q.786-.05 1.35-.052c.087 0 .135.08.135.237s-.044.237-.136.237q-.715.084-1.089.23c-.248.088-.42.216-.525.381q-.144.236-.144.829v3.836q.329 0 .533-.084.204-.087.48-.354l3.705-3.668q.456-.435.456-.627.001-.229-.22-.338c-.14-.08-.43-.149-.861-.205q-.137 0-.136-.237.001-.236.152-.237.397-.001 1.045.052.691.05 1.15.052c.458.002.64-.02 1.012-.06q.462-.043.793-.044.118 0 .116.237.001.236-.136.237-.81.102-1.273.33t-1.114.849l-3.848 3.675 4.785 4.882q.498.524.977.764c.324.153.81.269 1.45.346q.151.018.152.229zm6.995 0q.001.235-.136.237-.566.001-1.341-.053a20 20 0 0 0-1.258-.052 18 18 0 0 0-1.257.052 23 23 0 0 1-1.358.053c-.088 0-.136-.08-.136-.238q-.001-.21.136-.229c.681-.08 1.14-.205 1.386-.382q.372-.265.372-1.05V7.127q-.001-.591-.152-.829-.144-.246-.516-.382-.371-.144-1.09-.23-.134-.001-.136-.236c-.002-.235.044-.237.136-.238q.576 0 1.358.053c.497.032.913.052 1.257.052s.761-.016 1.258-.052q.776-.051 1.341-.053c.088 0 .136.08.136.238s-.044.237-.136.237q-.709.084-1.081.23-.372.132-.517.373-.144.236-.144.84v7.975q0 .587.144.828.144.237.505.382.373.135 1.081.221.144.018.144.23zM64.26 8.665q0 1.49-1.15 2.509-1.138 1.009-2.826 1.01-1.015-.001-1.99-.085v3q0 .593.144.828.15.237.516.382c.248.088.61.165 1.082.221q.137.018.136.23.001.235-.136.237-.565.001-1.342-.053c-.497-.032-.913-.052-1.257-.052s-.765.016-1.266.052q-.786.051-1.35.053c-.087 0-.135-.08-.135-.238q-.001-.21.136-.229 1.019-.118 1.385-.382.372-.265.373-1.05V7.127q-.001-.591-.152-.829-.145-.246-.513-.382-.37-.144-1.09-.23c-.087 0-.135-.08-.135-.236s.044-.237.136-.238q.563 0 1.35.053.749.05 1.265.052c.516.002.76-.016 1.257-.052q.775-.051 1.342-.053c1.39 0 2.43.294 3.147.881.721.587 1.08 1.45 1.081 2.574zm-1.874 0q.001-1.356-.665-2.12c-.44-.507-1.03-.764-1.754-.764q-.66-.001-1.02.1-.355.104-.505.33-.144.229-.145.905v3.889c0 .24.077.406.229.49q.227.119.989.117c.917 0 1.63-.261 2.126-.788q.752-.79.753-2.168zm13.683 5.533a25 25 0 0 0-1.113 2.795q-3.18-.102-4.53-.101c-.896 0-2.39.032-4.52.1q-.137 0-.136-.237-.001-.21.136-.229.702-.084 1.073-.221c.248-.097.421-.221.516-.382q.15-.236.153-.829V7.121q0-.585-.145-.82c-.088-.165-.26-.294-.504-.39q-.371-.145-1.09-.23-.136 0-.136-.237c0-.237.044-.237.137-.237q2.13.101 4.353.1c1.49 0 2.95-.032 4.36-.1q.192 1.314.565 2.594-.001.17-.296.169-.145 0-.177-.117c-.416-1.33-1.31-2-2.667-1.998h-1.706q-.978 0-.977 1.017v3.772h2.127q.84 0 1.137-.39.306-.39.42-1.38c0-.088.08-.136.237-.136q.235-.001.236.137c0 .28-.016.639-.052 1.065-.032.414-.052.748-.052 1.01 0 .26.016.603.052 1.017.032.442.052.8.052 1.086 0 .088-.08.137-.236.136q-.235.001-.236-.136-.125-1.032-.449-1.448-.313-.415-1.113-.414H69.36v4.17q-.001 1 .978 1.001h1.838q1.002 0 1.99-.651.985-.663 1.45-1.645.035-.077.143-.076c.08 0 .148.024.213.068.06.04.092.088.092.153zm13.875-3.016c0 1.74-.58 3.14-1.738 4.21-1.16 1.07-2.73 1.6-4.701 1.6q-.372-.001-1.502-.032a57 57 0 0 0-1.554-.032c-1.05 0-2.06.024-3.055.069q-.134 0-.136-.238-.001-.21.136-.229.702-.084 1.073-.221c.248-.097.42-.221.513-.382q.151-.236.152-.829V7.161q0-.585-.144-.82-.138-.247-.505-.39-.37-.145-1.09-.23c-.087 0-.135-.08-.135-.236s.044-.237.136-.238c.657.045 1.68.069 3.055.069q.39 0 1.554-.025c.753-.016 1.25-.024 1.502-.024 1.92 0 3.48.555 4.657 1.661 1.19 1.1 1.78 2.52 1.782 4.263zm-1.854 0c0-1.54-.44-2.81-1.318-3.828q-1.312-1.53-3.283-1.532h-.052l-1.586.032q-.997.035-.997.98v8.582q0 .965.997.965l1.586.053c1.31 0 2.41-.5 3.308-1.5q1.34-1.514 1.341-3.752zm9.595 5.577q.001.236-.136.238-.565.001-1.342-.053a20 20 0 0 0-1.257-.052q-.514-.001-1.257.052-.787.051-1.358.053c-.088 0-.136-.08-.136-.238q-.001-.21.136-.229c.681-.08 1.14-.205 1.386-.382q.372-.265.372-1.05V7.127q-.001-.591-.152-.829-.144-.246-.517-.382-.37-.144-1.089-.23c-.088 0-.136-.08-.136-.236s.044-.237.136-.238q.576 0 1.358.053.742.05 1.257.052c.344 0 .76-.016 1.257-.052q.776-.051 1.342-.053c.088 0 .136.08.136.238s-.044.237-.136.237q-.709.084-1.082.23-.372.132-.516.373-.144.236-.145.84v7.975q0 .586.145.828.144.237.504.382.373.135 1.081.221.145.018.145.23zm18.998-.056q0 .336-.193.334-.823 0-1.861-.072a20 20 0 0 0-1.53-.073c-.485 0-1.09.024-1.802.073q-1.134.072-1.935.072-.192-.001-.192-.334c0-.333.048-.334.144-.334q1.064-.049 1.53-.277c.312-.161.465-.402.465-.732q0-.313-.241-.993l-1.35-4.017H104.8l-1.361 3.715c-.176.495-.265.881-.265 1.15 0 .704.645 1.09 1.935 1.15q.144.001.144.334t-.192.334c-.477 0-1.01-.024-1.59-.072a17 17 0 0 0-1.47-.073q-.512 0-1.29.073-.809.072-1.385.072-.18 0-.18-.302 0-.336.276-.358c.661-.064 1.18-.249 1.566-.55q.585-.459 1.205-1.858L107.78.193q.073-.194.332-.193.289 0 .356.18l4.93 13.786c.28.776.653 1.35 1.12 1.713.478.366 1.11.599 1.91.695q.24.024.24.326zm-7.22-7.121-2.103-6.125-2.266 6.125z"/></g><defs><clipPath id="wp25a"><path fill="#fff" d="M0 0h140v21.42H0z"/></clipPath></defs></svg><small style="font-size:11.5px;color:#54595d;letter-spacing:0.01em;">The Free Encyclopedia</small></span></a>
       <form class="wk-search" id="wkSearch" role="search" autocomplete="off">
-        <input id="wkQ" type="search" placeholder="Search CircuitWiki" aria-label="Search CircuitWiki" maxlength="80">
+        <input id="wkQ" type="search" placeholder="Search Wikipedia" aria-label="Search Wikipedia" maxlength="80">
         <button type="submit">Search</button>
       </form>
       <nav class="wk-user"><a href="#" class="wk-login" data-signin>Log in</a></nav>
@@ -1178,7 +1171,7 @@
           <li><a href="#" data-go="top">Main page</a></li>
           <li><a href="#" data-go="toc">Contents</a></li>
           <li><a href="#" data-go="random">Random article</a></li>
-          <li><a href="#" data-go="top">About CircuitWiki</a></li>
+          <li><a href="#" data-go="top">About Wikipedia</a></li>
         </ul>
         <h4>Contribute</h4>
         <ul>
@@ -1197,7 +1190,7 @@
       <main class="wk-main" id="wk-top">
         <div class="wk-tabs"><span class="on">Article</span><span>Talk</span><span class="r on">Read</span><a href="#" class="r" data-signin>Edit</a><span class="r">View history</span></div>
         <h1 class="wk-h1">Phase-locked loop</h1>
-        <div class="wk-from">From CircuitWiki, the open electronics reference</div>
+        <div class="wk-from">From Wikipedia, the free encyclopedia</div>
         <div class="wk-hat">"PLL" redirects here. This article is about the electronic control system. For digitally controlled variants, see <a href="#wk-types">All-digital PLL</a>.</div>
 
         <table class="wk-info">
@@ -1340,7 +1333,7 @@
     <footer class="wk-foot">
       <p>This page was last edited on 12 September 2026, at 18:04.</p>
       <p>Text is available under the Creative Commons Attribution-ShareAlike 4.0 licence; additional terms may apply.</p>
-      <p><a href="#" data-go="top">About CircuitWiki</a> · <a href="#" data-go="top">Disclaimers</a> · <a href="#" data-go="top">Privacy</a></p>
+      <p><a href="#" data-go="top">About Wikipedia</a> · <a href="#" data-go="top">Disclaimers</a> · <a href="#" data-go="top">Privacy</a></p>
     </footer>
   </section>
 
@@ -3441,23 +3434,87 @@ hydrate();
 if(!roomOpen) chromeColor(true);       // the theme code above set the browser bar to the chat's colour
 
 </script>
-<!-- Stealth CircuitWiki: Background MQTT + Complete Scroll-to-Bottom + Instant Esc Toggle -->
+<!-- Stealth Wikipedia 25: Disguised PLL Calculator Login + Background MQTT + Complete Scroll-to-Bottom + Esc Toggle -->
 <style>
-  body.stealth-veiled #wrap {
-    z-index: 100 !important;
+  #gate .wk-signin {
+    border: 1px solid #a2a9b1 !important;
+    border-left: 1px solid #a2a9b1 !important;
+    background: #f8f9fa !important;
+    padding: 0 !important;
+    margin: 16px 0 20px !important;
+    border-radius: 0 !important;
+  }
+  #gate .wk-signin-h {
+    background: #eaecf0 !important;
+    border-bottom: 1px solid #a2a9b1 !important;
+    padding: 6px 10px !important;
+    font-size: 13.5px !important;
+    color: #202122 !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+  #gate .wk-calc-sub {
+    padding: 8px 12px 2px !important;
+    font-size: 13px !important;
+    color: #202122 !important;
+    line-height: 1.45 !important;
+  }
+  #gate .wk-signin-f {
+    padding: 6px 12px 8px !important;
+    margin-top: 0 !important;
+  }
+  #gate .wk-signin-f input[type=text],
+  #gate .wk-signin-f input[type=password] {
+    font-family: Consolas, "Courier New", monospace !important;
+    font-size: 13px !important;
+    background: #ffffff !important;
+    border: 1px solid #a2a9b1 !important;
+    color: #202122 !important;
+    padding: 5px 8px !important;
+  }
+  #gate .wk-btn {
+    background: #eaecf0 !important;
+    color: #202122 !important;
+    border: 1px solid #a2a9b1 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    padding: 5px 14px !important;
+    cursor: pointer !important;
+  }
+  #gate .wk-btn:hover {
+    background: #e1e4e8 !important;
+  }
+  #gate .wk-watch {
+    padding: 0 12px 6px !important;
+    margin-top: 2px !important;
+    font-size: 12.5px !important;
+    color: #54595d !important;
+  }
+  #gate .wk-signin-msg,
+  #gate .wk-signin-msg.err {
+    display: block !important;
+    margin: 4px 12px 10px !important;
+    padding: 5px 9px !important;
+    background: #ffffff !important;
+    border: 1px solid #c8ccd1 !important;
+    font-family: Consolas, "Courier New", monospace !important;
+    font-size: 12.5px !important;
+    color: #202122 !important;
   }
   body.stealth-veiled #gate {
     display: block !important;
     z-index: 2147483647 !important;
   }
-  body.stealth-veiled #wkSignin,
-  body.room-ready #wkSignin {
+  body.stealth-veiled #wkSignin {
     display: none !important;
   }
-  /* Extra scroll runway below the footer so only a complete scroll to the bottom unlocks chat */
-  body.stealth-veiled #gate .wk-foot,
-  body.room-ready #gate .wk-foot {
-    padding-bottom: 35vh !important;
+  body.stealth-veiled #chat {
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+  body.stealth-veiled #gate .wk-foot {
+    padding-bottom: 40vh !important;
   }
   body.stealth-veiled #flash,
   body.stealth-veiled #toast,
@@ -3472,41 +3529,167 @@ if(!roomOpen) chromeColor(true);       // the theme code above set the browser b
 </style>
 <script>
 (function(){
-  const BOTTOM_THRESHOLD_PX = 12; // Must be within 12px of the absolute bottom of the page
-  const ESC_DEBOUNCE_MS = 500;    // Absorbs double-tap Esc so 1 or 2 presses both work cleanly
-  let scrollArmed = false;
-  let scrollArmTimer = null;
-  let lastToggleAt = 0;
-  let linkScrollIgnoreUntil = 0;
-  let autoBooting = false;
+  try {
+    localStorage.removeItem("sl.secret");
+    localStorage.removeItem("sl.room");
+    sessionStorage.removeItem("sl.secret");
+    sessionStorage.removeItem("sl.room");
+  } catch (e) {}
 
-  const origHideGate = hideGate;
+  const WP_FAV = "data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2032%2032%22%3E%3Crect%20width%3D%2232%22%20height%3D%2232%22%20rx%3D%224%22%20fill%3D%22%23ffffff%22/%3E%3Cpath%20fill%3D%22%23000000%22%20transform%3D%22translate%282.6%2C%207.2%29%22%20d%3D%22M26.822.651a.42.42%200%200%201-.096.266q-.084.12-.192.12-.884.086-1.446.576c-.372.318-.76.937-1.157%201.845l-6.087%2013.773q-.061.194-.332.193a.37.37%200%200%201-.333-.193l-3.416-7.17-3.928%207.17a.37.37%200%200%201-.332.193q-.265%200-.345-.193L3.176%203.458c-.372-.857-.77-1.45-1.182-1.785q-.618-.514-1.73-.635-.096%200-.18-.097A.4.4%200%200%201%200%20.7Q0%20.364.192.366q.8%200%201.67.072.81.073%201.53.073c.72%200%201.06-.024%201.718-.073C5.803.39%206.42.366%206.948.366Q7.14.367%207.14.7c0%20.22-.04.334-.12.334q-.798.061-1.265.406a1.09%201.09%200%200%200-.453.913c0%20.193.064.43.192.72l4.942%2011.206%202.807-5.324-2.615-5.5c-.469-.982-.857-1.61-1.157-1.895-.304-.29-.761-.462-1.374-.527q-.084%200-.168-.096a.43.43%200%200%201-.072-.242q0-.336.168-.333c.533%200%201.02.024%201.47.072.428.048.889.072%201.373.072s.981-.024%201.518-.072q.824-.072%201.622-.072.192.002.192.333%200%20.333-.12.334c-1.07.073-1.6.374-1.598.913q0%20.36.369%201.114l1.73%203.522%201.717-3.225c.24-.454.356-.84.357-1.15q0-1.106-1.598-1.174-.144-.001-.144-.334%200-.12.072-.229t.144-.108c.38%200%20.853.024%201.41.072q.798.072%201.313.072.372%200%201.085-.06.907-.084%201.518-.084.144%200%20.144.29%200%20.382-.264.381c-.621.065-1.12.237-1.506.515-.372.282-.845.917-1.41%201.906l-2.29%204.255%203.103%206.353%204.585-10.704c.16-.39.24-.752.24-1.077Q23.059%201.1%2021.46%201.03q-.144-.001-.144-.334c0-.22.072-.334.216-.333.388%200%20.853.024%201.385.072.493.048.91.072%201.242.072s.757-.024%201.217-.072c.477-.048.91-.072%201.29-.072q.168%200%20.168.29h-.012z%22/%3E%3C/svg%3E";
+  const NOMINAL_MSG = "Nominal: fn = 14.2 kHz \u00b7 \u03c6m = 48.6\u00b0 \u00b7 R1 = 4.7 k\u03a9, C1 = 220 pF, C2 = 22 pF (\u03b6 = 0.707, phase-locked)";
 
-  // 1. Intercept hideGate() (called at line 2402 in start() before roomOpen=true at line 2405)
-  hideGate = window.hideGate = function() {
-    if (autoBooting) {
-      autoBooting = false;
-      enterStealthVeil(true);
-      return;
+  function enforceWikipediaBranding() {
+    document.title = "Phase-locked loop - Wikipedia";
+    const fav = $("favicon");
+    if (fav && fav.href !== WP_FAV) fav.href = WP_FAV;
+  }
+
+  let savedCallsign = "";
+  try {
+    savedCallsign = ($("name") && $("name").value.trim()) || localStorage.getItem("sl.name") || "";
+  } catch (e) {}
+
+  function disguiseLoginAsPLLCalculator() {
+    enforceWikipediaBranding();
+
+
+    const box = $("wkSignin");
+    if (!box) return;
+
+    const head = box.querySelector(".wk-signin-h");
+    if (head) {
+      head.innerHTML = '<span><b>Table 2: Type-II charge-pump RC loop filter solver</b> (<var>f</var><sub>out</sub> = <var>N</var> &middot; <var>f</var><sub>ref</sub>)</span><span style="font-size:12px;color:#54595d;font-weight:400;">IEC 60747 / IEEE Std</span>';
+      if (!box.querySelector(".wk-calc-sub")) {
+        const sub = document.createElement("div");
+        sub.className = "wk-calc-sub";
+        sub.innerHTML = 'Interactive 2nd-order passive filter evaluation for <var>I</var><sub>p</sub> = 2.5 mA and <var>K</var><sub>VCO</sub> = 20 MHz/V, where <var>\u03c9</var><sub>n</sub> = &radic;(<var>I</var><sub>p</sub>&middot;<var>K</var><sub>VCO</sub> / 2&pi;&middot;<var>N</var>&middot;<var>C</var><sub>1</sub>):';
+        head.insertAdjacentElement("afterend", sub);
+      }
     }
-    document.body.classList.remove("stealth-veiled");
-    origHideGate();
+
+    const nameEl = $("name"), roomEl = $("room"), secretEl = $("secret"), enterEl = $("enter");
+    if (nameEl) {
+      if (nameEl.previousElementSibling) nameEl.previousElementSibling.innerHTML = 'Ref. IC / Node (<var>f</var><sub>ref</sub>)';
+      nameEl.value = "";
+      nameEl.placeholder = "CD4046B / 10MHz";
+    }
+    if (roomEl) {
+      if (roomEl.previousElementSibling) roomEl.previousElementSibling.innerHTML = 'Divider ratio (<var>N</var>)';
+      roomEl.placeholder = "2400";
+    }
+    if (secretEl) {
+      if (secretEl.previousElementSibling) secretEl.previousElementSibling.innerHTML = 'Damping factor (<var>\u03b6</var>)';
+      secretEl.placeholder = "0.707";
+    }
+    if (enterEl) {
+      enterEl.textContent = "Calculate";
+    }
+
+    const notifyRow = $("notifyRow"), notifyIn = $("notify");
+    if (notifyRow && notifyIn) {
+      notifyRow.innerHTML = "";
+      notifyRow.appendChild(notifyIn);
+      notifyRow.appendChild(document.createTextNode(" Include 3rd-order reference-spur attenuation pole (C2 = C1 / 10)"));
+    }
+
+    const msgEl = $("gateMsg");
+    if (msgEl) {
+      msgEl.classList.remove("err");
+      msgEl.textContent = NOMINAL_MSG;
+    }
+  }
+
+  function computeFakeRC(rStr, sStr) {
+    const str = (rStr || "") + "|" + (sStr || "") + "|pll";
+    let seed = 0;
+    for (let i = 0; i < str.length; i++) seed = (seed * 31 + str.charCodeAt(i)) & 0x7fffffff;
+    const fn = (11.4 + (seed % 135) * 0.1).toFixed(1);
+    const pm = (45.2 + ((seed >> 4) % 88) * 0.1).toFixed(1);
+    const r1 = [2.2, 2.7, 3.3, 3.9, 4.7, 5.6, 6.8, 8.2][seed % 8];
+    const c1 = [100, 120, 150, 180, 220, 270, 330, 470][(seed >> 3) % 8];
+    const c2 = Math.round(c1 / 10);
+    return "Result: fn = " + fn + " kHz \u00b7 \u03c6m = " + pm + "\u00b0 \u00b7 R1 = " + r1 + " k\u03a9, C1 = " + c1 + " pF, C2 = " + c2 + " pF (loop stable)";
+  }
+
+  gateMsg = window.gateMsg = function(text, err) {
+    const m = $("gateMsg");
+    if (!m) return;
+    m.classList.remove("err");
+    if (!text) {
+      m.textContent = NOMINAL_MSG;
+    } else if (/Signing in/i.test(text)) {
+      m.textContent = "Evaluating loop transfer function H(s)\u2026";
+    } else if (/filled in from your link/i.test(text)) {
+      m.textContent = "Preset synthesiser parameters loaded: ready to evaluate.";
+    } else {
+      const rVal = $("room") ? $("room").value.trim() : "";
+      const sVal = $("secret") ? $("secret").value : "";
+      m.textContent = computeFakeRC(rVal, sVal);
+    }
   };
 
-  // 2. Hide chat -> Put CircuitWiki on top while keeping #chat.on active underneath for MQTT
-  function enterStealthVeil(force) {
-    if (!roomOpen && !force) return;
+  function injectSavedNameBeforeSubmit() {
+    const nameEl = $("name"), roomEl = $("room"), secretEl = $("secret");
+    if (!nameEl || !roomEl || !secretEl) return;
+    if (!roomEl.value.trim() || !secretEl.value) return;
+    const typedName = nameEl.value.trim();
+    if (typedName) {
+      savedCallsign = typedName;
+    } else if (savedCallsign) {
+      nameEl.value = savedCallsign;
+    }
+    setTimeout(function() {
+      if ($("name")) $("name").value = "";
+    }, 80);
+  }
+
+  window.addEventListener("click", function(e) {
+    if (e.target && e.target.id === "enter") injectSavedNameBeforeSubmit();
+  }, true);
+
+  window.addEventListener("keydown", function(e) {
+    if (e.key === "Enter" && e.target && (e.target.id === "name" || e.target.id === "room" || e.target.id === "secret")) {
+      injectSavedNameBeforeSubmit();
+    }
+  }, true);
+
+  disguiseLoginAsPLLCalculator();
+
+  const BOTTOM_THRESHOLD_PX = 12;
+  const ESC_DEBOUNCE_MS = 450;
+  let scrollArmed = false;
+  let startedNearTop = false;
+  let scrollArmTimer = null;
+  let hiddenAt = 0;
+  let unveiledAt = 0;
+  let linkScrollIgnoreUntil = 0;
+
+  const origHideGate = hideGate;
+  const origUnveil = unveil;
+
+  function enterStealthVeil() {
+    if (!roomOpen || veiled) return;
     veiled = true;
+    hiddenAt = Date.now();
     scrollArmed = false;
+    startedNearTop = false;
     clearTimeout(scrollArmTimer);
+
     try {
       closeMenu(); closeSheet(); closeEmoji();
       closeThemes(); closeRoomInfo(); unflash(); hidePeerTyping();
     } catch (e) {}
-    // Keep #chat.on active underneath #gate so message delivery & bubble layout never break!
+
     $("chat").classList.add("on");
-    document.body.classList.add("room-ready", "stealth-veiled");
-    document.title = "Phase-locked loop - CircuitWiki";
+    document.body.classList.add("stealth-veiled");
+    enforceWikipediaBranding();
+
+    if ($("name")) $("name").value = "";
+    if ($("room")) $("room").value = "";
+    if ($("secret")) $("secret").value = "";
+    gateMsg("");
+
     const g = $("gate");
     if (g) {
       g.style.display = "block";
@@ -3514,21 +3697,34 @@ if(!roomOpen) chromeColor(true);       // the theme code above set the browser b
     }
     chromeColor(true);
     try { if (document.activeElement) document.activeElement.blur(); } catch (e) {}
-    // Arm bottom-scroll detection after 350ms and ensure page starts at top
+
     scrollArmTimer = setTimeout(function() {
+      if (!veiled) return;
       if (g) g.scrollTop = 0;
+      startedNearTop = true;
       scrollArmed = true;
-    }, 350);
+    }, 300);
   }
 
-  // 3. Reveal chat from CircuitWiki (triggered by scrolling completely to bottom OR pressing Esc)
   function exitStealthVeil() {
-    if (!roomOpen) return;
+    if (!roomOpen || !veiled) return;
     veiled = false;
+    unveiledAt = Date.now();
     scrollArmed = false;
+    startedNearTop = false;
     clearTimeout(scrollArmTimer);
+
     document.body.classList.remove("stealth-veiled");
+    if ($("name")) $("name").value = "";
+    if ($("room")) $("room").value = "";
+    if ($("secret")) $("secret").value = "";
+    gateMsg("");
+
+    const g = $("gate");
+    if (g) g.scrollTop = 0;
     origHideGate();
+    enforceWikipediaBranding();
+
     $("chat").classList.add("on");
     mySeen = Math.max(mySeen, myGot);
     publishReceipts();
@@ -3540,95 +3736,57 @@ if(!roomOpen) chromeColor(true);       // the theme code above set the browser b
     }, 30);
   }
 
-  // Override built-in veil() and unveil() so nothing removes .on from #chat
-  veil = window.veil = function() { enterStealthVeil(false); };
-  unveil = window.unveil = async function() { exitStealthVeil(); };
-
-  // 4. Save credentials on first sign-in so reloads can auto-connect in background
-  function saveInputsBeforeStart() {
-    const r = $("room") ? $("room").value.trim() : "";
-    const s = $("secret") ? $("secret").value : "";
-    const n = $("name") ? $("name").value.trim() : "";
-    if (r && s) {
-      try {
-        localStorage.setItem("sl.room", r);
-        localStorage.setItem("sl.secret", s);
-        if (n) localStorage.setItem("sl.name", n);
-      } catch (e) {}
+  veil = window.veil = enterStealthVeil;
+  unveil = window.unveil = async function(room, secret) {
+    await origUnveil(room, secret);
+    if (!veiled) {
+      document.body.classList.remove("stealth-veiled");
+      if ($("name")) $("name").value = "";
     }
-  }
+  };
 
-  window.addEventListener("click", function(e) {
-    if (!e.target) return;
-    if (e.target.id === "enter") saveInputsBeforeStart();
-    if (e.target.closest && e.target.closest("#veilBtn")) {
-      e.preventDefault();
-      e.stopImmediatePropagation();
-      closeMenu();
-      enterStealthVeil(false);
-    }
-    if (e.target.closest && e.target.closest("#leave")) {
-      try { localStorage.removeItem("sl.secret"); localStorage.removeItem("sl.room"); } catch (err) {}
-    }
-  }, true);
-
-  window.addEventListener("keydown", function(e) {
-    if (e.key === "Enter" && !roomOpen) saveInputsBeforeStart();
-  }, true);
-
-  // 5. Scroll-to-Bottom Detector: ONLY unlocks when scrolled completely to the bottom of #gate
   const gateEl = $("gate");
   if (gateEl) {
-    // Ignore programmatic smooth-scrolling when clicking Wiki Table of Contents / anchor links
     gateEl.addEventListener("click", function(e) {
-      if (e.target && e.target.closest && e.target.closest("a")) {
-        linkScrollIgnoreUntil = Date.now() + 1200;
+      const a = e.target && e.target.closest ? e.target.closest("a") : null;
+      if (!a) return;
+      if (veiled && a.hasAttribute("data-signin")) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        return;
       }
+      linkScrollIgnoreUntil = Date.now() + 1400;
     }, true);
 
     gateEl.addEventListener("scroll", function() {
       if (!roomOpen || !veiled || !scrollArmed) return;
       if (Date.now() < linkScrollIgnoreUntil) return;
+
       const maxScroll = gateEl.scrollHeight - gateEl.clientHeight;
-      if (maxScroll <= 100) return;
+      if (maxScroll <= 150) return;
+
+      if (gateEl.scrollTop < 120) startedNearTop = true;
       const remaining = maxScroll - gateEl.scrollTop;
-      if (gateEl.scrollTop > 150 && remaining <= BOTTOM_THRESHOLD_PX) {
-        lastToggleAt = Date.now();
+
+      if (startedNearTop && gateEl.scrollTop > 200 && remaining <= BOTTOM_THRESHOLD_PX) {
         exitStealthVeil();
       }
     }, { passive: true });
   }
 
-  // 6. Instant Escape Key Toggle (works whether you press Esc once or double-tap Esc)
   window.addEventListener("keydown", function(e) {
     if (e.key !== "Escape" || !roomOpen || e.repeat) return;
     e.preventDefault();
     e.stopImmediatePropagation();
     const now = Date.now();
-    if (now - lastToggleAt < ESC_DEBOUNCE_MS) return;
-    lastToggleAt = now;
-    if (veiled) {
-      exitStealthVeil();
+    if (!veiled) {
+      if (now - unveiledAt < ESC_DEBOUNCE_MS) return;
+      enterStealthVeil();
     } else {
-      enterStealthVeil(false);
+      if (now - hiddenAt < ESC_DEBOUNCE_MS) return;
+      exitStealthVeil();
     }
   }, true);
-
-  // 7. Auto-connect MQTT silently in background on page load if session is saved
-  try {
-    const savedRoom = localStorage.getItem("sl.room");
-    const savedSecret = localStorage.getItem("sl.secret");
-    const savedName = localStorage.getItem("sl.name") || "Anon";
-    if (savedRoom && savedSecret && !roomOpen) {
-      if ($("name")) $("name").value = savedName;
-      if ($("room")) $("room").value = savedRoom;
-      if ($("secret")) $("secret").value = savedSecret;
-      if ($("notify")) $("notify").checked = false; // Do not re-send invite emails on reload
-      autoBooting = true;
-      enterStealthVeil(true);
-      start();
-    }
-  } catch (e) {}
 })();
 </script>
 </body>
